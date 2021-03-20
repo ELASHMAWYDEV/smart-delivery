@@ -20,14 +20,14 @@ require("./db");
 //Socket Handler
 require("./socket/index")(io);
 
+//API routes
+app.post("*", require("./api"));
 // /*-------For Test Only--------*/
 // app.use(express.static("test"));
-
 // app.get("/test/:user/:event", (req, res) => {
 //   res.sendFile(
 //     path.join(__dirname, "test", req.params.user, `${req.params.event}.html`)
 //   );
 // });
 /*------------------------------------------*/
-
 http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
