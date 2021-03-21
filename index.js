@@ -21,7 +21,7 @@ require("./db");
 require("./socket/index")(io);
 
 //API routes
-app.post("*", require("./api"));
+app.use("/api", require("./api"));
 // /*-------For Test Only--------*/
 // app.use(express.static("test"));
 // app.get("/test/:user/:event", (req, res) => {

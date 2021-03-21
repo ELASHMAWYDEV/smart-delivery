@@ -6,6 +6,7 @@ const pointSchema = new mongoose.Schema({
     type: String,
     enum: ["Point"],
     required: true,
+    default: "Point"
   },
   coordinates: {
     type: [Number],
@@ -14,6 +15,10 @@ const pointSchema = new mongoose.Schema({
 });
 
 const masterSchema = new mongoose.Schema({
+  orderId: Number,
+  branchId: Number,
+  branchNameAr: String,
+  branchNameEn: String,
   receiverName: String,
   receiverMobile: String,
   receiverAddress: String,
@@ -27,13 +32,13 @@ const masterSchema = new mongoose.Schema({
     index: "2dsphere",
     required: true,
   },
-  branchId: Number,
   storeCost: Number,
   receiverCollected: Number,
   isPaid: Boolean,
   discount: Number,
   tax: Number,
   deliveryCost: Number,
+  fromReceiver: Number,
 });
 
 const itemSchema = new mongoose.Schema({
@@ -43,7 +48,7 @@ const itemSchema = new mongoose.Schema({
 });
 const orderSchema = new mongoose.Schema({
   master: masterSchema,
-  items: itemSchema,
+  items: [itemSchema],
 });
 
 const Order = mongoose.model("Order", orderSchema, "orders");

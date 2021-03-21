@@ -4,7 +4,7 @@ const router = express.Router();
 
 
 
-router.post("/NewOrderRequest", require("./NewOrderRequest"));
+router.use("/NewOrderRequest", require("./NewOrderRequest"));
 
 
 
