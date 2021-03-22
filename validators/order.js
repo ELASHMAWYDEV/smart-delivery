@@ -1,38 +1,50 @@
 const { checkSchema } = require("express-validator");
 
 module.exports = checkSchema({
-  receiverName: { isString: true, errorMessage: "يجب كتابة اسم العميل" },
-  receiverMobile: { isString: true, errorMessage: "يجب كتابة رقم هاتف العميل" },
-  receiverAddress: { isString: true, errorMessage: "يجب كتابة عنوان العميل" },
-  receiverLocation: {
+  "arr.*.receiverName": {
+    isString: true,
+    errorMessage: "يجب كتابة اسم العميل",
+  },
+  "arr.*.receiverMobile": {
+    isString: true,
+    errorMessage: "يجب كتابة رقم هاتف العميل",
+  },
+  "arr.*.receiverAddress": {
+    isString: true,
+    errorMessage: "يجب كتابة عنوان العميل",
+  },
+  "arr.*.receiverLocation": {
     isArray: true,
     errorMessage: "هناك مشكلة في تحديد موقع العميل",
   },
-  branchId: {
+  "arr.*.branchId": {
     isInt: true,
     optional: { options: { nullable: true } },
     errorMessage: "يجب ارسال رقم تعريف المطعم",
   },
-  isPaid: { isBoolean: true, errorMessage: "هناك مشكلة في تحديد حالة الدفع" },
-  storeCost: { isFloat: true, errorMessage: "يجب تحديد مبلغ الدفع" },
-  receiverCollected: {
+  "arr.*.isPaid": {
+    isBoolean: true,
+    errorMessage: "هناك مشكلة في تحديد حالة الدفع",
+  },
+  "arr.*.storeCost": { isFloat: true, errorMessage: "يجب تحديد مبلغ الدفع" },
+  "arr.*.receiverCollected": {
     isFloat: true,
     errorMessage: "يجب تحديد المبلغ المطلوب من العميل",
   },
-  discount: {
+  "arr.*.discount": {
     isInt: true,
     optional: { options: { nullable: true } },
     errorMessage: "حدثت مشكلة في تحديد الخصم",
   },
-  tax: {
+  "arr.*.tax": {
     isInt: true,
     optional: { options: { nullable: true } },
     errorMessage: "يجب كتابة اسم العميل",
   },
-  deliveryCost: {
+  "arr.*.deliveryCost": {
     isInt: true,
     optional: { options: { nullable: true } },
     errorMessage: "يجب كتابة اسم العميل",
   },
-  items: { isArray: true, errorMessage: "هناك مشكلة في المنتجات" },
+  "arr.*.items": { isArray: true, errorMessage: "هناك مشكلة في المنتجات" },
 });

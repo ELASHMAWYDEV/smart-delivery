@@ -103,7 +103,7 @@ module.exports = async ({
 
     return {
       status: true,
-      orderSave,
+      order: orderSave.toObject(),
     };
   } catch (e) {
     console.log(`Error in createOrder() method: ${e.message}`);

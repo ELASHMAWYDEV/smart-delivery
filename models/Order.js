@@ -6,7 +6,7 @@ const pointSchema = new mongoose.Schema({
     type: String,
     enum: ["Point"],
     required: true,
-    default: "Point"
+    default: "Point",
   },
   coordinates: {
     type: [Number],
@@ -46,9 +46,55 @@ const itemSchema = new mongoose.Schema({
   price: Number,
   quantity: Number,
 });
+
+const orderDriversSchema = new mongoose.Schema({
+  orderId: {
+    type: Number,
+  },
+  driverId: {
+    type: Number,
+  },
+  requestStatus: {
+    // 1 ==> accept, 2 ==> reject, 3 ==> ignore , 4 ==> noCatch, 5 ==> noCatch & seen by notification
+    type: Number,
+  },
+  location: {
+    type: pointSchema,
+    required: true,
+    index: "2dsphere",
+  },
+  actionDate: {
+    type: Date,
+  },
+  rangeIndex: {
+    type: Number,
+    default: 1,
+  },
+  estimatedDriverDistance: {
+    type: Number,
+    default: 0, //temp
+  },
+  estimatedDriverDuration: {
+    type: Number,
+    default: 0, //temp
+  },
+  timeSent: {
+    type: Number,
+    default: new Date().getTime(),
+  },
+  isSeenNoCatch: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const orderSchema = new mongoose.Schema({
   master: masterSchema,
   items: [itemSchema],
+  driversFound: {
+    type: [orderDriversSchema],
+    default: [],
+  },
 });
 
 const Order = mongoose.model("Order", orderSchema, "orders");

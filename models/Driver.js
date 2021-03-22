@@ -1,48 +1,30 @@
 const mongoose = require("mongoose");
-const { Number, Boolean, String } = mongoose.Schema.Types;
+const { Number, Boolean, String, ObjectId } = mongoose.Schema.Types;
 
 const pointSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ["Point"],
     required: true,
+    default: "Point",
   },
   coordinates: {
     type: [Number],
     required: true,
   },
 });
-const tripSchema = new mongoose.Schema({
-  pickupLat: {
-    type: Number,
-  },
-  pickupLng: {
-    type: Number,
-  },
-  pickAddress: {
-    type: String,
-  },
-  dropoffLat: {
-    type: Number,
-  },
-  dropoffLng: {
-    type: Number,
-  },
-  dropoffAddress: {
-    type: String,
-  },
-  userId: {
-    type: Number,
-  },
-  tripID: {
-    type: Number,
-  },
+
+const busyOrderSchema = new mongoose.Schema({
+  _id: { ref: "Order", type: ObjectId },
+  orderId: Number,
+  branchId: Number,
 });
+
 const driverSchema = new mongoose.Schema({
-  driverID: {
+  driverId: {
     type: Number,
   },
-  categoryCarTypeID: {
+  categoryCarTypeId: {
     type: Number,
   },
   isDeleted: {
@@ -57,21 +39,17 @@ const driverSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  genderRequest: {
-    type: Number,
+  busyOrders: {
+    type: [busyOrderSchema],
+    default: [],
   },
   deviceType: {
     type: Number,
   },
   location: {
     type: pointSchema,
-    index: "2dsphere",
     required: true,
-  },
-  oldLocation: {
-    type: pointSchema,
     index: "2dsphere",
-    required: true,
   },
   phoneNumber: {
     type: Number,
@@ -97,10 +75,10 @@ const driverSchema = new mongoose.Schema({
   colorNameEn: {
     type: String,
   },
-  carImage: {
+  carPicture: {
     type: String,
   },
-  driverImage: {
+  driverPicture: {
     type: String,
   },
   plateNumber: {
@@ -109,14 +87,11 @@ const driverSchema = new mongoose.Schema({
   updateLocationDate: {
     type: Date,
   },
-  tokenID: {
+  firebaseToken: {
     type: String,
   },
-  busyTrip: {
-    type: tripSchema,
-  },
-  Language: {
-    type: String,
+  countryId: {
+    type: Number,
   },
 });
 

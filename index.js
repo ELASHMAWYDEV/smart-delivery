@@ -19,6 +19,7 @@ require("./db");
 
 //Socket Handler
 require("./socket/index")(io);
+module.exports.io = io;
 
 //API routes
 app.use("/api", require("./api"));
