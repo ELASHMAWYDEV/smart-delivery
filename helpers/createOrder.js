@@ -75,10 +75,9 @@ module.exports = async ({
 */
 
     //Save order to DB
-
     let orderSave = await OrderModel.create({
       master: {
-        orderId: apiData.orderId,
+        orderId: apiData.tripId,
         branchId: apiData.branchId,
         branchNameAr: apiData.branchNameAr,
         branchNameEn: apiData.branchNameEn,
@@ -103,7 +102,7 @@ module.exports = async ({
 
     return {
       status: true,
-      order: orderSave.toObject(),
+      order: orderSave,
     };
   } catch (e) {
     console.log(`Error in createOrder() method: ${e.message}`);

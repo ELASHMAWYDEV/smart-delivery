@@ -27,5 +27,6 @@ const checkAuthToken = (req, res, next) => {
 router.use("/client", checkAuthToken, require("./client"));
 
 //Driver
+router.use("/driver", checkAuthToken, require("./driver"));
 
 module.exports = router;

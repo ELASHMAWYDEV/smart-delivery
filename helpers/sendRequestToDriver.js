@@ -7,10 +7,10 @@ module.exports = async ({ driver, orderId }) => {
   try {
     //Add the driver to the driversFound[] in order
     await OrderModel.updateOne(
-      { orderId },
+      { "master.orderId": orderId },
       {
-        driversFound: {
-          $push: {
+        $push: {
+          driversFound: {
             _id: driver._id,
             driverId: driver.driverId,
             requestStatus: 4, // 4 => noCatch (default), 1 => accept, 2 => ignore, 3 => reject
@@ -26,7 +26,7 @@ module.exports = async ({ driver, orderId }) => {
 
     /******************************************************/
     //Get the order after update
-    const orderSearch = await OrderModel.findOne({ orderId });
+    const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
     /******************************************************/
 
@@ -37,7 +37,11 @@ module.exports = async ({ driver, orderId }) => {
       order: orderSearch,
     });
 
-    return { status: true, message: "request sent successfully" };
+    return {
+      status: true,
+      message: "request sent successfully",
+      order: orderSearch,
+    };
     /******************************************************/
   } catch (e) {
     console.log(`Error in sendRequetToDrivers() method: ${e.message}`);

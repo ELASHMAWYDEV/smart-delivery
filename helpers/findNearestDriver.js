@@ -1,11 +1,14 @@
 const DriverModel = require("../models/Driver");
+const OrderModel = require("../models/Order");
+const { activeOrderDrivers } = require("../globals");
 
-module.exports = async ({ location }) => {
+module.exports = async ({ location, orderId }) => {
   try {
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
-      isBusy: false,
       isDeleted: false,
+      isBusy: false,
+      driverId: { $nin: activeOrderDrivers.get(orderId) },
       location: {
         $nearSphere: {
           $geometry: {
@@ -16,14 +19,35 @@ module.exports = async ({ location }) => {
       },
     });
 
+    //If no driver found , send message to client
+    if (!driverSearch) {
+      return { status: false, message: "No drivers found" };
+    }
+
+    //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
+    activeOrderDrivers.set(orderId, [
+      ...activeOrderDrivers.get(orderId),
+      driverSearch.driverId,
+    ]);
+
+    /******************************************************/
+
     if (driverSearch) {
       return { status: true, driver: driverSearch };
     } else {
+      //Update the order status
+      await OrderModel.updateOne(
+        {
+          "master.orderId": orderId,
+        },
+        { "master.statusId": 2 } //Not Found
+      );
       return { status: false, message: "No drivers found" };
     }
 
     /******************************************************/
   } catch (e) {
+    console.log(`Error in findNearestDriver()`, e);
     return {
       status: false,
       message: `Error in findNearestDriver(): ${e.message}`,

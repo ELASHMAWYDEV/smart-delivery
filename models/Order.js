@@ -17,6 +17,7 @@ const pointSchema = new mongoose.Schema({
 const masterSchema = new mongoose.Schema({
   orderId: Number,
   branchId: Number,
+  driverId: { type: Number, default: null },
   branchNameAr: String,
   branchNameEn: String,
   receiverName: String,
@@ -39,6 +40,8 @@ const masterSchema = new mongoose.Schema({
   tax: Number,
   deliveryCost: Number,
   fromReceiver: Number,
+  //1 ==> created, 2 ==> not found, 3 ==> accept, 4 ==> received, 5 ==> delivered
+  statusId: { type: Number, default: 1 },
 });
 
 const itemSchema = new mongoose.Schema({
@@ -93,7 +96,6 @@ const orderSchema = new mongoose.Schema({
   items: [itemSchema],
   driversFound: {
     type: [orderDriversSchema],
-    default: [],
   },
 });
 
