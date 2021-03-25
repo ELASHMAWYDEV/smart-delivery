@@ -3,11 +3,8 @@ const DriverModel = require("../models/Driver");
 module.exports = async ({ branchId }) => {
   try {
     let searchDrivers = await DriverModel.find({
-      busyOrders: {
-        $elemMatch: {
-          branchId,
-        },
-      },
+      "busyOrders.1": { $exists: false },
+      "busyOrders.branchId": branchId,
     });
 
     if (searchDrivers.length == 0) {

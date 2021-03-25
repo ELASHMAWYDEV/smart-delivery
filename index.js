@@ -5,6 +5,7 @@ const cors = require("cors");
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
+const TaskRunner = require("concurrent-tasks");
 const PORT = process.env.PORT || 5000;
 
 //Init
@@ -21,8 +22,20 @@ require("./db");
 require("./socket/index")(io);
 module.exports.io = io;
 
+//Docs
+app.get("/api/docs", (req, res) => {
+
+});
+
+
+
 //API routes
 app.use("/api", require("./api"));
+
+
+
+
+
 // /*-------For Test Only--------*/
 // app.use(express.static("test"));
 // app.get("/test/:user/:event", (req, res) => {
@@ -31,4 +44,5 @@ app.use("/api", require("./api"));
 //   );
 // });
 /*------------------------------------------*/
+
 http.listen(PORT, () => console.log(`Server running on port ${PORT}`));

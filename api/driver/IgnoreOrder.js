@@ -48,20 +48,33 @@ router.post("/", async (req, res) => {
     );
     /******************************************************/
 
-    //Set the driver to be not busy
+    //Remove the orderId from busyOrders
     await DriverModel.updateOne(
       {
         driverId,
       },
       {
-        isBusy: false,
-        busyOrders: [],
+        $pull: { busyOrders: { orderId } },
       }
     );
+
+    //Check if driver has any busy orders
+    let driverSearch = await DriverModel.findOne({ driverId });
+
+    if (driverSearch.busyOrders.length == 0) {
+      //Set the driver to be not busy
+      await DriverModel.updateOne(
+        {
+          driverId,
+        },
+        {
+          isBusy: false,
+        }
+      );
+    }
     /******************************************************/
 
     //Check if any driver on the way to this restaurant
-
     let driversOnWay = await checkDriversOnWay({
       branchId: orderSearch.master.branchId,
     });

@@ -9,6 +9,7 @@ const {
   checkDriversOnWay,
   sendRequestToDriver,
   findNearestDriver,
+  updateOrderStatus,
 } = require("../../helpers");
 
 const { activeOrderDrivers } = require("../../globals");
@@ -35,43 +36,28 @@ router.post("/", orderValidator, async (req, res) => {
     else orders = [req.body];
 
     /******************************************************/
-    //Create the order on DB & API
+    console.log(
+      `NewOrderRequest has new orders, number of order: ${orders.length}`
+    );
 
-    const {
-      receiverName,
-      receiverMobile,
-      receiverAddress,
-      receiverLocation,
-      branchId,
-      isPaid,
-      storeCost,
-      receiverCollected,
-      discount,
-      tax,
-      deliveryCost,
-      items,
-    } = orders[0];
+    /******************************************************/
+    //Create the order on DB & API
 
     const createOrderResult = await createOrder({
       token: req.token,
-      receiverName,
-      receiverMobile,
-      receiverAddress,
-      receiverLocation,
-      branchId,
-      isPaid,
-      storeCost,
-      receiverCollected,
-      discount,
-      tax,
-      deliveryCost,
-      items,
+      orders,
     });
 
     if (!createOrderResult.status) return res.json(createOrderResult);
 
-    let { order } = createOrderResult;
-    activeOrderDrivers.set(order.master.orderId, []);
+    let { orders: ordersAfterSave } = createOrderResult;
+
+    //Send response to client
+    res.json({
+      status: true,
+      message: "تم ارسال جميع الطلبات ويتم توزيعها علي السائقين الأن",
+      orders: createOrderResult.orders,
+    });
 
     /******************************************************/
     /*
@@ -83,53 +69,73 @@ router.post("/", orderValidator, async (req, res) => {
      */
     /******************************************************/
     //Check if any driver on the way to this restaurant
+    for (let order of ordersAfterSave) {
+      activeOrderDrivers.set(order.master.orderId, []);
 
-    let driversOnWay = await checkDriversOnWay({ branchId });
+      let driversOnWay = await checkDriversOnWay({
+        branchId: order.master.branchId,
+      });
 
-    //Send request to driversOnWay
-    if (driversOnWay.status) {
-      let { drivers } = driversOnWay;
-      const result = await sendRequestToDriver({
-        driver: drivers[0],
+      //Send request to driversOnWay
+      if (driversOnWay.status) {
+        let { drivers } = driversOnWay;
+        const result = await sendRequestToDriver({
+          driver: drivers[0],
+          orderId: order.master.orderId,
+        });
+
+        //Continue if order was sent to the driver
+        if (result.status) {
+          console.log(
+            `Order ${order.master.orderId} was sent to driver ${drivers[0].driverId} on way`
+          );
+          continue;
+        }
+      }
+
+      /******************************************************/
+
+      //Find nearest driver & send request to him
+      let nearestDriverResult = await findNearestDriver({
+        location: order.master.receiverLocation,
         orderId: order.master.orderId,
       });
 
-      //Send the result to client
-      return res.json(result);
+      if (nearestDriverResult.status) {
+        //Send the request to driver
+        const result = await sendRequestToDriver({
+          driver: nearestDriverResult.driver,
+          orderId: order.master.orderId,
+        });
+
+        //Continue if order was sent to the driver
+        if (result.status) {
+          console.log(
+            `Order ${order.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
+          );
+          continue;
+        }
+      }
+      /******************************************************/
+
+      console.log(`Order ${order.master.orderId}, no drivers found`);
+      //Set the order to not found
+      await updateOrderStatus({
+        orderId: order.master.orderId,
+        statusId: 2,
+        token: req.token,
+      });
     }
-
-    /******************************************************/
-
-    //Find nearest driver & send request to him
-    let nearestDriverResult = await findNearestDriver({
-      location: order.master.receiverLocation,
-      orderId: order.master.orderId,
-    });
-
-    if (!nearestDriverResult.status) {
-      return res.json(nearestDriverResult);
-    }
-
-    /******************************************************/
-
-    //Send the request to driver
-    const sendRequestResult = await sendRequestToDriver({
-      driver: nearestDriverResult.driver,
-      orderId: order.master.orderId,
-    });
-
-    if (sendRequestResult.status) {
-      //Check if there
-    }
-
-    return res.json(sendRequestResult);
 
     /******************************************************/
   } catch (e) {
-    return res.json({
-      status: false,
-      message: `Error in NewOrderRequest endpoint: ${e.message}`,
-    });
+    if (!res.headersSent) {
+      return res.json({
+        status: false,
+        message: `Error in NewOrderRequest endpoint: ${e.message}`,
+      });
+    }
+    console.log(`Error in NewOrderRequest endpoint: ${e.message}`, e);
   }
 });
 

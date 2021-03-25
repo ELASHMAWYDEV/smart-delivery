@@ -111,7 +111,7 @@ router.post("/", async (req, res) => {
 
     /******************************************************/
     //Get the order again
-    orderSearch = await OrderModel.findOne({ 'master.orderId': orderId });
+    orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();
     /******************************************************/
 
@@ -130,16 +130,13 @@ router.post("/", async (req, res) => {
     }
     /******************************************************/
 
-    //Add order to busyOrders
+    //Make sure driver is busy
     await DriverModel.updateOne(
       {
         driverId,
       },
       {
         isBusy: true,
-        busyOrders: {
-          $push: { orderId, branchId: orderSearch.master.branchId },
-        },
       }
     );
 

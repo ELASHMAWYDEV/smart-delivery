@@ -18,7 +18,6 @@ router.post("/", async (req, res) => {
     const updateResult = await updateOrderStatus({
       token: req.token,
       orderId,
-      driverId,
       statusId: 4,
     });
 

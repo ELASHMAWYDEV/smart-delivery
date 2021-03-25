@@ -30,6 +30,23 @@ module.exports = async ({ driver, orderId }) => {
 
     /******************************************************/
 
+    //Update the driver to be busy & add the orderId to him
+    await DriverModel.updateOne(
+      { driverId: driver.driverId },
+      {
+        isBusy: true,
+        $push: {
+          busyOrders: {
+            orderId: orderId,
+            branchId: orderSearch.master.branchId,
+          },
+        },
+      }
+    );
+
+
+    /******************************************************/
+
     //Send a request to the driver
     io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
       status: true,
