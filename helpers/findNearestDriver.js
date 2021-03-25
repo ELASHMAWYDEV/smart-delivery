@@ -4,11 +4,17 @@ const { activeOrderDrivers } = require("../globals");
 
 module.exports = async ({ location, orderId }) => {
   try {
+    const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+
+    let driversIds = orderSearch.driversFound.map((d) => d.driverId);
+
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
       isDeleted: false,
       isBusy: false,
-      driverId: { $nin: activeOrderDrivers.get(orderId) },
+      driverId: { $nin: driversIds },
+      "busyOrders.1": { $exists: false },
+      "busyOrders.orderId": { $ne: orderId },
       location: {
         $nearSphere: {
           $geometry: {

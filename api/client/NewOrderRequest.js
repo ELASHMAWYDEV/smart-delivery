@@ -74,6 +74,7 @@ router.post("/", orderValidator, async (req, res) => {
 
       let driversOnWay = await checkDriversOnWay({
         branchId: order.master.branchId,
+        orderId: order.master.orderId,
       });
 
       //Send request to driversOnWay
@@ -86,6 +87,9 @@ router.post("/", orderValidator, async (req, res) => {
 
         //Continue if order was sent to the driver
         if (result.status) {
+          activeOrderDrivers.set(order.master.orderId, [
+            ...activeOrderDrivers.get(order.master.orderId),
+          ]);
           console.log(
             `Order ${order.master.orderId} was sent to driver ${drivers[0].driverId} on way`
           );
@@ -110,6 +114,9 @@ router.post("/", orderValidator, async (req, res) => {
 
         //Continue if order was sent to the driver
         if (result.status) {
+          activeOrderDrivers.set(order.master.orderId, [
+            ...activeOrderDrivers.get(order.master.orderId),
+          ]);
           console.log(
             `Order ${order.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
           );

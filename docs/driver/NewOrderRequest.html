@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .data {
+      font-size: 18px;
+    }
+
+    h2,
+    h3,
+    p {
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Event Name:</h2>
+  <p class="data">NewOrderRequest</p>
+  <br>
+  <h3>Type:</h3>
+  <p>Listen</p>
+  <br>
+  <h3>Description: </h3>
+  <p>Driver should only listen for this event to get new orders</p>
+  <hr>
+  <h2>Request: </h2>
+  <pre class="data">
+    No Request
+  </pre>
+  <hr>
+  <h2>Response OK:</h2>
+  <br>
+
+  <pre id="response" class="data">
+    {
+      "status": true,
+      "message": "You have received a new order",
+      "order": {
+          "_id": "605c4dee5d548553b0307a3f",
+          "master": {
+              "driverId": 2,
+              "statusId": 3,
+              "_id": "605c4dee5d548553b0307a40",
+              "orderId": 157,
+              "branchId": 2,
+              "branchNameAr": "كنتاكى",
+              "branchNameEn": "KFC",
+              "receiverName": "Dev Loay",
+              "receiverMobile": "0595489308",
+              "receiverAddress": "Ismailia ElSheikh Zayed",
+              "storeCost": 50.25,
+              "discount": 0,
+              "tax": 5,
+              "deliveryCost": 0,
+              "receiverLocation": {
+                  "type": "Point",
+                  "coordinates": [
+                      32.292009,
+                      30.611838
+                  ],
+                  "_id": "605c4dee5d548553b0307a41"
+              },
+              "branchLocation": {
+                  "type": "Point",
+                  "coordinates": [
+                      32.292009,
+                      30.611838
+                  ],
+                  "_id": "605c4dee5d548553b0307a42"
+              },
+              "fromReceiver": 70.5
+          },
+          "items": [
+              {
+                  "_id": "605c4dee5d548553b0307a43",
+                  "name": "Fried one",
+                  "price": 20.25,
+                  "quantity": 1.25
+              },
+              {
+                  "_id": "605c4dee5d548553b0307a44",
+                  "name": "Fried two",
+                  "price": 20,
+                  "quantity": 2
+              },
+              {
+                  "_id": "605c4dee5d548553b0307a45",
+                  "name": "Fried three",
+                  "price": 10,
+                  "quantity": 1
+              }
+          ],
+          "driversFound": [
+              {
+                  "rangeIndex": 1,
+                  "estimatedDriverDistance": 0,
+                  "estimatedDriverDuration": 0,
+                  "timeSent": 1616661999274,
+                  "isSeenNoCatch": false,
+                  "_id": "6056fd9ee11f127b6f0f1831",
+                  "driverId": 2,
+                  "requestStatus": 1,
+                  "location": {
+                      "type": "Point",
+                      "coordinates": [
+                          0,
+                          0
+                      ],
+                      "_id": "605c4def5d548553b0307a4d"
+                  },
+                  "actionDate": "2021-03-25T09:05:52.000Z"
+              }
+          ],
+          "__v": 0
+      }
+  }
+  </pre>
+  <hr>
+  <h2>Response ERROR:</h2>
+  <br>
+
+  <pre id="response" class="data">
+    No Errors will be handled from this event
+  </pre>
+
+  </script>
+</body>
+
+</html>

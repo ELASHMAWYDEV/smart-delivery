@@ -22,19 +22,24 @@ require("./db");
 require("./socket/index")(io);
 module.exports.io = io;
 
-//Docs
-app.get("/api/docs", (req, res) => {
+app.use(express.static("docs"));
 
+/********************************************/
+//Docs
+app.get("/docs/:user/:event", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "docs", req.params.user, `${req.params.event}.html`)
+  );
 });
 
 
+app.get("/docs", (req, res) => {
+  res.sendFile(path.join(__dirname, "docs", "index.html"))
+});
+/********************************************/
 
 //API routes
 app.use("/api", require("./api"));
-
-
-
-
 
 // /*-------For Test Only--------*/
 // app.use(express.static("test"));

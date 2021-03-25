@@ -77,6 +77,7 @@ router.post("/", async (req, res) => {
     //Check if any driver on the way to this restaurant
     let driversOnWay = await checkDriversOnWay({
       branchId: orderSearch.master.branchId,
+      orderId: orderId
     });
 
     //Send request to driversOnWay
@@ -87,8 +88,13 @@ router.post("/", async (req, res) => {
         orderId: orderSearch.master.orderId,
       });
 
-      //Send the result to client
-      return res.json(result);
+      if (result.status) {
+        //Respond to driver
+        return res.json({
+          status: true,
+          message: "order ignored successfully",
+        });
+      }
     }
 
     /******************************************************/
@@ -99,50 +105,56 @@ router.post("/", async (req, res) => {
       orderId: orderSearch.master.orderId,
     });
 
-    if (!nearestDriverResult.status) {
-      const updateResult = await updateOrderStatus({
-        statusId: 2,
+    if (nearestDriverResult.status) {
+      const result = await sendRequestToDriver({
+        driver: nearestDriverResult.driver.driverId,
         orderId: orderSearch.master.orderId,
-        token: req.token,
       });
 
-      if (!updateResult.status) {
-        return res.json(updateResult);
+      if (result.status) {
+        //Respond to driver
+        return res.json({
+          status: true,
+          message: "order ignored successfully",
+        });
       }
-
-      //Update the order
-      await OrderModel.updateOne(
-        {
-          "master.orderId": orderId,
-        },
-        {
-          $set: {
-            "master.statusId": 2, //Not found
-            "master.driverId": null,
-          },
-        }
-      );
-
-      //Send to the client
-      io.to(clients.get(orderSearch.master.branchId)).emit("NoDriversFound", {
-        status: true,
-        message: `No drivers found for order #${orderSearch.master.orderId}`,
-        orderSearch,
-      });
-      return res.json({ status: true, message: "Order ignored successfully" });
     }
 
     /******************************************************/
-
-    //Send the request to driver
-    const sendRequestResult = await sendRequestToDriver({
-      driver: nearestDriverResult.driver,
+    const updateResult = await updateOrderStatus({
+      statusId: 2,
       orderId: orderSearch.master.orderId,
+      token: req.token,
     });
 
-    /******************************************************/
+    if (!updateResult.status) {
+      console.log(updateResult);
+    }
 
-    return res.json({ status: true, message: "Order ignored successfully" });
+    //Update the order
+    await OrderModel.updateOne(
+      {
+        "master.orderId": orderId,
+      },
+      {
+        $set: {
+          "master.statusId": 2, //Not found
+          "master.driverId": null,
+        },
+      }
+    );
+
+    //Send to the client
+    io.to(clients.get(orderSearch.master.branchId)).emit("NoDriversFound", {
+      status: true,
+      message: `No drivers found for order #${orderSearch.master.orderId}`,
+      orderSearch,
+    });
+
+    return res.json({
+      status: true,
+      message: "order ignored successfully",
+    });
   } catch (e) {
     return res.json({
       status: false,
