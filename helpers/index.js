@@ -4,4 +4,5 @@ module.exports = {
   sendRequestToDriver: require("./sendRequestToDriver"),
   updateOrderStatus: require("./updateOrderStatus"),
   findNearestDriver: require("./findNearestDriver"),
+  receiveOrder: require("./receiveOrder"),
 };

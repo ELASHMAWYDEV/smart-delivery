@@ -1,35 +1,48 @@
-const express = require("express");
-const router = express.Router();
 const { validationResult } = require("express-validator");
-const { updateOrderStatus } = require("../../helpers");
+const { receiveOrder } = require("../../helpers");
 
 
-router.post("/", async (req, res) => {
+module.exports = (io, socket) => {
+      socket.on("ReceiveOrder", async ({ branchId, driverId, token }) => {
   try {
     //Developement errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.json({ status: false, errors: errors.array() });
+    if (!branchId)
+        return socket.emit("ReceiveOrder", {
+          status: false,
+          message: "branchId is missing",
+        });
+      if (!driverId)
+        return socket.emit("ReceiveOrder", {
+          status: false,
+          message: "driverId is missing",
+        });
+      if (!token)
+        return socket.emit("ReceiveOrder", {
+          status: false,
+          message: "token is missing",
+        });
     /******************************************************/
 
-    const { orderId, driverId } = req.body;
+    //Update the orders
+    const updateOrdersResult = await receiveOrder({token, branchId});
+    
+    if(!updateOrdersResult.status) {
+      return socket.emit(updateOrdersResult)
+    }
+    
 
-    //Update the order
-    const updateResult = await updateOrderStatus({
-      token: req.token,
-      orderId,
-      statusId: 4,
-    });
+    let { ordersIds } = updateOrdersResult;
+    
 
-
-    return res.json(updateResult);
+    return socket.emit('ReceiveOrder',{status: true, message: `Orders ${ordersIds.map(order => "#" + order)} has been received successfully`});
     /******************************************************/
   } catch (e) {
-    return res.json({
+    console.log(`Error in ReceiveOrder event: ${e.message}`);
+    return socket.emit("ReceiveOrder",{
       status: false,
-      message: `Error in NewOrderRequest endpoint: ${e.message}`,
+      message: `Error in ReceiveOrder event: ${e.message}`,
     });
   }
 });
+}
 
-module.exports = router;
