@@ -39,7 +39,7 @@ module.exports = (io, socket) => {
       });
       /******************************************************/
     } catch (e) {
-      console.log(`Error in ReceiveOrder event: ${e.message}`);
+      console.log(`Error in ReceiveOrder event: ${e.message}`, e);
       return socket.emit("ReceiveOrder", {
         status: false,
         message: `Error in ReceiveOrder event: ${e.message}`,

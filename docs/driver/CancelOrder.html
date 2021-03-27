@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .data {
+      font-size: 18px;
+    }
+
+    h2,
+    h3,
+    p {
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Event Name:</h2>
+  <p class="data">CancelOrder</p>
+  <br>
+  <h3>Type:</h3>
+  <p>Listen</p>
+  <br>
+  <h3>Description: </h3>
+  <p>If an order was canceled, driver application should remove it from the list and mark as canceled</p>
+  <hr>
+  <h2>Request: </h2>
+  <pre class="data">
+    No Request is needed
+  </pre>
+  <hr>
+  <h2>Response OK:</h2>
+  <br>
+
+  <pre id="response" class="data">
+    {
+      "status": true,
+      "message": "Order #152 was canceled by board",
+      "orderId": 152
+    }
+  </pre>
+  <hr>
+  <h2>Response ERROR:</h2>
+  <br>
+
+  <pre id="response" class="data">
+    No Errors will be handled from this event
+  </pre>
+
+  </script>
+</body>
+
+</html>

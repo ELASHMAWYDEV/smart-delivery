@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Map</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    .data {
+      font-size: 18px;
+    }
+
+    h2,
+    h3,
+    p {
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Route path:</h2>
+  <p class="data">/api/client/NewOrderRequest</p>
+  <br>
+  <h3>Method:</h3>
+  <p>POST</p>
+  <br>
+  <h3>Description: </h3>
+  <p>client would send requests to create orders, 1 or many orders are valid to be sent to this route</p>
+  <hr>
+  <h2>Headers: </h2>
+  <pre class="data">
+    {
+      Authorization: "Bearer token"
+    }
+  </pre>
+  <hr>
+  <h2>Request: </h2>
+  <pre class="data">
+    {} || [{}, {}] ==> you can send one object or array of objects
+    ------------------------------
+    {
+      "branchId": 5, ==> Integer | null
+      "receiverName": "Dev Loay",
+      "receiverAddress": "Ismailia ElSheikh Zayed",
+      "receiverMobile": "0595489308",
+      "isPaid": false,
+      "storeCost": 50.25,
+      "discount": 0,
+      "tax": 5,
+      "deliveryCost": 0,
+      "receiverCollected": 70.50,
+      "receiverLocation": [
+          30.12, ==> longtude index 0
+          25.126 ==> latitude index 1
+      ],
+      "items": [
+          {
+              "name": "Fried one",
+              "price": 20.25,
+              "quantity": 1.25
+          },
+          {
+              "name": "Fried two",
+              "price": 20,
+              "quantity": 2
+          },
+          {
+              "name": "Fried three",
+              "price": 10,
+              "quantity": 1
+          }
+      ]
+  }
+  </pre>
+  <hr>
+  <h2>Response OK:</h2>
+  <br>
+
+  <pre id="response" class="data">
+    {
+      "status": true,
+      "message": "All orders have been sent to drivers",
+    }
+  </pre>
+  <hr>
+  <h2>Response ERROR:</h2>
+  <br>
+
+  <pre id="response" class="data">
+    No Errors will be handled from this event
+  </pre>
+
+  </script>
+</body>
+
+</html>

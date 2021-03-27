@@ -1,5 +1,3 @@
-const express = require("express");
-const router = express.Router();
 const { validationResult } = require("express-validator");
 const {
   checkDriversOnWay,
@@ -13,21 +11,21 @@ const { io } = require("../../index");
 const { clients } = require("../../globals");
 
 module.exports = (io, socket) => {
-  socket.on("AcceptOrder", async ({ orderId, driverId, token }) => {
+  socket.on("RejectOrder", async ({ orderId, driverId, token }) => {
     try {
       //Developement errors
       if (!orderId)
-        return socket.emit("AcceptOrder", {
+        return socket.emit("RejectOrder", {
           status: false,
           message: "orderId is missing",
         });
       if (!driverId)
-        return socket.emit("AcceptOrder", {
+        return socket.emit("RejectOrder", {
           status: false,
           message: "driverId is missing",
         });
       if (!token)
-        return socket.emit("AcceptOrder", {
+        return socket.emit("RejectOrder", {
           status: false,
           message: "token is missing",
         });
@@ -86,6 +84,14 @@ module.exports = (io, socket) => {
           }
         );
       }
+
+      /******************************************************/
+      //Send to the driver all is OK
+      socket.emit("RejectOrder", {
+        status: true,
+        message: "order rejected successfully",
+      });
+
       /******************************************************/
 
       //Check if any driver on the way to this restaurant
@@ -103,13 +109,7 @@ module.exports = (io, socket) => {
           orderId: orderSearch.master.orderId,
         });
 
-        if (result.status) {
-          //Respond to driver
-          return socket.emit("IgnoreOrder", {
-            status: true,
-            message: "order rejected successfully",
-          });
-        }
+        if (result.status) return;
       }
 
       /******************************************************/
@@ -126,13 +126,7 @@ module.exports = (io, socket) => {
           orderId: orderSearch.master.orderId,
         });
 
-        if (result.status) {
-          //Respond to driver
-          return socket.emit("IgnoreOrder", {
-            status: true,
-            message: "order ignored successfully",
-          });
-        }
+        if (result.status) return;
       }
 
       /******************************************************/
@@ -165,14 +159,9 @@ module.exports = (io, socket) => {
         message: `No drivers found for order #${orderSearch.master.orderId}`,
         orderSearch,
       });
-
-      return socket.emit("IgnoreOrder", {
-        status: true,
-        message: "order ignored successfully",
-      });
     } catch (e) {
-      console.log(DriverModel);
-      return socket.emit("IgnoreOrder", {
+      console.log(`Error in RejectOrder event: ${e.message}`, e);
+      return socket.emit("RejectOrder", {
         status: false,
         message: `Error in RejectOrder event: ${e.message}`,
       });
@@ -180,4 +169,3 @@ module.exports = (io, socket) => {
   });
 };
 
-module.exports = router;

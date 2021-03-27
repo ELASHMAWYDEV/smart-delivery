@@ -6,7 +6,7 @@ const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const TaskRunner = require("concurrent-tasks");
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5003;
 
 //Init
 require("./init");
@@ -25,12 +25,6 @@ module.exports.io = io;
 app.use(express.static("docs"));
 
 /********************************************/
-//Docs
-app.get("/docs/:user/:event", (req, res) => {
-  res.sendFile(
-    path.join(__dirname, "docs", req.params.user, `${req.params.event}.html`)
-  );
-});
 
 
 app.get("/docs", (req, res) => {

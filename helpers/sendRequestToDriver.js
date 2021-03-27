@@ -44,7 +44,6 @@ module.exports = async ({ driver, orderId }) => {
       }
     );
 
-
     /******************************************************/
 
     //Send a request to the driver

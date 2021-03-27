@@ -32,17 +32,10 @@ module.exports = async ({ orderId, lng, lat, token }) => {
 
     let { data: apiData } = data;
 
-    //Get the list of order Ids from response
-    let ordersIds = [];
-
-    for (let trip of apiData.trips) {
-      ordersIds.push(trip.tripId);
-    }
-
     //Update the orders on DB
     await OrderModel.updateMany(
       {
-        "master.orderId": { $in: ordersIds },
+        "master.orderId": orderId,
       },
       {
         "master.statusId": 5, //Delivered
@@ -52,16 +45,15 @@ module.exports = async ({ orderId, lng, lat, token }) => {
     return {
       status: true,
       message: "Orders status updated successefully",
-      ordersIds,
     };
 
     /******************************************************/
   } catch (e) {
-    console.log(`Error in receiveOrder(): ${e.message}`);
+    console.log(`Error in deliverOrder(): ${e.message}`);
 
     return {
       status: false,
-      message: `Error in receiveOrder(): ${e.message}`,
+      message: `Error in deliverOrder(): ${e.message}`,
     };
   }
 };

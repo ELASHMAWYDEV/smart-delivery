@@ -1,5 +1,3 @@
-const express = require("express");
-const router = express.Router();
 const { updateOrderStatus } = require("../../helpers");
 const { activeOrders, drivers } = require("../../globals");
 const OrderModel = require("../../models/Order");
@@ -167,5 +165,3 @@ module.exports = (io, socket) => {
     }
   });
 };
-
-module.exports = router;

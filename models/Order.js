@@ -40,7 +40,7 @@ const masterSchema = new mongoose.Schema({
   tax: Number,
   deliveryCost: Number,
   fromReceiver: Number,
-  //1 ==> created, 2 ==> not found, 3 ==> accept, 4 ==> received, 5 ==> delivered
+  //1 ==> created, 2 ==> not found, 3 ==> accept, 4 ==> received, 5 ==> delivered, 6 ==> canceled
   statusId: { type: Number, default: 1 },
 });
 
