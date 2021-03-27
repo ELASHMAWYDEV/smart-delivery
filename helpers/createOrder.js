@@ -47,24 +47,25 @@ module.exports = async ({ token, orders }) => {
           "status": true,
           "isAuthorize": true,
           "data": [{
-            "tripId": 6,
+            "orderId": 6,
             "branchId": 2,
             "branchLat": 30.611838,
             "branchLng": 32.292009,
             "branchNameAr": "كنتاكى",
             "branchNameEn": "KFC",
-            "receiveraddress": "Ismailia ElSheikh Zayed",
-            "receiverLat": 25.126,
-            "receiverLng": 30.12,
-            "fromReceiver": 70.5,
-            "storeCost": 50.25
+            "branchAddress": "الرياض",
+            "deliveryPriceAr": "25 SAR",
+            "deliveryPriceEn": "25 ريال سعودي",
+            "paymentTypeAr": "فيزا"
+            "paymentTypeEn": "Cash",
+            "branchLogo": "https://logo.png",
+            "receiverDistance": 1.2 
           }]
         }
         */
 
     //Transform to be like DB schema
     const ordersToStoreInDB = apiData.map((order) => {
-      
       return {
         master: {
           orderId: order.tripId,

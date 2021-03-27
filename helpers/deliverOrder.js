@@ -3,13 +3,15 @@ const OrderModel = require("../models/Order");
 
 const { API_URI } = require("../globals");
 
-module.exports = async ({ branchId, token }) => {
+module.exports = async ({ orderId, lng, lat, token }) => {
   try {
     //Send to the API
     let response = await axios.post(
-      `${API_URI}/Trip/ReceiveTrip`,
+      `${API_URI}/Trip/FinishTrip`,
       {
-        branchId,
+        orderId,
+        lng,
+        lat,
       },
       {
         headers: {
@@ -30,7 +32,6 @@ module.exports = async ({ branchId, token }) => {
 
     let { data: apiData } = data;
 
-    /*************************************************************/
     //Get the list of order Ids from response
     let ordersIds = [];
 
@@ -38,14 +39,13 @@ module.exports = async ({ branchId, token }) => {
       ordersIds.push(trip.tripId);
     }
 
-    /*************************************************************/
     //Update the orders on DB
     await OrderModel.updateMany(
       {
         "master.orderId": { $in: ordersIds },
       },
       {
-        "master.statusId": 4, //Received
+        "master.statusId": 5, //Delivered
       }
     );
 

@@ -22,19 +22,20 @@
 <body>
 
   <h2>Event Name:</h2>
-  <p class="data">JoinDriver</p>
+  <p class="data">ReceiveOrder</p>
   <br>
   <h3>Type:</h3>
   <p>Emmit / Listen</p>
   <br>
   <h3>Description: </h3>
-  <p>Driver should trigger this event when he opens the application for first time only</p>
+  <p>Driver should trigger this event when he receives the order from restaurant</p>
   <hr>
   <h2>Request: </h2>
   <pre class="data">
     {
       driverId: 2,
-      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9      
+      orderId: 150,
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
     }
   </pre>
   <hr>
@@ -44,7 +45,7 @@
   <pre id="response" class="data">
     {
       "status": true,
-      "message": "You have joind successfully"
+      "message": "Order updated as received successfully",
     }
   </pre>
   <hr>

@@ -5,4 +5,5 @@ module.exports = {
   updateOrderStatus: require("./updateOrderStatus"),
   findNearestDriver: require("./findNearestDriver"),
   receiveOrder: require("./receiveOrder"),
+  deliverOrder: require("./deliverOrder"),
 };

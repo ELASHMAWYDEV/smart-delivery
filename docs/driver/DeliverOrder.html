@@ -22,13 +22,13 @@
 <body>
 
   <h2>Event Name:</h2>
-  <p class="data">RejectOrder</p>
+  <p class="data">DeliverOrder</p>
   <br>
   <h3>Type:</h3>
   <p>Emmit / Listen</p>
   <br>
   <h3>Description: </h3>
-  <p>Driver should trigger this event when he wants to reject an order that was sent to him</p>
+  <p>Driver should trigger this event when he delivers the order to the client</p>
   <hr>
   <h2>Request: </h2>
   <pre class="data">
@@ -45,7 +45,7 @@
   <pre id="response" class="data">
     {
       "status": true,
-      "message": "Order rejected successfully"
+      "message": "Order updated as delivered successfully, get ready for new orders !",
     }
   </pre>
   <hr>

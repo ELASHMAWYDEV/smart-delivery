@@ -1,29 +1,28 @@
-const { validationResult } = require("express-validator");
-const { receiveOrder } = require("../../helpers");
+const { deliverOrder } = require("../../helpers");
 
 module.exports = (io, socket) => {
-  socket.on("ReceiveOrder", async ({ branchId, driverId, token }) => {
+  socket.on("DeliverOrder", async ({ branchId, driverId, token }) => {
     try {
       //Developement errors
       if (!branchId)
-        return socket.emit("ReceiveOrder", {
+        return socket.emit("DeliverOrder", {
           status: false,
           message: "branchId is missing",
         });
       if (!driverId)
-        return socket.emit("ReceiveOrder", {
+        return socket.emit("DeliverOrder", {
           status: false,
           message: "driverId is missing",
         });
       if (!token)
-        return socket.emit("ReceiveOrder", {
+        return socket.emit("DeliverOrder", {
           status: false,
           message: "token is missing",
         });
       /******************************************************/
 
       //Update the orders
-      const updateOrdersResult = await receiveOrder({ token, branchId });
+      const updateOrdersResult = await deliverOrder({ token, branchId });
 
       if (!updateOrdersResult.status) {
         return socket.emit(updateOrdersResult);
@@ -31,7 +30,7 @@ module.exports = (io, socket) => {
 
       let { ordersIds } = updateOrdersResult;
 
-      return socket.emit("ReceiveOrder", {
+      return socket.emit("DeliverOrder", {
         status: true,
         message: `Orders ${ordersIds.map(
           (order) => "#" + order
@@ -39,10 +38,10 @@ module.exports = (io, socket) => {
       });
       /******************************************************/
     } catch (e) {
-      console.log(`Error in ReceiveOrder event: ${e.message}`);
-      return socket.emit("ReceiveOrder", {
+      console.log(`Error in DeliverOrder event: ${e.message}`);
+      return socket.emit("DeliverOrder", {
         status: false,
-        message: `Error in ReceiveOrder event: ${e.message}`,
+        message: `Error in DeliverOrder event: ${e.message}`,
       });
     }
   });
