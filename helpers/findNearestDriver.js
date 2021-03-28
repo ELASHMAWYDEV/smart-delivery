@@ -12,8 +12,8 @@ module.exports = async ({ location, orderId }) => {
       isOnline: true,
       isDeleted: false,
       driverId: { $nin: driversIds },
-      "busyOrders.1": { $exists: false },
-      "busyOrders.orderId": { $ne: orderId },
+      // "busyOrders.1": { $exists: false },
+      // "busyOrders.orderId": { $ne: orderId },
       location: {
         $nearSphere: {
           $geometry: {

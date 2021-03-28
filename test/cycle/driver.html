@@ -101,235 +101,235 @@
 
   <script>
 
-try {
+    try {
 
-    let driverIdInput = document.querySelector("#driverId");
-    let tokenInput = document.querySelector("#token");
-    let orderIdInput = document.querySelector("#orderId");
+      let driverIdInput = document.querySelector("#driverId");
+      let tokenInput = document.querySelector("#token");
+      let orderIdInput = document.querySelector("#orderId");
 
-    let driverId = driverIdInput.value;
-    let token = tokenInput.value;
-    let orderId = orderIdInput.value;
+      let driverId = driverIdInput.value;
+      let token = tokenInput.value;
+      let orderId = orderIdInput.value;
 
-    driverIdInput.oninput = (e) => driverId = e.target.value;
-    tokenInput.oninput = (e) => token = e.target.value;
-    orderIdInput.oninput = (e) => orderId = e.target.value;
-
-
-    //Initialize Socket
-    const socket = io.connect(window.location.origin, {
-      reconnection: true,
-      reconnectionDelay: 500,
-      reconnectionAttempts: Infinity
-    });
-
-    socket.on("connect", () => console.log("connected"));
-    socket.on("disconnect", () => console.log("disconnected"));
-
-    //Online & Offline
-    let goOnlineBtn = document.querySelector("#go-online-btn");
-    let goOfflineBtn = document.querySelector("#go-offline-btn");
-
-    goOnlineBtn.onclick = () => goOnline(1);
-    goOfflineBtn.onclick = () => goOnline(2);
+      driverIdInput.oninput = (e) => driverId = e.target.value;
+      tokenInput.oninput = (e) => token = e.target.value;
+      orderIdInput.oninput = (e) => orderId = e.target.value;
 
 
+      //Initialize Socket
+      const socket = io.connect(window.location.origin, {
+        reconnection: true,
+        reconnectionDelay: 500,
+        reconnectionAttempts: Infinity
+      });
 
-    socket.emit("GoOnline", {
-      token,
-      driverId,
-      status: 1
-    });
+      socket.on("connect", () => console.log("connected"));
+      socket.on("disconnect", () => console.log("disconnected"));
 
-    const goOnline = (status) => {
+      //Online & Offline
+      let goOnlineBtn = document.querySelector("#go-online-btn");
+      let goOfflineBtn = document.querySelector("#go-offline-btn");
+
+      goOnlineBtn.onclick = () => goOnline(1);
+      goOfflineBtn.onclick = () => goOnline(2);
+
+
+
       socket.emit("GoOnline", {
         token,
         driverId,
-        status
+        status: 1
       });
+
+      const goOnline = (status) => {
+        socket.emit("GoOnline", {
+          token,
+          driverId,
+          status
+        });
+      }
+
+
+      const acceptOrder = () => {
+        socket.emit("AcceptOrder", {
+          token,
+          driverId,
+          orderId
+        });
+      }
+
+      const ignoreOrder = () => {
+        socket.emit("IgnoreOrder", {
+          token,
+          driverId,
+          orderId
+        });
+      }
+
+      const rejectOrder = () => {
+        socket.emit("RejectOrder", {
+          token,
+          driverId,
+          orderId
+        });
+      }
+
+      const receiveOrder = () => {
+        socket.emit("ReceiveOrder", {
+          token,
+          driverId,
+          orderId
+        });
+      }
+
+      const deliverOrder = () => {
+        socket.emit("DeliverOrder", {
+          token,
+          driverId,
+          orderId
+        });
+      }
+
+
+
+
+
+      /*************************************************************/
+
+      //Listen for GoOnline
+      socket.on("GoOnline", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#go-online-result");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+      //Listen for New orders
+      socket.on("NewOrderRequest", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#new-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+          document.querySelector("#orderId").value = data.order.orderId;
+          orderId = data.order.orderId;
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+      //Listen for Accept
+      socket.on("AcceptOrder", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#accept-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+
+      //Listen for Reject
+      socket.on("RejectOrder", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#reject-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+      //Listen for Ignore
+      socket.on("IgnoreOrder", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#ignore-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+      //Listen for Receive
+      socket.on("ReceiveOrder", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#receive-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+      //Listen for Deliver
+      socket.on("DeliverOrder", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#deliver-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+
+      //Listen for Cancel
+      socket.on("CancelOrder", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#cancel-order-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
+
+
+    } catch (e) {
+      console.log(e);
     }
-
-
-    const acceptOrder = (status) => {
-      socket.emit("AcceptOrder", {
-        token,
-        driverId,
-        orderId
-      });
-    }
-
-    const ignoreOrder = (status) => {
-      socket.emit("IgnoreOrder", {
-        token,
-        driverId,
-        orderId
-      });
-    }
-
-    const rejectOrder = (status) => {
-      socket.emit("RejectOrder", {
-        token,
-        driverId,
-        orderId
-      });
-    }
-
-    const receiveOrder = (status) => {
-      socket.emit("ReceiveOrder", {
-        token,
-        driverId,
-        orderId
-      });
-    }
-
-    const deliverOrder = (status) => {
-      socket.emit("DeliverOrder", {
-        token,
-        driverId,
-        orderId
-      });
-    }
-
-
-
-
-
-    /*************************************************************/
-
-    //Listen for GoOnline
-    socket.on("GoOnline", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#go-online-result");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-    //Listen for New orders
-    socket.on("NewOrderRequest", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#new-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-        document.querySelector("#orderId").value = data.order.orderId;
-        orderId = data.order.orderId;
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-    //Listen for Accept
-    socket.on("AcceptOrder", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#accept-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-
-    //Listen for Reject
-    socket.on("RejectOrder", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#reject-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-    //Listen for Ignore
-    socket.on("IgnoreOrder", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#ignore-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-    //Listen for Receive
-    socket.on("ReceiveOrder", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#receive-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-    //Listen for Deliver
-    socket.on("DeliverOrder", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#deliver-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-
-    //Listen for Cancel
-    socket.on("CancelOrder", data => {
-      console.log(data);
-      let resultContainer = document.querySelector("#cancel-order-listen");
-      if (!data.status) {
-        resultContainer.classList.add("bg-danger");
-        resultContainer.classList.remove("bg-success");
-      } else {
-        resultContainer.classList.remove("bg-danger");
-        resultContainer.classList.add("bg-success");
-
-      }
-      resultContainer.textContent = JSON.stringify(data, null, 2);
-    })
-
-
-  } catch (e) {
-    console.log(e);
-  }
 
 
   </script>

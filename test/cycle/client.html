@@ -127,6 +127,7 @@
       );
 
       let data = await response.data;
+      console.log(data);
       let resultContainer = document.querySelector("#new-order-result");
       if (!data.status) {
         resultContainer.classList.add("bg-danger");
@@ -151,6 +152,8 @@
       );
 
       let data = await response.data;
+      console.log(data);
+
       let resultContainer = document.querySelector("#cancel-order-result");
       if (!data.status) {
         resultContainer.classList.add("bg-danger");

@@ -10,8 +10,8 @@ module.exports = async ({ branchId, orderId }) => {
 
     let searchDrivers = await DriverModel.find({
       driverId: { $nin: driversIds },
-      "busyOrders.1": { $exists: false },
-      "busyOrders.branchId": branchId,
+      // "busyOrders.1": { $exists: false },
+      // "busyOrders.branchId": branchId,
     });
 
     if (searchDrivers.length == 0) {
