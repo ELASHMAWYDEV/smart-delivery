@@ -134,13 +134,6 @@
       goOfflineBtn.onclick = () => goOnline(2);
 
 
-
-      socket.emit("GoOnline", {
-        token,
-        driverId,
-        status: 1
-      });
-
       const goOnline = (status) => {
         socket.emit("GoOnline", {
           token,
