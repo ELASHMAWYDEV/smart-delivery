@@ -71,7 +71,7 @@ module.exports = (io, socket) => {
       //Check if driver has any busy orders
       let driverSearch = await DriverModel.findOne({ driverId });
 
-      if (!(driversSearch.busyOrders && driversSearch.busyOrders.length != 0)) {
+      if (!(driverSearch.busyOrders && driverSearch.busyOrders.length != 0)) {
         //Set the driver to be not busy
         await DriverModel.updateOne(
           {
@@ -129,7 +129,7 @@ module.exports = (io, socket) => {
       const updateResult = await updateOrderStatus({
         statusId: 2,
         orderId: orderSearch.master.orderId,
-        token: req.token,
+        token,
       });
 
       if (!updateResult.status) {
