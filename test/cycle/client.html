@@ -143,7 +143,7 @@
 
     /****************************************************/
     cancelOrderBtn.onclick = async () => {
-      let response = await axios.post("https://b2btestapi.taketosa.com/api/Trip/CancelTrip",
+      let response = await axios.post("https://b2btestapi.taketosa.com/api/Trip/CancelTrip?tripMasterID&cancelReasonID",
         { tripMasterID: orderId, cancelReasonID: null }, {
         headers: {
           Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQ2xpZW50MzMwMzEzMjYxOCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3NpZCI6IjMiLCJqdGkiOiI1NDY4N2U5ZC05ZDgyLTQzYzAtYWQyOS05YmViYzgzODUzNjgiLCJleHAiOjE2MTYyNDIwNTcsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDQzNzciLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQ0Mzc3In0.6EcBcKt18oiEFyGNlvCzK5l-5s29iqVuqZSuAHQzf1s"
