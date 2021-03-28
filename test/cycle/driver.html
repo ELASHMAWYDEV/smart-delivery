@@ -220,7 +220,7 @@
         resultContainer.classList.remove("bg-danger");
         resultContainer.classList.add("bg-success");
 
-        document.querySelector("#orderId").value = data.order.master.orderId;
+        document.querySelector("#orderId").value = data.order.orderId;
         orderId = data.order.master.orderId;
       }
       resultContainer.textContent = JSON.stringify(data, null, 2);

@@ -68,7 +68,8 @@ module.exports = async ({ driver, orderId }) => {
         deliveryPriceEn: master.deliveryPriceEn,
         deliveryPriceAr: master.deliveryPriceAr,
         branchLocation: {
-          coordinates: [master.branchLng, master.branchLat],
+          lng: master.branchLocation.coordinates[0],
+          lat: master.branchLocation.coordinates[1],
         },
       },
     });
