@@ -2,6 +2,7 @@ const Sentry = require("@sentry/node");
 
 //Models
 const DriverModel = require("../../models/Driver");
+const OrderModel = require("../../models/Order");
 
 //Globals
 let { drivers } = require("../../globals");
@@ -27,6 +28,10 @@ module.exports = (io, socket) => {
           },
         }
       );
+
+      /***************************************************/
+      //For test only - get the busy
+      let orderSearch = await OrderModel;
 
       /***************************************************/
 
