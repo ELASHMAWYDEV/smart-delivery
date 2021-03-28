@@ -13,7 +13,7 @@ module.exports = checkSchema({
     isString: true,
     errorMessage: "يجب كتابة عنوان العميل",
   },
-  "arr.*.receiverLocation": {
+  "arr.*.location": {
     isArray: true,
     errorMessage: "هناك مشكلة في تحديد موقع العميل",
   },

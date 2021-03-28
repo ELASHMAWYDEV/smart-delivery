@@ -11,7 +11,6 @@ module.exports = async ({ location, orderId }) => {
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
       isDeleted: false,
-      isBusy: false,
       driverId: { $nin: driversIds },
       "busyOrders.1": { $exists: false },
       "busyOrders.orderId": { $ne: orderId },

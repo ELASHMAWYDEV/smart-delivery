@@ -7,8 +7,8 @@ module.exports = async ({ token, orders }) => {
     // receiverName,
     // receiverMobile,
     // receiverAddress,
-    // receiverLocation,
     // receiverCollected,
+    // location,
     // branchId,
     // isPaid,
     // storeCost,
@@ -68,27 +68,21 @@ module.exports = async ({ token, orders }) => {
     const ordersToStoreInDB = apiData.map((order) => {
       return {
         master: {
-          orderId: order.tripId,
+          orderId: order.orderId,
           branchId: order.branchId,
           branchNameAr: order.branchNameAr,
           branchNameEn: order.branchNameEn,
-          receiverName: order.receiverName,
-          receiverMobile: order.receiverMobile,
-          receiverAddress: order.receiverAddress,
-          isPaid: order.isPaid,
-          storeCost: order.storeCost,
-          discount: order.discount,
-          tax: order.tax,
-          deliveryCost: order.deliveryCost,
-          receiverLocation: {
-            coordinates: [order.receiverLng, order.receiverLat],
-          },
+          branchAddress: order.branchAddress,
+          receiverDistance: order.receiverDistance,
+          branchLogo: order.branchLogo,
+          paymentTypeEn: order.paymentTypeEn,
+          paymentTypeAr: order.paymentTypeAr,
+          deliveryPriceEn: order.deliveryPriceEn,
+          deliveryPriceAr: order.deliveryPriceAr,
           branchLocation: {
             coordinates: [order.branchLng, order.branchLat],
           },
-          fromReceiver: order.fromReceiver,
         },
-        items: order.items,
       };
     });
 

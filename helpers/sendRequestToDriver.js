@@ -45,7 +45,7 @@ module.exports = async ({ driver, orderId }) => {
     );
 
     /******************************************************/
-
+    console.log(drivers.get(driver.driverId));
     //Send a request to the driver
     io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
       status: true,

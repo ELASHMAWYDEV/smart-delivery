@@ -20,35 +20,27 @@ const masterSchema = new mongoose.Schema({
   driverId: { type: Number, default: null },
   branchNameAr: String,
   branchNameEn: String,
-  receiverName: String,
-  receiverMobile: String,
-  receiverAddress: String,
-  receiverLocation: {
-    type: pointSchema,
-    index: "2dsphere",
-    required: true,
-  },
+  branchAddress: String,
+  receiverDistance: Number,
+  branchLogo: String,
+  paymentTypeEn: String,
+  paymentTypeAr: String,
+  deliveryPriceEn: String,
+  deliveryPriceAr: String,
   branchLocation: {
     type: pointSchema,
     index: "2dsphere",
     required: true,
   },
-  storeCost: Number,
-  receiverCollected: Number,
-  isPaid: Boolean,
-  discount: Number,
-  tax: Number,
-  deliveryCost: Number,
-  fromReceiver: Number,
   //1 ==> created, 2 ==> not found, 3 ==> accept, 4 ==> received, 5 ==> delivered, 6 ==> canceled
   statusId: { type: Number, default: 1 },
 });
 
-const itemSchema = new mongoose.Schema({
-  name: String,
-  price: Number,
-  quantity: Number,
-});
+// const itemSchema = new mongoose.Schema({
+//   name: String,
+//   price: Number,
+//   quantity: Number,
+// });
 
 const orderDriversSchema = new mongoose.Schema({
   orderId: {
@@ -93,7 +85,7 @@ const orderDriversSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema({
   master: masterSchema,
-  items: [itemSchema],
+  // items: [itemSchema],
   driversFound: {
     type: [orderDriversSchema],
   },

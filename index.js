@@ -5,8 +5,7 @@ const cors = require("cors");
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-const TaskRunner = require("concurrent-tasks");
-const PORT = process.env.PORT || 5003;
+const PORT = process.env.PORT || 5000;
 
 //Init
 require("./init");
@@ -36,12 +35,11 @@ app.get("/docs", (req, res) => {
 app.use("/api", require("./api"));
 
 // /*-------For Test Only--------*/
-// app.use(express.static("test"));
-// app.get("/test/:user/:event", (req, res) => {
-//   res.sendFile(
-//     path.join(__dirname, "test", req.params.user, `${req.params.event}.html`)
-//   );
-// });
+app.get("/test/cycle/:user", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "test", "cycle", `${req.params.user}.html`)
+  );
+});
 /*------------------------------------------*/
 
 http.listen(PORT, () => console.log(`Server running on port ${PORT}`));

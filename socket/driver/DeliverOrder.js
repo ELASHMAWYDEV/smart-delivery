@@ -1,9 +1,8 @@
 const { deliverOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 
-
 module.exports = (io, socket) => {
-  socket.on("DeliverOrder", async ({ lat = , lng, orderId, driverId, token }) => {
+  socket.on("DeliverOrder", async ({ lat, lng, orderId, driverId, token }) => {
     try {
       //Developement errors
       if (!orderId)
@@ -35,35 +34,34 @@ module.exports = (io, socket) => {
         return socket.emit(updateOrdersResult);
       }
 
-
-       //Remove the order from driver's busyOrders & make not busy if no orders left
-    await DriverModel.updateOne(
-      {
-        driverId: driverId,
-      },
-      {
-        $pull: { busyOrders: { orderId } },
-      }
-    );
-
-    //Check if driver has any busy orders
-    let driverSearch = await DriverModel.findOne({
-      driverId: driverId,
-    });
-
-    if (driverSearch.busyOrders.length == 0) {
-      //Set the driver to be not busy
+      //Remove the order from driver's busyOrders & make not busy if no orders left
       await DriverModel.updateOne(
         {
-          driverId,
+          driverId: driverId,
         },
         {
-          isBusy: false,
+          $pull: { busyOrders: { orderId } },
         }
       );
-    }
 
-    /******************************************************/
+      //Check if driver has any busy orders
+      let driverSearch = await DriverModel.findOne({
+        driverId: driverId,
+      });
+
+      if (driverSearch.busyOrders.length == 0) {
+        //Set the driver to be not busy
+        await DriverModel.updateOne(
+          {
+            driverId,
+          },
+          {
+            isBusy: false,
+          }
+        );
+      }
+
+      /******************************************************/
 
       return socket.emit("DeliverOrder", {
         status: true,

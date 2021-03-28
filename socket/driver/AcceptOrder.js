@@ -24,6 +24,9 @@ module.exports = (io, socket) => {
         });
       /******************************************************/
 
+      console.log(
+        `AcceptOrder event was called by driver: ${driverId}, order: ${orderId}`
+      );
       //Check if order exist on DB
       let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
@@ -97,6 +100,18 @@ module.exports = (io, socket) => {
         activeOrders.delete(orderId);
         return socket.emit("AcceptOrder", updateResult);
       }
+
+      //Update the order status on DB
+      await OrderModel.updateOne(
+        {
+          "master.orderId": orderId,
+        },
+        {
+          $set: {
+            "master.statusId": 3,
+          },
+        }
+      );
       /******************************************************/
       //Save the driver data coming from trip
       // await OrderModel.updateOne(

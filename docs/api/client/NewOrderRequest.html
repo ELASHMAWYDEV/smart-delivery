@@ -42,38 +42,39 @@
     {} || [{}, {}] ==> you can send one object or array of objects
     ------------------------------
     {
-      "branchId": 5, ==> Integer | null
+
+      "branchId": null,
       "receiverName": "Dev Loay",
       "receiverAddress": "Ismailia ElSheikh Zayed",
-      "receiverMobile": "0595489308",
+      "receivermobile": "0595489308",
       "isPaid": false,
       "storeCost": 50.25,
       "discount": 0,
       "tax": 5,
       "deliveryCost": 0,
       "receiverCollected": 70.50,
-      "receiverLocation": [
-          30.12, ==> longtude index 0
-          25.126 ==> latitude index 1
+      "location": [
+        30.12,
+        25.126
       ],
       "items": [
-          {
-              "name": "Fried one",
-              "price": 20.25,
-              "quantity": 1.25
-          },
-          {
-              "name": "Fried two",
-              "price": 20,
-              "quantity": 2
-          },
-          {
-              "name": "Fried three",
-              "price": 10,
-              "quantity": 1
-          }
+        {
+          "name": "Fried one",
+          "price": 20.25,
+          "quantity": 1.25
+        },
+        {
+          "name": "Fried two",
+          "price": 20,
+          "quantity": 2
+        },
+        {
+          "name": "Fried three",
+          "price": 10,
+          "quantity": 1
+        }
       ]
-  }
+    }
   </pre>
   <hr>
   <h2>Response OK:</h2>

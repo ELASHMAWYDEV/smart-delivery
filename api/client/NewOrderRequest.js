@@ -36,11 +36,6 @@ router.post("/", orderValidator, async (req, res) => {
     else orders = [req.body];
 
     /******************************************************/
-    console.log(
-      `NewOrderRequest has new orders, number of order: ${orders.length}`
-    );
-
-    /******************************************************/
     //Create the order on DB & API
 
     const createOrderResult = await createOrder({
@@ -56,7 +51,7 @@ router.post("/", orderValidator, async (req, res) => {
     res.json({
       status: true,
       message: "تم ارسال جميع الطلبات ويتم توزيعها علي السائقين الأن",
-      orders: createOrderResult.orders,
+      orders: ordersAfterSave.map((order) => order.master.orderId),
     });
 
     /******************************************************/
@@ -101,7 +96,7 @@ router.post("/", orderValidator, async (req, res) => {
 
       //Find nearest driver & send request to him
       let nearestDriverResult = await findNearestDriver({
-        location: order.master.receiverLocation,
+        location: order.master.branchLocation,
         orderId: order.master.orderId,
       });
 

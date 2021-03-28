@@ -32,33 +32,34 @@ router.post("/", async (req, res) => {
     );
 
     /******************************************************/
-    //Remove the order from driver's busyOrders & make not busy if no orders left
-    await DriverModel.updateOne(
-      {
-        driverId: orderSearch.master.driverId,
-      },
-      {
-        $pull: { busyOrders: { orderId } },
-      }
-    );
-
-    //Check if driver has any busy orders
-    let driverSearch = await DriverModel.findOne({
-      driverId: orderSearch.master.driverId,
-    });
-
-    if (driverSearch.busyOrders.length == 0) {
-      //Set the driver to be not busy
+    if (orderSearch.master.driverId) {
+      //Remove the order from driver's busyOrders & make not busy if no orders left
       await DriverModel.updateOne(
         {
-          driverId,
+          driverId: orderSearch.master.driverId,
         },
         {
-          isBusy: false,
+          $pull: { busyOrders: { orderId } },
         }
       );
-    }
 
+      //Check if driver has any busy orders
+      let driverSearch = await DriverModel.findOne({
+        driverId: orderSearch.master.driverId,
+      });
+
+      if (driverSearch.busyOrders.length == 0) {
+        //Set the driver to be not busy
+        await DriverModel.updateOne(
+          {
+            driverId,
+          },
+          {
+            isBusy: false,
+          }
+        );
+      }
+    }
     /******************************************************/
     //Send the cancel to the driver via socket
     io.to(drivers.get(orderSearch.master.driverId)).emit("CancelOrder", {

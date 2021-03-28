@@ -1,0 +1,172 @@
+<html>
+
+<head>
+  <title>Client Cycle | Smart Delivery</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+
+<body>
+
+
+  <div class="jumbotron">
+    <h1 class="display-3">Client Cycle</h1>
+    <p class="lead">All client events & cycles are to be tested from here</p>
+    <hr class="my-2">
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="form-group col-md-6">
+        <label for="branchId">Branch Id:</label>
+        <input type="text" class="form-control" name="branchId" value="2" id="branchId" placeholder="branchId">
+      </div>
+      <div class="form-group col-md-6">
+        <label for="token">Token:</label>
+        <textarea type="text" class="form-control" name="token" id="token"
+          placeholder="token">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiQ2xpZW50MzMwMzEzMjYxOCIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3NpZCI6IjMiLCJqdGkiOiI1NDY4N2U5ZC05ZDgyLTQzYzAtYWQyOS05YmViYzgzODUzNjgiLCJleHAiOjE2MTYyNDIwNTcsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDQzNzciLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQ0Mzc3In0.6EcBcKt18oiEFyGNlvCzK5l-5s29iqVuqZSuAHQzf1s</textarea>
+      </div>
+    </div>
+
+    <p class="lead">
+      <button class="btn btn-primary btn-lg" id="new-order-btn" role="button">NewOrderRequest</button>
+    </p>
+    <div class="">
+      <p class="lead">Result</p>
+      <pre class="text-white p-4 display-5" id="new-order-result"></pre>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="form-group col-md-6">
+        <label for="orderId">Order Id:</label>
+        <input type="text" class="form-control" name="orderId" id="orderId" placeholder="orderId">
+      </div>
+    </div>
+
+    <p class="lead">
+      <button class="btn btn-primary btn-lg" id="cancel-order-btn" role="button">CancelOrder</button>
+    </p>
+    <div class="">
+      <p class="lead">Result</p>
+      <pre class="text-white p-4 display-5" id="cancel-order-result"></pre>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.4/socket.io.js"> </script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <script>
+
+    //Initialize Socket
+    const socket = io.connect('http://localhost:5000', {
+      reconnection: true,
+      reconnectionDelay: 500,
+      reconnectionAttempts: Infinity
+    });
+
+    socket.on("connect", () => console.log("connected"));
+    socket.on("disconnect", () => console.log("disconnected"));
+
+    let branchIdInput = document.querySelector("#branchId");
+    let orderIdInput = document.querySelector("#orderId");
+    let tokenInput = document.querySelector("#token");
+
+    let branchId = branchIdInput.value;
+    let orderId = orderIdInput.value;
+    let token = tokenInput.value;
+
+    branchIdInput.oninput = (e) => branchId = e.target.value;
+    orderIdInput.oninput = (e) => orderId = e.target.value;
+    tokenInput.oninput = (e) => token = e.target.value;
+
+
+    let newOrderBtn = document.querySelector("#new-order-btn");
+    let cancelOrderBtn = document.querySelector("#cancel-order-btn");
+
+
+    newOrderBtn.onclick = async () => {
+      let response = await axios.post("/api/client/NewOrderRequest",
+        [{
+
+          "branchId": null,
+          "receiverName": "Dev Loay",
+          "receiverAddress": "Ismailia ElSheikh Zayed",
+          "receivermobile": "0595489308",
+          "isPaid": false,
+          "storeCost": 50.25,
+          "discount": 0,
+          "tax": 5,
+          "deliveryCost": 0,
+          "receiverCollected": 70.50,
+          "location": [
+            30.12,
+            25.126
+          ],
+          "items": [
+            {
+              "name": "Fried one",
+              "price": 20.25,
+              "quantity": 1.25
+            },
+            {
+              "name": "Fried two",
+              "price": 20,
+              "quantity": 2
+            },
+            {
+              "name": "Fried three",
+              "price": 10,
+              "quantity": 1
+            }
+          ]
+        }], {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+      );
+
+      let data = await response.data;
+      let resultContainer = document.querySelector("#new-order-result");
+      if (!data.status) {
+        resultContainer.classList.add("bg-danger");
+        resultContainer.classList.remove("bg-success");
+      } else {
+        resultContainer.classList.remove("bg-danger");
+        resultContainer.classList.add("bg-success");
+
+      }
+      resultContainer.textContent = JSON.stringify(data, null, 2);
+    }
+
+
+    /****************************************************/
+    cancelOrderBtn.onclick = async () => {
+      let response = await axios.post("/api/client/CancelOrder",
+        { orderId }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+      );
+
+      let data = await response.data;
+      let resultContainer = document.querySelector("#cancel-order-result");
+      if (!data.status) {
+        resultContainer.classList.add("bg-danger");
+        resultContainer.classList.remove("bg-success");
+      } else {
+        resultContainer.classList.remove("bg-danger");
+        resultContainer.classList.add("bg-success");
+
+      }
+      resultContainer.textContent = JSON.stringify(data, null, 2);
+    }
+
+
+
+
+  </script>
+</body>
+
+</html>
