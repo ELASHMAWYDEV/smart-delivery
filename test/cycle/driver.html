@@ -101,6 +101,8 @@
 
   <script>
 
+try {
+
     let driverIdInput = document.querySelector("#driverId");
     let tokenInput = document.querySelector("#token");
     let orderIdInput = document.querySelector("#orderId");
@@ -221,7 +223,7 @@
         resultContainer.classList.add("bg-success");
 
         document.querySelector("#orderId").value = data.order.orderId;
-        orderId = data.order.master.orderId;
+        orderId = data.order.orderId;
       }
       resultContainer.textContent = JSON.stringify(data, null, 2);
     })
@@ -325,6 +327,9 @@
     })
 
 
+  } catch (e) {
+    console.log(e);
+  }
 
 
   </script>
