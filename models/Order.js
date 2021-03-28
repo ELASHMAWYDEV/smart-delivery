@@ -21,6 +21,7 @@ const masterSchema = new mongoose.Schema({
   branchNameAr: String,
   branchNameEn: String,
   branchAddress: String,
+  receiverAddress: String,
   receiverDistance: Number,
   branchLogo: String,
   paymentTypeEn: String,

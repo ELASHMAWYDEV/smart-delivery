@@ -7,22 +7,27 @@ const { drivers } = require("../../globals");
 
 router.post("/", async (req, res) => {
   try {
-    const { orderId } = req.body;
+    let { orderId } = req.body;
 
     //Developmemt Errors
     if (!orderId)
       return res.json({ status: false, message: "orderId is missing" });
 
+    orderId = parseInt(orderId);
     /******************************************************/
     //Search for the order
-    const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+    const orderSearch = await OrderModel.findOne({
+      "master.orderId": orderId,
+      "master.statusId": { $nin: [2, 6] },
+    });
 
     if (!orderSearch)
       return res.json({
         status: false,
-        message: `There is no order with id #${orderId}`,
+        message: `There is no order with id #${orderId} or the order has been canceled before, or no drivers were found for this order`,
       });
 
+    console.log(`CancelOrder route was called, order: ${orderId}`);
     /******************************************************/
 
     //Set the order to status cancel
@@ -32,34 +37,34 @@ router.post("/", async (req, res) => {
     );
 
     /******************************************************/
-    if (orderSearch.master.driverId) {
-      //Remove the order from driver's busyOrders & make not busy if no orders left
+
+    //Remove the order from driver's busyOrders & make not busy if no orders left
+    await DriverModel.updateOne(
+      {
+        driverId: orderSearch.master.driverId,
+      },
+      {
+        $pull: { busyOrders: { orderId } },
+      }
+    );
+
+    //Check if driver has any busy orders
+    let driversSearch = await DriverModel.find({
+      driverId: orderSearch.master.driverId,
+    });
+
+    if (!(driversSearch.busyOrders && driversSearch.busyOrders.length != 0)) {
+      //Set the driver to be not busy
       await DriverModel.updateOne(
         {
-          driverId: orderSearch.master.driverId,
+          driverId: driversSearch.driverId,
         },
         {
-          $pull: { busyOrders: { orderId } },
+          isBusy: false,
         }
       );
-
-      //Check if driver has any busy orders
-      let driverSearch = await DriverModel.findOne({
-        driverId: orderSearch.master.driverId,
-      });
-
-      if (driverSearch.busyOrders.length == 0) {
-        //Set the driver to be not busy
-        await DriverModel.updateOne(
-          {
-            driverId,
-          },
-          {
-            isBusy: false,
-          }
-        );
-      }
     }
+
     /******************************************************/
     //Send the cancel to the driver via socket
     io.to(drivers.get(orderSearch.master.driverId)).emit("CancelOrder", {
@@ -72,7 +77,7 @@ router.post("/", async (req, res) => {
 
     return res.json({
       status: true,
-      message: "Order has been canceled successfully",
+      message: `Order #${orderId} has been canceled successfully`,
     });
 
     /******************************************************/

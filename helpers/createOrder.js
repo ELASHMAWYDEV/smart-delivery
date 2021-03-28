@@ -41,6 +41,7 @@ module.exports = async ({ token, orders }) => {
 
     let { data: apiData } = data;
 
+    console.log(apiData);
     /*  @response
         {
           "message": "The Trip was created successfully",
@@ -73,6 +74,7 @@ module.exports = async ({ token, orders }) => {
           branchNameAr: order.branchNameAr,
           branchNameEn: order.branchNameEn,
           branchAddress: order.branchAddress,
+          receiverAddress: order.receiverAddress,
           receiverDistance: order.receiverDistance,
           branchLogo: order.branchLogo,
           paymentTypeEn: order.paymentTypeEn,

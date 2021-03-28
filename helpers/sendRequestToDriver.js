@@ -9,6 +9,9 @@ module.exports = async ({ driver, orderId }) => {
     await OrderModel.updateOne(
       { "master.orderId": orderId },
       {
+        $set: {
+          "master.driverId": driver.driverId,
+        },
         $push: {
           driversFound: {
             _id: driver._id,
@@ -26,7 +29,8 @@ module.exports = async ({ driver, orderId }) => {
 
     /******************************************************/
     //Get the order after update
-    const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+    let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+    orderSearch = orderSearch && orderSearch.toObject();
 
     /******************************************************/
 
@@ -46,11 +50,29 @@ module.exports = async ({ driver, orderId }) => {
 
     /******************************************************/
     console.log(drivers.get(driver.driverId));
+
+    let { master } = orderSearch;
     //Send a request to the driver
     io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
       status: true,
       message: "You have a new order request",
-      order: orderSearch,
+      order: {
+        orderId: master.orderId,
+        branchId: master.branchId,
+        branchNameAr: master.branchNameAr,
+        branchNameEn: master.branchNameEn,
+        branchAddress: master.branchAddress,
+        receiverAddress: master.receiverAddress,
+        receiverDistance: master.receiverDistance,
+        branchLogo: master.branchLogo,
+        paymentTypeEn: master.paymentTypeEn,
+        paymentTypeAr: master.paymentTypeAr,
+        deliveryPriceEn: master.deliveryPriceEn,
+        deliveryPriceAr: master.deliveryPriceAr,
+        branchLocation: {
+          coordinates: [master.branchLng, master.branchLat],
+        },
+      },
     });
 
     return {
