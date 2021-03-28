@@ -10,6 +10,7 @@ module.exports = async ({ branchId, orderId }) => {
 
     let searchDrivers = await DriverModel.find({
       driverId: { $nin: driversIds },
+      isOnline: true,
       // "busyOrders.1": { $exists: false },
       // "busyOrders.branchId": branchId,
     });
