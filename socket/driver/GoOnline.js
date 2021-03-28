@@ -13,6 +13,16 @@ let { drivers } = require("../../globals");
 module.exports = (io, socket) => {
   socket.on("GoOnline", async ({ driverId, status, token }) => {
     try {
+      //Get the driver
+      const driverSearch = await DriverModel.findOne({ driverId });
+
+      if (!driverSearch) {
+        return socket.emit("GoOnline", {
+          status: false,
+          message: `Driver ${driverId} is not registered on DB`,
+        });
+      }
+
       console.log(`GoOnline Event Called, driver id: ${driverId}`);
 
       //Add driver to socket
@@ -30,15 +40,12 @@ module.exports = (io, socket) => {
       );
 
       /***************************************************/
-      //For test only - get the busy
-      let orderSearch = await OrderModel;
-
-      /***************************************************/
 
       //Emit GoOnline with updated status
       socket.emit("GoOnline", {
         status: true,
         message: `The driver is set to ${status == 1 ? "online" : "offline"}`,
+        busyOrders: driverSearch.busyOrders,
       });
 
       /***********************************************************/
