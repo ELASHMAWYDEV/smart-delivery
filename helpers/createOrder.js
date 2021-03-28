@@ -41,7 +41,6 @@ module.exports = async ({ token, orders }) => {
 
     let { data: apiData } = data;
 
-    console.log(apiData);
     /*  @response
         {
           "message": "The Trip was created successfully",

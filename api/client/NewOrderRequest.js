@@ -21,6 +21,7 @@ const { activeOrderDrivers } = require("../../globals");
  */
 
 router.post("/", orderValidator, async (req, res) => {
+  let start_time = new Date().getTime();
   try {
     //Developement errors
     const errors = validationResult(req);
@@ -28,7 +29,6 @@ router.post("/", orderValidator, async (req, res) => {
       return res.json({ status: false, errors: errors.array() });
 
     /******************************************************/
-
     //Will receive array || object
     let orders = [];
 
@@ -54,6 +54,11 @@ router.post("/", orderValidator, async (req, res) => {
       orders: ordersAfterSave.map((order) => order.master.orderId),
     });
 
+    console.log(
+      "New request response:",
+      new Date().getTime() - start_time,
+      "ms"
+    );
     /******************************************************/
     /*
      *
