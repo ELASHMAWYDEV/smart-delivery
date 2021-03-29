@@ -75,6 +75,7 @@ module.exports = async ({ driver, orderId }) => {
           lat: master.branchLocation.coordinates[1],
         },
       },
+      timerSeconds: 15 //Temporary
     });
 
     return {

@@ -16,6 +16,8 @@ module.exports = async ({ token, orders }) => {
     // tax,
     // deliveryCost,
     // items,
+    // isLocated :Boolean
+    // locationUrl: String | null
 
     /*************************************************/
     //Send to the api
