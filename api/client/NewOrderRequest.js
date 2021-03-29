@@ -21,7 +21,6 @@ const { activeOrderDrivers } = require("../../globals");
  */
 
 router.post("/", orderValidator, async (req, res) => {
-  let start_time = new Date().getTime();
   try {
     //Developement errors
     const errors = validationResult(req);
@@ -53,12 +52,6 @@ router.post("/", orderValidator, async (req, res) => {
       message: "تم ارسال جميع الطلبات ويتم توزيعها علي السائقين الأن",
       orders: ordersAfterSave.map((order) => order.master.orderId),
     });
-
-    console.log(
-      "New request response:",
-      new Date().getTime() - start_time,
-      "ms"
-    );
     /******************************************************/
     /*
      *

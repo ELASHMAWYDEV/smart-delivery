@@ -1,3 +1,6 @@
+//Models
+const DriverModel = require("../models/Driver");
+
 //Globals
 let { clients, drivers } = require("../globals");
 
@@ -15,8 +18,15 @@ module.exports = (io, socket) => {
       //Delete if driver
       if (!clientId && driverId && driverId.length != 0) {
         drivers.delete(driverId[0]);
-        console.log(`Driver ${driverId[0]} disconnected`);
-
+        //Update the driver
+        await DriverModel.updateOne(
+          { driverId: driverId[0] },
+          {
+            $set: {
+              isOnline: false,
+            },
+          }
+        );
         /************************************************************/
       }
 

@@ -6,22 +6,25 @@ const { API_URI } = require("../globals");
 
 module.exports = async ({ statusId, orderId, token }) => {
   try {
+    orderId = parseInt(orderId);
+
     //Get the list of drivers found for this order
     let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();
 
     console.log({
-      tripID: orderId,
-      tripStatusID: statusId,
+      orderId,
+      tripStatusId: statusId,
       cancelReasonID: 0, //temp
       tripDrivers: orderSearch.driversFound,
     });
+
     //Update to the API
     let response = await axios.post(
       `${API_URI}/Trip/UpdateTrip`,
       {
-        tripID: orderId,
-        tripStatusID: statusId,
+        orderId,
+        tripStatusId: statusId,
         cancelReasonID: 0, //temp
         tripDrivers: orderSearch.driversFound,
       },
@@ -44,6 +47,7 @@ module.exports = async ({ statusId, orderId, token }) => {
 
     let { data: apiData } = data;
 
+    console.log(apiData);
     return {
       status: true,
       message: "Order status updated successefully",

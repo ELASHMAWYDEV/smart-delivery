@@ -82,7 +82,6 @@ module.exports = (io, socket) => {
             "driversFound.$.actionDate": new Date().constructor({
               timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
             }),
-            "master.statusId": 3, //Accept
             "master.driverId": driverId,
           },
         }
@@ -101,6 +100,7 @@ module.exports = (io, socket) => {
         return socket.emit("AcceptOrder", updateResult);
       }
 
+      console.log(updateResult);
       //Update the order status on DB
       await OrderModel.updateOne(
         {

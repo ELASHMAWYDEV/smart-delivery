@@ -50,6 +50,9 @@ module.exports = async ({ driver, orderId }) => {
 
     /******************************************************/
     let { master } = orderSearch;
+
+    console.log(drivers);
+
     //Send a request to the driver
     io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
       status: true,

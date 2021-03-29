@@ -54,43 +54,38 @@
     <hr>
     <div>
       <p class="lead">
-        <button class="btn btn-primary btn-lg" id="accept-order-btn" onclick="acceptOrder()"
-          role="button">AcceptOrder</button>
+        <button class="btn btn-primary btn-lg" id="accept-order-btn" role="button">AcceptOrder</button>
       </p>
       <p class="lead">Result</p>
       <pre class="text-white p-4 display-5" id="accept-order-listen"></pre>
     </div>
     <div>
       <p class="lead">
-        <button class="btn btn-primary btn-lg" id="accept-order-btn" onclick="rejectOrder()"
-          role="button">RejectOrder</button>
+        <button class="btn btn-primary btn-lg" id="reject-order-btn" role="button">RejectOrder</button>
       </p>
       <p class="lead">Result</p>
-      <pre class="text-white p-4 display-5" id="accept-order-listen"></pre>
+      <pre class="text-white p-4 display-5" id="reject-order-listen"></pre>
     </div>
     <div>
       <p class="lead">
-        <button class="btn btn-primary btn-lg" id="accept-order-btn" onclick="ignoreOrder()"
-          role="button">IgnoreOrder</button>
+        <button class="btn btn-primary btn-lg" id="ignore-order-btn" role="button">IgnoreOrder</button>
       </p>
       <p class="lead">Result</p>
-      <pre class="text-white p-4 display-5" id="accept-order-listen"></pre>
+      <pre class="text-white p-4 display-5" id="ignore-order-listen"></pre>
     </div>
     <div>
       <p class="lead">
-        <button class="btn btn-primary btn-lg" id="accept-order-btn" onclick="receiveOrder()"
-          role="button">ReceiveOrder</button>
+        <button class="btn btn-primary btn-lg" id="receive-order-btn" role="button">ReceiveOrder</button>
       </p>
       <p class="lead">Result</p>
-      <pre class="text-white p-4 display-5" id="accept-order-listen"></pre>
+      <pre class="text-white p-4 display-5" id="receive-order-listen"></pre>
     </div>
     <div>
       <p class="lead">
-        <button class="btn btn-primary btn-lg" id="accept-order-btn" onclick="deliverOrder()"
-          role="button">DeliverOrder</button>
+        <button class="btn btn-primary btn-lg" id="deliver-order-btn" role="button">DeliverOrder</button>
       </p>
       <p class="lead">Result</p>
-      <pre class="text-white p-4 display-5" id="accept-order-listen"></pre>
+      <pre class="text-white p-4 display-5" id="deliver-order-listen"></pre>
     </div>
   </div>
 
@@ -123,15 +118,25 @@
         reconnectionAttempts: Infinity
       });
 
-      socket.on("connect", () => console.log("connected"));
+      socket.on("connect", (socket) => console.log("connected", socket));
       socket.on("disconnect", () => console.log("disconnected"));
 
       //Online & Offline
       let goOnlineBtn = document.querySelector("#go-online-btn");
       let goOfflineBtn = document.querySelector("#go-offline-btn");
+      let acceptOrderBtn = document.querySelector("#accept-order-btn");
+      let rejectOrderBtn = document.querySelector("#reject-order-btn");
+      let ignoreOrderBtn = document.querySelector("#ignore-order-btn");
+      let receiveOrderBtn = document.querySelector("#receive-order-btn");
+      let deliverOrderBtn = document.querySelector("#deliver-order-btn");
 
       goOnlineBtn.onclick = () => goOnline(1);
       goOfflineBtn.onclick = () => goOnline(2);
+      acceptOrderBtn.onclick = () => acceptOrder();
+      rejectOrderBtn.onclick = () => rejectOrder();
+      ignoreOrderBtn.onclick = () => ignoreOrder();
+      receiveOrderBtn.onclick = () => receiveOrder();
+      deliverOrderBtn.onclick = () => deliverOrder();
 
 
       const goOnline = (status) => {
