@@ -4,6 +4,10 @@ const { activeOrderDrivers } = require("../globals");
 
 module.exports = async ({ location, orderId }) => {
   try {
+
+    //Get i
+
+
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
     let driversIds = orderSearch.driversFound.map((d) => d.driverId);

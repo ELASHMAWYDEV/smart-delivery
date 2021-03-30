@@ -1,0 +1,12 @@
+config:
+  target: "http://localhost:5000"
+  phases:
+    - duration: 20
+      arriveRate: 10
+      rampTo: 100
+      name: "Testing 100 user"
+scenarios:
+  - engine: "ws"
+    flow: 
+      - send: "Hello"
+      - think: 5

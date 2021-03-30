@@ -169,7 +169,7 @@ module.exports = (io, socket) => {
       return socket.emit("AcceptOrder", {
         status: true,
         message: "Order accepted successfully",
-        order: orderSearch,
+        orderId: orderSearch.master.orderId,
       });
       /******************************************************/
     } catch (e) {
