@@ -63,7 +63,7 @@ module.exports = (io, socket) => {
 
       /********************************************************/
       //Send back to the driver
-      socket.emit("JoinDriver", {
+      return socket.emit("JoinDriver", {
         status: true,
         isAuthorize: true,
         isHasOrder,

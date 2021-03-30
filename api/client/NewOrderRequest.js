@@ -62,6 +62,7 @@ router.post("/", orderValidator, async (req, res) => {
      */
     /******************************************************/
     //Check if any driver on the way to this restaurant
+    console.log("Number of orders:", ordersAfterSave.length);
     for (let order of ordersAfterSave) {
       activeOrderDrivers.set(order.master.orderId, []);
 
