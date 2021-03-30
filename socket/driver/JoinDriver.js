@@ -65,8 +65,9 @@ module.exports = (io, socket) => {
       //Send back to the driver
       socket.emit("JoinDriver", {
         status: true,
-        isHasTrip,
         isAuthorize: true,
+        isHasTrip,
+        isOnline: driverSearch.isOnline,
         message: `join success, socket id: ${socket.id}`,
       });
 

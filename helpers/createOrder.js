@@ -22,7 +22,7 @@ module.exports = async ({ token, orders }) => {
     /*************************************************/
     //Send to the api
     let response = await axios.post(
-      `${API_URI}/Trip/MultiNewTrip`,
+      `${API_URI}/Trip/MultiOrders`,
       { orders },
       {
         headers: {

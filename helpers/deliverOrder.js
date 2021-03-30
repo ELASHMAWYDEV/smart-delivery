@@ -7,7 +7,7 @@ module.exports = async ({ orderId, lng, lat, token }) => {
   try {
     //Send to the API
     let response = await axios.post(
-      `${API_URI}/Trip/FinishTrip`,
+      `${API_URI}/Trip/FinishOrder`,
       {
         orderId,
         lng,

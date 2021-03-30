@@ -44,8 +44,16 @@
 
   <pre id="response" class="data">
     {
-      "status": true,
-      "message": ""
+      status: true,
+      isAuthorize: true,
+      isHasTrip: true | false,
+      isOnline: true | false,
+      message: "The driver is set to online",
+      busyOrders: [
+        251,
+        256,
+        269
+      ]
     }
   </pre>
   <hr>
@@ -55,6 +63,7 @@
   <pre id="response" class="data">
     {
       status: false,
+      isAuthorize: false | true,
       message: "Error Message"
     }
   </pre>

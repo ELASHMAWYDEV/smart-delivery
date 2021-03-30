@@ -116,7 +116,7 @@
         reconnection: true,
         reconnectionDelay: 500,
         reconnectionAttempts: Infinity,
-        query: "driverId=2"
+        query: `driverId=${driverId}&token=${token}`
       });
 
       socket.on("connect", (socket) => console.log("connected", socket));

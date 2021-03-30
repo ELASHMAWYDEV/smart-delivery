@@ -7,7 +7,7 @@ module.exports = async ({ branchId, token }) => {
   try {
     //Send to the API
     let response = await axios.post(
-      `${API_URI}/Trip/ReceiveTrip`,
+      `${API_URI}/Trip/ReceiveOrder`,
       {
         branchId,
       },

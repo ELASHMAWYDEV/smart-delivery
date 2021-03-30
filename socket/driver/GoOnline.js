@@ -61,6 +61,7 @@ module.exports = (io, socket) => {
       socket.emit("GoOnline", {
         status: true,
         isAuthorize: true,
+        isOnline: status == 1 ? true : false,
         message: `The driver is set to ${status == 1 ? "online" : "offline"}`,
         busyOrders,
       });

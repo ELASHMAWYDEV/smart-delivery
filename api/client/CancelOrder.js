@@ -62,6 +62,7 @@ router.post("/", async (req, res) => {
         "CancelOrder",
         {
           status: true,
+          isAuthorize: true,
           message: `Order #${orderId} was canceled by board`,
           orderId,
         }

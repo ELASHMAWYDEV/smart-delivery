@@ -2,7 +2,7 @@ const axios = require("axios");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 
-const { API_URI } = require("../globals");
+const { API_URI, API_SECRET_KEY } = require("../globals");
 
 module.exports = async ({ statusId, orderId, token }) => {
   try {
@@ -12,25 +12,17 @@ module.exports = async ({ statusId, orderId, token }) => {
     let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();
 
-    console.log({
-      orderId,
-      tripStatusId: statusId,
-      cancelReasonID: 0, //temp
-      tripDrivers: orderSearch.driversFound,
-    });
-
     //Update to the API
     let response = await axios.post(
-      `${API_URI}/Trip/UpdateTrip`,
+      `${API_URI}/Trip/UpdateOrder`,
       {
         orderId,
-        tripStatusId: statusId,
-        cancelReasonID: 0, //temp
-        tripDrivers: orderSearch.driversFound,
+        orderStatusId: statusId,
+        orderDrivers: orderSearch.driversFound,
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${API_SECRET_KEY}`,
         },
       }
     );

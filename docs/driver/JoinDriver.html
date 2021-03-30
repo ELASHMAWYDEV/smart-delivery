@@ -22,17 +22,20 @@
 <body>
 
   <h2>Event Name:</h2>
-  <p class="data">CancelOrder</p>
+  <p class="data">JoinDriver</p>
   <br>
   <h3>Type:</h3>
-  <p>Listen</p>
+  <p>Emmit / Listen</p>
   <br>
   <h3>Description: </h3>
-  <p>If an order was canceled, driver application should remove it from the list and mark as canceled</p>
+  <p>Driver should trigger this event when he wants to join the socket and know if he has any orders or not</p>
   <hr>
   <h2>Request: </h2>
   <pre class="data">
-    No Request is needed
+    {
+      driverId: 2,
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9,
+    }
   </pre>
   <hr>
   <h2>Response OK:</h2>
@@ -42,8 +45,9 @@
     {
       status: true,
       isAuthorize: true,
-      message: "Order #152 was canceled by board",
-      orderId: 152
+      isHasTrip: true | false,
+      isOnline: true | false,
+      message: "join success, socket id: yS9BBTjRKSdz2c3BAABC",
     }
   </pre>
   <hr>
@@ -51,7 +55,11 @@
   <br>
 
   <pre id="response" class="data">
-    No Errors will be handled from this event
+    {
+      status: false,
+      isAuthorize: false | true,
+      message: "Error Message"
+    }
   </pre>
 
   </script>
