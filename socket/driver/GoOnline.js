@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require("uuid");
+
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
@@ -54,14 +56,9 @@ module.exports = (io, socket) => {
 
       busyOrders = busyOrders.map((order) => order.master.orderId);
       /***************************************************/
-
-      console.log(
-        `GoOnline Event emitted, driver id: ${driverId} ${
-          status == 1 ? "online" : "offline"
-        }`
-      );
       //Emit GoOnline with updated status
       return socket.emit("GoOnline", {
+        uuid: uuidv4(),
         status: true,
         isAuthorize: true,
         isOnline: status == 1 ? true : false,
