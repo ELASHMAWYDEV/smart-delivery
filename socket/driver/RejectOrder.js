@@ -50,7 +50,7 @@ module.exports = (io, socket) => {
       let orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
         "master.driverId": driverId,
-        "master.statusId": { $in: [3, 4, 5, 6] },
+        "master.statusId": { $in: [1, 3, 4, 5, 6] },
       });
 
       if (orderSearch)
