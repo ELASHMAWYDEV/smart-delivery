@@ -1,7 +1,13 @@
+const { drivers } = require("../globals");
+
 module.exports = (io) => {
   io.on("connection", (socket) => {
     console.log(`New user connected: ${socket.id}`);
-    console.log(socket.handshake.query);
+
+    if (socket.handshake.query.driverId) {
+      drivers.set(parseInt(socket.handshake.query.driverId), socket.id);
+      console.log(drivers);
+    }
 
     require("./disconnect")(io, socket);
 
@@ -14,7 +20,6 @@ module.exports = (io) => {
     require("./driver/DeliverOrder")(io, socket);
   });
 };
-
 
 /*
 
