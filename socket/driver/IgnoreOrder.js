@@ -52,7 +52,7 @@ module.exports = (io, socket) => {
         "master.statusId": { $in: [1, 3, 4, 5, 6] },
       });
 
-      if (!orderSearch)
+      if (orderSearch)
         return socket.emit("IgnoreOrder", {
           status: false,
           isAuthorize: true,

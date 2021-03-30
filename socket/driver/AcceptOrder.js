@@ -71,7 +71,6 @@ module.exports = (io, socket) => {
       orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
         "master.statusId": { $ne: 1 }, //Not Equal,
-        "master.driverId": { $ne: driverId },
         driversFound: {
           $elemMatch: { requestStatus: { $in: [2, 3, 4, 5] } },
         },

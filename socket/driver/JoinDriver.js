@@ -71,6 +71,7 @@ module.exports = (io, socket) => {
         message: `join success, socket id: ${socket.id}`,
       });
 
+      
       /********************************************************/
     } catch (e) {
       console.log(`Error in JoinDriver, error: ${e.message}`);
