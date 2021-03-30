@@ -54,8 +54,8 @@ module.exports = (io, socket) => {
         "master.driverId": driverId,
       });
 
-      let isHasTrip = false;
-      if (busyOrders > 0) isHasTrip = true;
+      let isHasOrder = false;
+      if (busyOrders > 0) isHasOrder = true;
 
       /********************************************************/
       //Add driver to the socket
@@ -66,7 +66,7 @@ module.exports = (io, socket) => {
       socket.emit("JoinDriver", {
         status: true,
         isAuthorize: true,
-        isHasTrip,
+        isHasOrder,
         isOnline: driverSearch.isOnline,
         message: `join success, socket id: ${socket.id}`,
       });

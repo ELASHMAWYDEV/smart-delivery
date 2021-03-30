@@ -24,13 +24,6 @@ module.exports = (io) => {
           message: "You are not authorized",
         });
       } else {
-        socket.emit("JoinDriver", {
-          status: true,
-          isAuthorize: true,
-          isOnline: driverSearch.isOnline,
-          message: `join success, socket id: ${socket.id}`,
-        });
-
         //Update the driver on drivers Map
         drivers.set(query.driverId, socket.id);
       }
@@ -55,7 +48,7 @@ module.exports = (io) => {
 
 
 
-  start app ==> join (API) ==> isHasTrip -true -false (storage) ==> GoOnline -1 -2
+  start app ==> join (API) ==> isHasOrder -true -false (storage) ==> GoOnline -1 -2
 
   onConnect ==> GoOnline  (last state)
 */
