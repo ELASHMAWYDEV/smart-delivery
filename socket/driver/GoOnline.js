@@ -11,23 +11,30 @@ let { drivers } = require("../../globals");
 // const checkForTripRequest = require("../../helpers/Join/checkForTripRequest");
 
 module.exports = (io, socket) => {
-  socket.on("GoOnline", async ({ driverId, status }) => {
+  socket.on("GoOnline", async ({ driverId, status, token }) => {
     try {
-      //Get the driver
-      const driverSearch = await DriverModel.findOne({ driverId });
+      console.log(`GoOnline Event Called, driver id: ${driverId}`);
+      /********************************************************/
+
+      //Check if token is valid
+      let driverSearch = await DriverModel.findOne({
+        driverId,
+        accessToken: token,
+      });
 
       if (!driverSearch) {
-        return socket.emit("GoOnline", {
+        return socket.emit("AcceptOrder", {
           status: false,
-          message: `Driver ${driverId} is not registered on DB`,
+          isAuthorize: false,
+          isOnline: false,
+          message: "You are not authorized",
         });
       }
 
-      console.log(`GoOnline Event Called, driver id: ${driverId}`);
+      /******************************************************/
 
       //Add driver to socket
-      if (status == 1) drivers.set(parseInt(driverId), socket.id);
-      else drivers.delete(driverId);
+      drivers.set(parseInt(driverId), socket.id);
 
       //Update the driver
       await DriverModel.updateOne(
@@ -41,19 +48,22 @@ module.exports = (io, socket) => {
 
       console.log(drivers);
       /***************************************************/
+      //Search for busy orders
+      let busyOrders = await OrderModel.find({
+        "master.driverId": driverId,
+        "master.statusId": { $nin: [2, 6] },
+      });
+
+      busyOrders = busyOrders.map((order) => order.master.orderId);
+      /***************************************************/
 
       //Emit GoOnline with updated status
       socket.emit("GoOnline", {
         status: true,
+        isAuthorize: true,
         message: `The driver is set to ${status == 1 ? "online" : "offline"}`,
-        busyOrders: driverSearch.busyOrders,
+        busyOrders,
       });
-
-      /***********************************************************/
-
-      //Special Case if the driver was waiting for a new trip request
-      // await checkForTripRequest({ socket, driverId });
-
       /***********************************************************/
     } catch (e) {
       Sentry.captureException(e);

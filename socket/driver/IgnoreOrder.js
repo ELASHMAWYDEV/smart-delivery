@@ -28,6 +28,23 @@ module.exports = (io, socket) => {
           message: "token is missing",
         });
 
+      /********************************************************/
+
+      //Check if token is valid
+      let driverSearch = await DriverModel.findOne({
+        driverId,
+        accessToken: token,
+      });
+
+      if (!driverSearch) {
+        return socket.emit("AcceptOrder", {
+          status: false,
+          isAuthorize: false,
+          isOnline: false,
+          message: "You are not authorized",
+        });
+      }
+
       /******************************************************/
       //Check if order exist on DB
       let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
@@ -57,35 +74,28 @@ module.exports = (io, socket) => {
         }
       );
       /******************************************************/
+      //Check if driver has any busy orders
+      const busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [1, 3, 4, 5] },
+        "master.driverId": orderSearch.master.driverId,
+      });
 
-      //Remove the orderId from busyOrders
+      //Set the driver to be not busy
       await DriverModel.updateOne(
         {
-          driverId,
+          driverId: orderSearch.master.driverId,
         },
         {
-          $pull: { busyOrders: { orderId } },
+          isBusy: busyOrders > 0 ? true : false,
         }
       );
 
-      //Check if driver has any busy orders
-      let driverSearch = await DriverModel.findOne({ driverId });
-
-      if (!(driverSearch.busyOrders && driverSearch.busyOrders.length != 0)) {
-        //Set the driver to be not busy
-        await DriverModel.updateOne(
-          {
-            driverId,
-          },
-          {
-            isBusy: false,
-          }
-        );
-      }
       /******************************************************/
+
       //Send to the driver all is OK
       socket.emit("IgnoreOrder", {
         status: true,
+        isAuthorize: true,
         message: "order ignored successfully",
       });
 

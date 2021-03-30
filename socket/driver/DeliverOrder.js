@@ -1,5 +1,6 @@
 const { deliverOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
+const OrderModel = require("../../models/Order");
 
 module.exports = (io, socket) => {
   socket.on("DeliverOrder", async ({ lat, lng, orderId, driverId, token }) => {
@@ -20,8 +21,27 @@ module.exports = (io, socket) => {
           status: false,
           message: "token is missing",
         });
+
+      driverId = parseInt(driverId);
+      orderId = parseInt(orderId);
       /******************************************************/
 
+      //Check if token is valid
+      let driverSearch = await DriverModel.findOne({
+        driverId,
+        accessToken: token,
+      });
+
+      if (!driverSearch) {
+        return socket.emit("AcceptOrder", {
+          status: false,
+          isAuthorize: false,
+          isOnline: false,
+          message: "You are not authorized",
+        });
+      }
+
+      /******************************************************/
       //Update the orders
       const updateOrdersResult = await deliverOrder({
         token,
@@ -31,40 +51,31 @@ module.exports = (io, socket) => {
       });
 
       if (!updateOrdersResult.status) {
-        return socket.emit(updateOrdersResult);
+        return socket.emit("DeliverOrder", updateOrdersResult);
       }
 
-      //Remove the order from driver's busyOrders & make not busy if no orders left
-      await DriverModel.updateOne(
-        {
-          driverId: driverId,
-        },
-        {
-          $pull: { busyOrders: { orderId } },
-        }
-      );
-
+      /******************************************************/
       //Check if driver has any busy orders
-      let driverSearch = await DriverModel.findOne({
-        driverId: driverId,
+      const busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [1, 3, 4, 5] },
+        "master.driverId": driverId,
       });
 
-      if (!(driversSearch.busyOrders && driversSearch.busyOrders.length != 0)) {
-        //Set the driver to be not busy
-        await DriverModel.updateOne(
-          {
-            driverId,
-          },
-          {
-            isBusy: false,
-          }
-        );
-      }
+      //Set the driver to be not busy
+      await DriverModel.updateOne(
+        {
+          driverId,
+        },
+        {
+          isBusy: busyOrders > 0 ? true : false,
+        }
+      );
 
       /******************************************************/
 
       return socket.emit("DeliverOrder", {
         status: true,
+        isAuthorize: true,
         message: `Order #${orderId} has been delivered successfully`,
       });
       /******************************************************/

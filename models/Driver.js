@@ -14,11 +14,6 @@ const pointSchema = new mongoose.Schema({
   },
 });
 
-const busyOrderSchema = new mongoose.Schema({
-  _id: { ref: "Order", type: ObjectId },
-  orderId: Number,
-  branchId: Number,
-});
 
 const driverSchema = new mongoose.Schema({
   driverId: {
@@ -38,10 +33,6 @@ const driverSchema = new mongoose.Schema({
   isBusy: {
     type: Boolean,
     default: false,
-  },
-  busyOrders: {
-    type: [busyOrderSchema],
-    default: [],
   },
   deviceType: {
     type: Number,
@@ -92,6 +83,9 @@ const driverSchema = new mongoose.Schema({
   },
   countryId: {
     type: Number,
+  },
+  accessToken: {
+    type: String,
   },
 });
 

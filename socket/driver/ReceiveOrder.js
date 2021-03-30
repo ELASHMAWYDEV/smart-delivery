@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const { receiveOrder } = require("../../helpers");
+const DriverModel = require("../../models/Driver");
 
 module.exports = (io, socket) => {
   socket.on("ReceiveOrder", async ({ branchId, driverId, token }) => {
@@ -20,6 +21,24 @@ module.exports = (io, socket) => {
           status: false,
           message: "token is missing",
         });
+
+      /********************************************************/
+
+      //Check if token is valid
+      let driverSearch = await DriverModel.findOne({
+        driverId,
+        accessToken: token,
+      });
+
+      if (!driverSearch) {
+        return socket.emit("AcceptOrder", {
+          status: false,
+          isAuthorize: false,
+          isOnline: false,
+          message: "You are not authorized",
+        });
+      }
+
       /******************************************************/
 
       //Update the orders
@@ -31,8 +50,23 @@ module.exports = (io, socket) => {
 
       let { ordersIds } = updateOrdersResult;
 
+      /******************************************************/
+
+      //Make sure driver is busy
+      await DriverModel.updateOne(
+        {
+          driverId,
+        },
+        {
+          isBusy: true,
+        }
+      );
+
+      /******************************************************/
+
       return socket.emit("ReceiveOrder", {
         status: true,
+        isAuthorize: true,
         message: `Orders ${ordersIds.map(
           (order) => "#" + order
         )} has been received successfully`,

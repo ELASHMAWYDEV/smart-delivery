@@ -33,25 +33,7 @@ module.exports = async ({ driver, orderId }) => {
     orderSearch = orderSearch && orderSearch.toObject();
 
     /******************************************************/
-
-    //Update the driver to be busy & add the orderId to him
-    await DriverModel.updateOne(
-      { driverId: driver.driverId },
-      {
-        isBusy: true,
-        $push: {
-          busyOrders: {
-            orderId: orderId,
-            branchId: orderSearch.master.branchId,
-          },
-        },
-      }
-    );
-
-    /******************************************************/
     let { master } = orderSearch;
-
-    console.log(drivers);
 
     //Send a request to the driver
     io.to(drivers.get(parseInt(driver.driverId))).emit("NewOrderRequest", {
@@ -75,7 +57,7 @@ module.exports = async ({ driver, orderId }) => {
           lat: master.branchLocation.coordinates[1],
         },
       },
-      timerSeconds: 15 //Temporary
+      timerSeconds: 15, //Temporary
     });
 
     return {

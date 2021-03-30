@@ -22,6 +22,28 @@ module.exports = (io, socket) => {
           status: false,
           message: "token is missing",
         });
+
+      /********************************************************/
+      //Parse driverId
+      driverId = parseInt(driverId);
+
+      /********************************************************/
+
+      //Check if token is valid
+      let driverSearch = await DriverModel.findOne({
+        driverId,
+        accessToken: token,
+      });
+
+      if (!driverSearch) {
+        return socket.emit("AcceptOrder", {
+          status: false,
+          isAuthorize: false,
+          isOnline: false,
+          message: "You are not authorized",
+        });
+      }
+
       /******************************************************/
 
       console.log(
@@ -100,7 +122,6 @@ module.exports = (io, socket) => {
         return socket.emit("AcceptOrder", updateResult);
       }
 
-      console.log(updateResult);
       //Update the order status on DB
       await OrderModel.updateOne(
         {
@@ -112,28 +133,6 @@ module.exports = (io, socket) => {
           },
         }
       );
-      /******************************************************/
-      //Save the driver data coming from trip
-      // await OrderModel.updateOne(
-      //   {
-      //     "master.orderId": orderId,
-      //     driversFound: {
-      //       $elemMatch: { driverId },
-      //     },
-      //   },
-      //   {
-      //     $set: {
-      //       driverName: updateResult.data.driverName,
-      //       colorHex: updateResult.data.colorHex,
-      //       driverPicture: updateResult.data.driverPicture,
-      //       totalDriverEvaluate: updateResult.data.totalDriverEvaluate,
-      //       taxiNumber: updateResult.data.taxiNumber,
-      //       model: updateResult.data.model,
-      //       carPicture: updateResult.data.carPicture,
-      //     },
-      //   }
-      // );
-
       /******************************************************/
       //Get the order again
       orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
@@ -147,6 +146,7 @@ module.exports = (io, socket) => {
         if (driver.driverId != driverId && driver.requestStatus == 4) {
           io.to(parseInt(drivers.get(driver.driverId))).emit("AcceptTrip", {
             status: false,
+            isAuthorize: true,
             message: "عذرا لقد قام سائق أخر بقبول الطلب",
           });
 

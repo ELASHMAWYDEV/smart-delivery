@@ -37,42 +37,36 @@ router.post("/", async (req, res) => {
     );
 
     /******************************************************/
+    //Check if there was a driver on this order & get his orders & update his busy state
+    if (orderSearch.master.driverId) {
+      /******************************************************/
+      //Check if driver has any busy orders
+      const busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [1, 3, 4, 5] },
+        "master.driverId": orderSearch.master.driverId,
+      });
 
-    //Remove the order from driver's busyOrders & make not busy if no orders left
-    await DriverModel.updateOne(
-      {
-        driverId: orderSearch.master.driverId,
-      },
-      {
-        $pull: { busyOrders: { orderId } },
-      }
-    );
-
-    //Check if driver has any busy orders
-    let driversSearch = await DriverModel.find({
-      driverId: orderSearch.master.driverId,
-    });
-
-    if (!(driversSearch.busyOrders && driversSearch.busyOrders.length != 0)) {
       //Set the driver to be not busy
       await DriverModel.updateOne(
         {
-          driverId: driversSearch.driverId,
+          driverId: orderSearch.master.driverId,
         },
         {
-          isBusy: false,
+          isBusy: busyOrders > 0 ? true : false,
+        }
+      );
+
+      /******************************************************/
+      //Send the cancel to the driver via socket
+      io.to(drivers.get(parseInt(orderSearch.master.driverId))).emit(
+        "CancelOrder",
+        {
+          status: true,
+          message: `Order #${orderId} was canceled by board`,
+          orderId,
         }
       );
     }
-
-    /******************************************************/
-    //Send the cancel to the driver via socket
-    io.to(drivers.get(orderSearch.master.driverId)).emit("CancelOrder", {
-      status: true,
-      message: `Order #${orderId} was canceled by board`,
-      orderId,
-    });
-
     /******************************************************/
 
     return res.json({
