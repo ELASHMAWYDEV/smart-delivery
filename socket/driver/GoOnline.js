@@ -55,6 +55,11 @@ module.exports = (io, socket) => {
       busyOrders = busyOrders.map((order) => order.master.orderId);
       /***************************************************/
 
+      console.log(
+        `GoOnline Event emitted, driver id: ${driverId} ${
+          status == 1 ? "online" : "offline"
+        }`
+      );
       //Emit GoOnline with updated status
       return socket.emit("GoOnline", {
         status: true,
