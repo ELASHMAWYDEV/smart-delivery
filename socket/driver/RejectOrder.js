@@ -30,14 +30,34 @@ module.exports = (io, socket) => {
           message: "token is missing",
         });
 
+      /********************************************************/
+
+      //Check if token is valid
+      let driverSearch = await DriverModel.findOne({
+        driverId,
+        accessToken: token,
+      });
+
+      if (!driverSearch) {
+        return socket.emit("RejectOrder", {
+          status: false,
+          isAuthorize: false,
+          message: "You are not authorized",
+        });
+      }
       /******************************************************/
       //Check if order exist on DB
-      let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+      let orderSearch = await OrderModel.findOne({
+        "master.orderId": orderId,
+        "master.driverId": driverId,
+        "master.statusId": { $in: [3, 4, 5, 6] },
+      });
 
-      if (!orderSearch)
-        return socket.emit("IgnoreOrder", {
+      if (orderSearch)
+        return socket.emit("RejectOrder", {
           status: false,
-          message: "لا يوجد طلب بهذا الرقم",
+          isAuthorize: true,
+          message: `You may have accepted this order #${orderId} or the board may have canceled it`,
         });
 
       /******************************************************/
@@ -51,6 +71,7 @@ module.exports = (io, socket) => {
         },
         {
           $set: {
+            driverId: null,
             "driversFound.$.requestStatus": 2, //reject
             "driversFound.$.actionDate": new Date().constructor({
               timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
@@ -62,13 +83,13 @@ module.exports = (io, socket) => {
       //Check if driver has any busy orders
       const busyOrders = await OrderModel.countDocuments({
         "master.statusId": { $in: [1, 3, 4, 5] },
-        "master.driverId": orderSearch.master.driverId,
+        "master.driverId": driverId,
       });
 
       //Set the driver to be not busy
       await DriverModel.updateOne(
         {
-          driverId: orderSearch.master.driverId,
+          driverId,
         },
         {
           isBusy: busyOrders > 0 ? true : false,
@@ -84,9 +105,11 @@ module.exports = (io, socket) => {
       });
 
       /******************************************************/
+      orderSearch = await OrderModel.findOne({
+        "master.orderId": orderId,
+      });
 
       //Check if any driver on the way to this restaurant
-
       let driversOnWay = await checkDriversOnWay({
         branchId: orderSearch.master.branchId,
         orderId: orderId,

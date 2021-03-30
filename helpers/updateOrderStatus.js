@@ -12,6 +12,11 @@ module.exports = async ({ statusId, orderId, token }) => {
     let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();
 
+    console.log({
+      orderId,
+      orderStatusId: statusId,
+      orderDrivers: orderSearch.driversFound,
+    });
     //Update to the API
     let response = await axios.post(
       `${API_URI}/Trip/UpdateOrder`,
@@ -39,7 +44,6 @@ module.exports = async ({ statusId, orderId, token }) => {
 
     let { data: apiData } = data;
 
-    console.log(apiData);
     return {
       status: true,
       message: "Order status updated successefully",
