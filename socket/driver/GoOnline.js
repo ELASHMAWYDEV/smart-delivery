@@ -11,7 +11,7 @@ let { drivers } = require("../../globals");
 // const checkForTripRequest = require("../../helpers/Join/checkForTripRequest");
 
 module.exports = (io, socket) => {
-  socket.on("GoOnline", async ({ driverId, status, token }) => {
+  socket.on("GoOnline", async ({ driverId, status }) => {
     try {
       //Get the driver
       const driverSearch = await DriverModel.findOne({ driverId });
