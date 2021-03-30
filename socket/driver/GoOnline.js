@@ -39,6 +39,7 @@ module.exports = (io, socket) => {
         }
       );
 
+      console.log(drivers);
       /***************************************************/
 
       //Emit GoOnline with updated status
