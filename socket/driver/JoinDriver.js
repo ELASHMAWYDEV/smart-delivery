@@ -73,10 +73,10 @@ module.exports = (io, socket) => {
 
       /********************************************************/
     } catch (e) {
-      console.log(`Error in GoOnline, error: ${e.message}`);
-      socket.emit("GoOnline", {
+      console.log(`Error in JoinDriver, error: ${e.message}`);
+      socket.emit("JoinDriver", {
         status: false,
-        message: `Error in GoOnline, error: ${e.message}`,
+        message: `Error in JoinDriver, error: ${e.message}`,
       });
     }
   });

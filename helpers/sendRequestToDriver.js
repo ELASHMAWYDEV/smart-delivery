@@ -1,10 +1,16 @@
 const DriverModel = require("../models/Driver");
+const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
 const { drivers } = require("../globals");
 const { io } = require("../index");
 
 module.exports = async ({ driver, orderId }) => {
   try {
+    //Get timerSeconds from settings
+    let timerSeconds;
+    const settings = await DeliverySettingsModel.findOne({});
+    if (settings && settings.timerSeconds) timerSeconds = settings.timerSeconds;
+
     //Add the driver to the driversFound[] in order
     await OrderModel.updateOne(
       { "master.orderId": orderId },
@@ -39,6 +45,7 @@ module.exports = async ({ driver, orderId }) => {
     io.to(drivers.get(parseInt(driver.driverId))).emit("NewOrderRequest", {
       status: true,
       message: "You have a new order request",
+      timerSeconds,
       order: {
         orderId: master.orderId,
         branchId: master.branchId,
@@ -57,7 +64,6 @@ module.exports = async ({ driver, orderId }) => {
           lat: master.branchLocation.coordinates[1],
         },
       },
-      timerSeconds: 15, //Temporary
     });
 
     return {

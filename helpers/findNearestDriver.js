@@ -1,11 +1,17 @@
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
+const DeliverySettingsModel = require("../models/DeliverySettings");
 const { activeOrderDrivers } = require("../globals");
 
 module.exports = async ({ location, orderId }) => {
   try {
 
-    //Get i
+    //Get global intervals
+    let maxDistance;
+    const settings = await DeliverySettingsModel.findOne({});
+    if (settings && settings.globalIntervals) {
+      maxDistance = settings.globalIntervals[0].maxDistance || 10000;
+    }
 
 
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });

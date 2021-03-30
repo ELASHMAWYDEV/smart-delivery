@@ -68,25 +68,27 @@ module.exports = async ({ token, orders }) => {
 
     //Transform to be like DB schema
     const ordersToStoreInDB = apiData.map((order) => {
-      return {
-        master: {
-          orderId: order.orderId,
-          branchId: order.branchId,
-          branchNameAr: order.branchNameAr,
-          branchNameEn: order.branchNameEn,
-          branchAddress: order.branchAddress,
-          receiverAddress: order.receiverAddress,
-          receiverDistance: order.receiverDistance,
-          branchLogo: order.branchLogo,
-          paymentTypeEn: order.paymentTypeEn,
-          paymentTypeAr: order.paymentTypeAr,
-          deliveryPriceEn: order.deliveryPriceEn,
-          deliveryPriceAr: order.deliveryPriceAr,
-          branchLocation: {
-            coordinates: [order.branchLng, order.branchLat],
+      if (order.status) {
+        return {
+          master: {
+            orderId: order.orderId,
+            branchId: order.branchId,
+            branchNameAr: order.branchNameAr,
+            branchNameEn: order.branchNameEn,
+            branchAddress: order.branchAddress,
+            receiverAddress: order.receiverAddress,
+            receiverDistance: order.receiverDistance,
+            branchLogo: order.branchLogo,
+            paymentTypeEn: order.paymentTypeEn,
+            paymentTypeAr: order.paymentTypeAr,
+            deliveryPriceEn: order.deliveryPriceEn,
+            deliveryPriceAr: order.deliveryPriceAr,
+            branchLocation: {
+              coordinates: [order.branchLng, order.branchLat],
+            },
           },
-        },
-      };
+        };
+      }
     });
 
     //Save order to DB

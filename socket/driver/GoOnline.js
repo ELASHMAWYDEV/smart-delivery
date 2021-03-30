@@ -1,5 +1,3 @@
-const Sentry = require("@sentry/node");
-
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
@@ -23,7 +21,7 @@ module.exports = (io, socket) => {
       });
 
       if (!driverSearch) {
-        return socket.emit("AcceptOrder", {
+        return socket.emit("GoOnline", {
           status: false,
           isAuthorize: false,
           isOnline: false,
@@ -58,7 +56,7 @@ module.exports = (io, socket) => {
       /***************************************************/
 
       //Emit GoOnline with updated status
-      socket.emit("GoOnline", {
+      return socket.emit("GoOnline", {
         status: true,
         isAuthorize: true,
         isOnline: status == 1 ? true : false,
@@ -67,7 +65,6 @@ module.exports = (io, socket) => {
       });
       /***********************************************************/
     } catch (e) {
-      Sentry.captureException(e);
       console.log(`Error in GoOnline, error: ${e.message}`);
       socket.emit("GoOnline", {
         status: false,
