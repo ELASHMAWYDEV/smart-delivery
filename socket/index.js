@@ -44,11 +44,3 @@ module.exports = (io) => {
   });
 };
 
-/*
-
-
-
-  start app ==> join (API) ==> isHasOrder -true -false (storage) ==> GoOnline -1 -2
-
-  onConnect ==> GoOnline  (last state)
-*/

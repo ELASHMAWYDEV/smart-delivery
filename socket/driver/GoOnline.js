@@ -66,7 +66,7 @@ module.exports = (io, socket) => {
       /***********************************************************/
     } catch (e) {
       console.log(`Error in GoOnline, error: ${e.message}`);
-      socket.emit("GoOnline", {
+      return socket.emit("GoOnline", {
         status: false,
         message: `Error in GoOnline, error: ${e.message}`,
       });
