@@ -56,9 +56,12 @@ module.exports = (io, socket) => {
 
       busyOrders = busyOrders.map((order) => order.master.orderId);
       /***************************************************/
+
+      const uuid = uuidv4();
+      console.log(`socket id: ${socket.id}, uuid: ${uuid}`);
       //Emit GoOnline with updated status
       return socket.emit("GoOnline", {
-        uuid: uuidv4(),
+        uuid,
         status: true,
         isAuthorize: true,
         isOnline: status == 1 ? true : false,
