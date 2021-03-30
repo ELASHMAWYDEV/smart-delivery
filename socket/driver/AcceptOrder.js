@@ -145,7 +145,7 @@ module.exports = (io, socket) => {
 
       for (let driver of orderSearch.driversFound) {
         if (driver.driverId != driverId && driver.requestStatus == 4) {
-          io.to(drivers.get(driver.driverId)).emit("AcceptTrip", {
+          io.to(parseInt(drivers.get(driver.driverId))).emit("AcceptTrip", {
             status: false,
             message: "عذرا لقد قام سائق أخر بقبول الطلب",
           });
