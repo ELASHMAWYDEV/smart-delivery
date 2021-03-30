@@ -115,7 +115,8 @@
       const socket = io.connect(window.location.origin, {
         reconnection: true,
         reconnectionDelay: 500,
-        reconnectionAttempts: Infinity
+        reconnectionAttempts: Infinity,
+        query: "driverId=2"
       });
 
       socket.on("connect", (socket) => console.log("connected", socket));
