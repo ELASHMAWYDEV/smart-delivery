@@ -76,56 +76,103 @@
     let branchId = branchIdInput.value;
     let orderId = orderIdInput.value;
     let token = tokenInput.value;
-    let numberOfOrder = numberOfOrderInput.value;
+    let numberOfOrders = numberOfOrdersInput.value;
+
+
+    let orders = Array.from({ length: numberOfOrders }).map(t => ({
+
+      "branchId": null,
+      "receiverName": "Dev Loay",
+      "receiverAddress": "Ismailia ElSheikh Zayed",
+      "receivermobile": "0595489308",
+      "isPaid": false,
+      "storeCost": 50.25,
+      "discount": 0,
+      "tax": 5,
+      "deliveryCost": 0,
+      "receiverCollected": 70.50,
+      "location": [
+        30.12,
+        25.126
+      ],
+      "isLocated": true,
+      "locationUrl": null,
+      "items": [
+        {
+          "name": "Fried one",
+          "price": 20.25,
+          "quantity": 1.25
+        },
+        {
+          "name": "Fried two",
+          "price": 20,
+          "quantity": 2
+        },
+        {
+          "name": "Fried three",
+          "price": 10,
+          "quantity": 1
+        }
+      ]
+    }))
+
 
     branchIdInput.oninput = (e) => branchId = e.target.value;
     orderIdInput.oninput = (e) => orderId = e.target.value;
     tokenInput.oninput = (e) => token = e.target.value;
-    numberOfOrderInput.oninput = (e) => numberOfOrder = e.target.value;
+    numberOfOrdersInput.oninput = (e) => {
+      numberOfOrders = e.target.value;
+
+      orders = Array.from({ length: numberOfOrders }).map(t => ({
+
+        "branchId": null,
+        "receiverName": "Dev Loay",
+        "receiverAddress": "Ismailia ElSheikh Zayed",
+        "receivermobile": "0595489308",
+        "isPaid": false,
+        "storeCost": 50.25,
+        "discount": 0,
+        "tax": 5,
+        "deliveryCost": 0,
+        "receiverCollected": 70.50,
+        "location": [
+          30.12,
+          25.126
+        ],
+        "isLocated": true,
+        "locationUrl": null,
+        "items": [
+          {
+            "name": "Fried one",
+            "price": 20.25,
+            "quantity": 1.25
+          },
+          {
+            "name": "Fried two",
+            "price": 20,
+            "quantity": 2
+          },
+          {
+            "name": "Fried three",
+            "price": 10,
+            "quantity": 1
+          }
+        ]
+      }))
+    }
+
 
 
     let newOrderBtn = document.querySelector("#new-order-btn");
     let cancelOrderBtn = document.querySelector("#cancel-order-btn");
 
 
+
+
+    console.log(orders);
     newOrderBtn.onclick = async () => {
       let response = await axios.post("/api/client/NewOrderRequest",
-        [{
-
-          "branchId": null,
-          "receiverName": "Dev Loay",
-          "receiverAddress": "Ismailia ElSheikh Zayed",
-          "receivermobile": "0595489308",
-          "isPaid": false,
-          "storeCost": 50.25,
-          "discount": 0,
-          "tax": 5,
-          "deliveryCost": 0,
-          "receiverCollected": 70.50,
-          "location": [
-            30.12,
-            25.126
-          ],
-          "isLocated": true,
-          "locationUrl": null,
-          "items": [
-            {
-              "name": "Fried one",
-              "price": 20.25,
-              "quantity": 1.25
-            },
-            {
-              "name": "Fried two",
-              "price": 20,
-              "quantity": 2
-            },
-            {
-              "name": "Fried three",
-              "price": 10,
-              "quantity": 1
-            }
-          ]
-        }], {
+        orders, {
         headers: {
           Authorization: `Bearer ${token}`
         }
