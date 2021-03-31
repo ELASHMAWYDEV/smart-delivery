@@ -86,8 +86,15 @@ module.exports = (io, socket) => {
       /***************************************************/
 
       orderSearch = await OrderModel.findOne({
-        orderId,
+        "master.orderId": orderId,
       });
+
+      if (!orderSearch)
+        return socket.emit("AcceptOrder", {
+          status: false,
+          isAuthorize: true,
+          message: `There is no order with id #${orderId}`,
+        });
 
       let branchDistance = 1.5; //default
       //Get the driver distance & duration
@@ -228,6 +235,7 @@ module.exports = (io, socket) => {
 
       /******************************************************/
     } catch (e) {
+      console.log(`Error in AcceptOrder event: ${e.message}`, e);
       return socket.emit("AcceptOrder", {
         status: false,
         message: `Error in AcceptOrder event: ${e.message}`,

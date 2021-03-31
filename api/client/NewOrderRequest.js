@@ -12,11 +12,7 @@ const {
   updateOrderStatus,
 } = require("../../helpers");
 
-const {
-  activeOrderDrivers,
-  ordersInterval,
-  clients,
-} = require("../../globals");
+const { ordersInterval } = require("../../globals");
 
 /*
  *
@@ -90,7 +86,7 @@ router.post("/", orderValidator, async (req, res) => {
         //Continue if order was sent to the driver
         if (result.status) {
           console.log(
-            `Order ${order.master.orderId} was sent to driver ${drivers[0].driverId} on way`
+            `Order ${order.master.orderId} was sent to driver ${driver.driverId} on way`
           );
           continue;
         }

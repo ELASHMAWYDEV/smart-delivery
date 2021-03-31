@@ -51,7 +51,7 @@ module.exports = (io, socket) => {
       /***************************************************/
       //Search for busy orders
       let busyOrders = await OrderModel.find({
-        "master.statusId": { $in: [3, 4] },
+        "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
       });
 

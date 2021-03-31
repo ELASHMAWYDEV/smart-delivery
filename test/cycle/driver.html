@@ -28,6 +28,11 @@
           placeholder="token">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiRHJpMDA1MzIxMzQ2NyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL3NpZCI6IjMiLCJqdGkiOiI2MmZiNDQ4OS00Y2EwLTQyZGUtYjllNS1lZTc5ZDg3MjZkMzgiLCJleHAiOjE2MTYzMTQ3MzcsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDQzOTQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQ0Mzk0In0.pSPV_tvT3xG4UWfKMWdHzoOctCq22ltma9fOrxkacp8</textarea>
       </div>
     </div>
+    <div class="container">
+      <h1>JoinDriver</h1>
+      <p class="lead">Listen</p>
+      <pre class="text-white p-4 display-5" id="join-driver-listen"></pre>
+    </div>
     <h1>Go Online & Offline</h1>
     <p class="lead">
       <button class="btn btn-primary btn-lg mr-4" id="go-online-btn" role="button">Go Online</button>
@@ -147,6 +152,11 @@
       deliverOrderBtn.onclick = () => deliverOrder();
 
 
+      setTimeout(() => {
+
+        socket.emit("JoinDriver", { token, driverId });
+      }, 1000);
+
       const goOnline = (status) => {
         socket.emit("GoOnline", {
           token,
@@ -201,6 +211,21 @@
 
 
       /*************************************************************/
+
+      //Listen for GoOnline
+      socket.on("JoinDriver", data => {
+        console.log(data);
+        let resultContainer = document.querySelector("#join-driver-listen");
+        if (!data.status) {
+          resultContainer.classList.add("bg-danger");
+          resultContainer.classList.remove("bg-success");
+        } else {
+          resultContainer.classList.remove("bg-danger");
+          resultContainer.classList.add("bg-success");
+
+        }
+        resultContainer.textContent = JSON.stringify(data, null, 2);
+      })
 
       //Listen for GoOnline
       socket.on("GoOnline", data => {

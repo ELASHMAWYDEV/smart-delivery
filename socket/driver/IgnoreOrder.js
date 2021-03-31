@@ -59,7 +59,7 @@ module.exports = (io, socket) => {
       }
 
       //Add driver to socket
-      drivers.set(driverId, socket.id);
+      drivers.set(parseInt(driverId), socket.id);
 
       /******************************************************/
 
