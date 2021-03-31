@@ -13,7 +13,11 @@ let { drivers } = require("../../globals");
 module.exports = (io, socket) => {
   socket.on("GoOnline", async ({ driverId, status, token }) => {
     try {
-      console.log(`GoOnline Event Called, driver id: ${driverId}`);
+      console.log(
+        `GoOnline Event Called, driver id: ${driverId}, ${
+          status == 1 ? "online" : "offline"
+        }`
+      );
       /********************************************************/
 
       //Check if token is valid
