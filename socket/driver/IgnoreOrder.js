@@ -142,7 +142,6 @@ module.exports = (io, socket) => {
           console.log(
             `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way`
           );
-          return;
         }
       }
 
@@ -164,7 +163,6 @@ module.exports = (io, socket) => {
           console.log(
             `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
           );
-          return;
         }
       }
 
