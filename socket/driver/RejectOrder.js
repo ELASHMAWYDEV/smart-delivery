@@ -74,7 +74,7 @@ module.exports = (io, socket) => {
         },
         {
           $set: {
-            driverId: null,
+            "master.driverId": null,
             "driversFound.$.requestStatus": 2, //reject
             "driversFound.$.actionDate": new Date().constructor({
               timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
@@ -89,8 +89,7 @@ module.exports = (io, socket) => {
         "master.driverId": driverId,
       });
 
-
-      console.log("Busy orders after reject:",busyOrders)
+      console.log("Busy orders after reject:", busyOrders);
       //Set the driver to be not busy
       await DriverModel.updateOne(
         {
