@@ -122,6 +122,13 @@ module.exports = (io, socket) => {
           console.log(
             `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way`
           );
+
+          //Send to the driver all is OK
+          return socket.emit("RejectOrder", {
+            status: true,
+            isAuthorize: true,
+            message: `Order #${orderId} rejected successfully`,
+          });
         }
       }
 
@@ -143,6 +150,13 @@ module.exports = (io, socket) => {
           console.log(
             `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
           );
+
+          //Send to the driver all is OK
+          return socket.emit("RejectOrder", {
+            status: true,
+            isAuthorize: true,
+            message: `Order #${orderId} rejected successfully`,
+          });
         }
       }
 
