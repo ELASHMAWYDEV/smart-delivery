@@ -58,6 +58,13 @@ module.exports = (io, socket) => {
       if (busyOrders > 0) isHasOrder = true;
 
       /********************************************************/
+
+      //Update the order Online state if isHasOrder = true
+      if (isHasOrder) {
+        await DriverModel.updateOne({ driverId }, { isOnline: true });
+      }
+
+      /********************************************************/
       //Add driver to the socket
       drivers.set(parseInt(driverId), socket.id);
 
@@ -67,7 +74,7 @@ module.exports = (io, socket) => {
         status: true,
         isAuthorize: true,
         isHasOrder,
-        isOnline: driverSearch.isOnline,
+        isOnline: isHasOrder || driverSearch.isOnline,
         message: `join success, socket id: ${socket.id}`,
       });
 

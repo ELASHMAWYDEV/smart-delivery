@@ -1,3 +1,5 @@
+const { disconnectDriver } = require("../helpers");
+
 //Models
 const DriverModel = require("../models/Driver");
 
@@ -19,14 +21,8 @@ module.exports = (io, socket) => {
       if (!clientId && driverId && driverId.length != 0) {
         drivers.delete(driverId[0]);
         //Update the driver
-        await DriverModel.updateOne(
-          { driverId: driverId[0] },
-          {
-            $set: {
-              isOnline: false,
-            },
-          }
-        );
+        await disconnectDriver({ driverId: driverId[0] });
+
         /************************************************************/
       }
 

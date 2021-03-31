@@ -7,4 +7,5 @@ module.exports = {
   receiveOrder: require("./receiveOrder"),
   deliverOrder: require("./deliverOrder"),
   getEstimatedDistanceDuration: require("./getEstimatedDistanceDuration"),
+  disconnectDriver: require("./disconnectDriver"),
 };
