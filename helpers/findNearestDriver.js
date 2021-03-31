@@ -1,6 +1,7 @@
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
+const { activeOrderDrivers } = require("../globals");
 
 module.exports = async ({ location, orderId }) => {
   try {
@@ -13,7 +14,9 @@ module.exports = async ({ location, orderId }) => {
 
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
-    let driversIds = orderSearch.driversFound.map((d) => d.driverId);
+    // let driversIds = orderSearch.driversFound.map((d) => d.driverId);
+
+    let driversIds = activeOrderDrivers.get(orderId);
 
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
@@ -39,10 +42,10 @@ module.exports = async ({ location, orderId }) => {
     }
 
     //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
-    // activeOrderDrivers.set(orderId, [
-    //   ...activeOrderDrivers.get(orderId),
-    //   driverSearch.driverId,
-    // ]);
+    activeOrderDrivers.set(orderId, [
+      ...activeOrderDrivers.get(orderId),
+      driverSearch.driverId,
+    ]);
 
     /******************************************************/
 

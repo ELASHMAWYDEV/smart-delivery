@@ -19,6 +19,7 @@ module.exports.clients = new Map();
 module.exports.drivers = new Map();
 module.exports.ordersInterval = new Map();
 module.exports.activeOrders = new Map();
+module.exports.activeOrderDrivers = new Map();
 module.exports.disconnectInterval = new Map();
 
 //API's
