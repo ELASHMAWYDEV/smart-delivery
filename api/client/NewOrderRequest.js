@@ -12,7 +12,7 @@ const {
   updateOrderStatus,
 } = require("../../helpers");
 
-const { ordersInterval } = require("../../globals");
+const { ordersInterval, activeOrderDrivers } = require("../../globals");
 
 const OrderModel = require("../../models/Order");
 /*
@@ -69,6 +69,9 @@ router.post("/", orderValidator, async (req, res) => {
       ordersInterval.set(parseInt(order.master.orderId), {
         order,
       });
+
+      //Init the activeOrderDrivers array
+      activeOrderDrivers.set(order.master.orderId, []);
 
       //Check if any driver on the way to this restaurant
       let driverOnWay = await checkDriverOnWay({
