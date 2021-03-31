@@ -40,7 +40,9 @@ module.exports = (io, socket) => {
       }
 
       /******************************************************/
-
+      console.log(
+        `ReceiveOrder event was called by driver: ${driverId}, branch: ${branchId}`
+      );
       //Update the orders
       const updateOrdersResult = await receiveOrder({ token, branchId });
 

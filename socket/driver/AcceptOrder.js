@@ -64,7 +64,7 @@ module.exports = (io, socket) => {
       if (activeOrders.has(orderId))
         return socket.emit("AcceptOrder", {
           status: false,
-          message: "عذرا ، قام سائق أخر بقبول الطلب",
+          message: "Sorry another driver accepted this order",
         });
 
       //Check DB after that

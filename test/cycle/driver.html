@@ -74,6 +74,10 @@
       <pre class="text-white p-4 display-5" id="ignore-order-listen"></pre>
     </div>
     <div>
+      <div class="form-group col-md-6">
+        <label for="orderId">Branch Id:</label>
+        <input type="text" class="form-control" name="branchId" id="branchId" placeholder="branchId">
+      </div>
       <p class="lead">
         <button class="btn btn-primary btn-lg" id="receive-order-btn" role="button">ReceiveOrder</button>
       </p>
@@ -101,14 +105,17 @@
       let driverIdInput = document.querySelector("#driverId");
       let tokenInput = document.querySelector("#token");
       let orderIdInput = document.querySelector("#orderId");
+      let branchIdInput = document.querySelector("#branchId");
 
       let driverId = driverIdInput.value;
       let token = tokenInput.value;
       let orderId = orderIdInput.value;
+      let branchId;
 
       driverIdInput.oninput = (e) => driverId = e.target.value;
       tokenInput.oninput = (e) => token = e.target.value;
       orderIdInput.oninput = (e) => orderId = e.target.value;
+      branchIdInput.oninput = (e) => branchId = e.target.value;
 
 
       //Initialize Socket
@@ -177,7 +184,7 @@
         socket.emit("ReceiveOrder", {
           token,
           driverId,
-          orderId
+          branchId
         });
       }
 
@@ -223,6 +230,8 @@
 
           document.querySelector("#orderId").value = data.order.orderId;
           orderId = data.order.orderId;
+          document.querySelector("#branchId").value = data.order.branchId;
+          branchId = data.order.branchId;
         }
         resultContainer.textContent = JSON.stringify(data, null, 2);
       })

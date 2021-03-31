@@ -46,11 +46,14 @@ module.exports = (io, socket) => {
         });
       }
       /******************************************************/
+      console.log(
+        `RejectOrder event was called by driver: ${driverId}, order: ${orderId}`
+      );
       //Check if order exist on DB
       let orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
-        "master.driverId": driverId,
-        "master.statusId": { $in: [1, 3, 4, 5, 6] },
+        "master.driverId": { $ne: driverId },
+        "master.statusId": { $ne: 1 },
       });
 
       if (orderSearch)
@@ -95,14 +98,6 @@ module.exports = (io, socket) => {
           isBusy: busyOrders > 0 ? true : false,
         }
       );
-
-      /******************************************************/
-      //Send to the driver all is OK
-      socket.emit("RejectOrder", {
-        status: true,
-        isAuthorize: true,
-        message: "order rejected successfully",
-      });
 
       /******************************************************/
       orderSearch = await OrderModel.findOne({
@@ -151,7 +146,8 @@ module.exports = (io, socket) => {
       });
 
       if (!updateResult.status) {
-        console.log(updateResult);
+        //Send to the driver all is OK
+        return socket.emit("RejectOrder", updateResult);
       }
 
       //Update the order
@@ -172,6 +168,13 @@ module.exports = (io, socket) => {
         status: true,
         message: `No drivers found for order #${orderSearch.master.orderId}`,
         orderSearch,
+      });
+
+      //Send to the driver all is OK
+      return socket.emit("RejectOrder", {
+        status: true,
+        isAuthorize: true,
+        message: "order rejected successfully",
       });
     } catch (e) {
       console.log(`Error in RejectOrder event: ${e.message}`, e);
