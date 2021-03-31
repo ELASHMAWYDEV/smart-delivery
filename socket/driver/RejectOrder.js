@@ -118,7 +118,12 @@ module.exports = (io, socket) => {
           orderId: orderSearch.master.orderId,
         });
 
-        if (result.status) return;
+        if (result.status) {
+          console.log(
+            `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way`
+          );
+          return;
+        }
       }
 
       /******************************************************/
@@ -135,10 +140,18 @@ module.exports = (io, socket) => {
           orderId: orderSearch.master.orderId,
         });
 
-        if (result.status) return;
+        if (result.status) {
+          console.log(
+            `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
+          );
+          return;
+        }
       }
 
       /******************************************************/
+
+      console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
+
       const updateResult = await updateOrderStatus({
         statusId: 2,
         orderId: orderSearch.master.orderId,
