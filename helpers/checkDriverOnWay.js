@@ -1,6 +1,6 @@
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
-const { activeOrderDrivers } = require("../globals");
+// const { activeOrderDrivers } = require("../globals");
 
 module.exports = async ({ branchId, orderId }) => {
   try {
@@ -10,6 +10,7 @@ module.exports = async ({ branchId, orderId }) => {
 
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
+      isBusy: true,
       isDeleted: false,
       driverId: { $nin: driversIds },
       location: {
@@ -39,7 +40,8 @@ module.exports = async ({ branchId, orderId }) => {
       "master.driverId": driverSearch.driverId,
     });
 
-    if (busyOrders > 1) {
+    console.log("busyOrders:", busyOrders, "driver:", driverSearch.driverId);
+    if (busyOrders >= 2) {
       return { status: false, message: "No drivers found" };
     }
 
