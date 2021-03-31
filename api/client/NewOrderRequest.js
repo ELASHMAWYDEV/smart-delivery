@@ -14,6 +14,7 @@ const {
 
 const { ordersInterval } = require("../../globals");
 
+const OrderModel = require("../../models/Order");
 /*
  *
  * This route handles new order requests sent from the client (restaurant)
@@ -124,6 +125,19 @@ router.post("/", orderValidator, async (req, res) => {
         statusId: 2,
         token: req.token,
       });
+
+      //Update the order
+      await OrderModel.updateOne(
+        {
+          "master.orderId": order.master.orderId,
+        },
+        {
+          $set: {
+            "master.statusId": 2, //Not found
+            "master.driverId": null,
+          },
+        }
+      );
     }
 
     /******************************************************/

@@ -24,4 +24,4 @@ module.exports.activeOrders = new Map();
 module.exports.GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_KEY || "";
 module.exports.FIREBASE_URI =
   process.env.FIREBASE_URI || "https://super-1231e.firebaseio.com";
-module.exports.API_SECRET_KEY = process.env.API_SECRET_KEY || "";
+module.exports.API_SECRET_KEY = process.env.API_SECRET_KEY || "randomtoken";

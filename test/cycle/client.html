@@ -29,6 +29,7 @@
 
     <p class="lead">
       <button class="btn btn-primary btn-lg" id="new-order-btn" role="button">NewOrderRequest</button>
+      <input type="number" value="1" id="number-of-orders" />
     </p>
     <div class="">
       <p class="lead">Result</p>
@@ -70,14 +71,17 @@
     let branchIdInput = document.querySelector("#branchId");
     let orderIdInput = document.querySelector("#orderId");
     let tokenInput = document.querySelector("#token");
+    let numberOfOrdersInput = document.querySelector("#number-of-orders");
 
     let branchId = branchIdInput.value;
     let orderId = orderIdInput.value;
     let token = tokenInput.value;
+    let numberOfOrder = numberOfOrderInput.value;
 
     branchIdInput.oninput = (e) => branchId = e.target.value;
     orderIdInput.oninput = (e) => orderId = e.target.value;
     tokenInput.oninput = (e) => token = e.target.value;
+    numberOfOrderInput.oninput = (e) => numberOfOrder = e.target.value;
 
 
     let newOrderBtn = document.querySelector("#new-order-btn");
