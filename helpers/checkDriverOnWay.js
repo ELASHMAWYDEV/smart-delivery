@@ -37,14 +37,21 @@ module.exports = async ({ branchId, orderId }) => {
     /******************************************************/
 
     //Check driver has how many orders
-    const busyOrders = await OrderModel.countDocuments({
+    const busyOrders = await OrderModel.find({
       "master.statusId": { $in: [1, 3] },
       "master.branchId": branchId,
       "master.driverId": driverSearch.driverId,
     });
 
-    console.log("busyOrders:", busyOrders, "driver:", driverSearch.driverId);
-    if (busyOrders >= 2) {
+    console.log(
+      "busyOrders:",
+      busyOrders.length,
+      "driver:",
+      driverSearch.driverId,
+      "orders:",
+      busyOrders.map((order) => order.master.orderId)
+    );
+    if (busyOrders.length >= 2 || busyOrders.length == 0) {
       return { status: false, message: "No drivers found" };
     }
 
