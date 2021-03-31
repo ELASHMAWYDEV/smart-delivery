@@ -89,7 +89,6 @@ module.exports = (io, socket) => {
         "master.driverId": driverId,
       });
 
-      console.log("Busy orders after reject:", busyOrders);
       //Set the driver to be not busy
       await DriverModel.updateOne(
         {
