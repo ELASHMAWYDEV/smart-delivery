@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
 const {
-  checkDriversOnWay,
+  checkDriverOnWay,
   sendRequestToDriver,
   findNearestDriver,
   updateOrderStatus,
@@ -105,16 +105,16 @@ module.exports = (io, socket) => {
       });
 
       //Check if any driver on the way to this restaurant
-      let driversOnWay = await checkDriversOnWay({
+      let driverOnWay = await checkDriverOnWay({
         branchId: orderSearch.master.branchId,
         orderId: orderId,
       });
 
-      //Send request to driversOnWay
-      if (driversOnWay.status) {
-        let { drivers } = driversOnWay;
+      //Send request to driverOnWay
+      if (driverOnWay.status) {
+        let { driver } = driverOnWay;
         const result = await sendRequestToDriver({
-          driver: drivers[0],
+          driver,
           orderId: orderSearch.master.orderId,
         });
 

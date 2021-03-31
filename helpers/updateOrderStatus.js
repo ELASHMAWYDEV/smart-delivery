@@ -2,21 +2,18 @@ const axios = require("axios");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 
-const { API_URI, API_SECRET_KEY } = require("../globals");
+const { API_URI, API_SECRET_KEY, ordersInterval } = require("../globals");
 
 module.exports = async ({ statusId, orderId, token }) => {
   try {
     orderId = parseInt(orderId);
 
+    if (statusId == 2) ordersInterval.delete(orderId);
+
     //Get the list of drivers found for this order
     let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();
 
-    console.log({
-      orderId,
-      orderStatusId: statusId,
-      orderDrivers: orderSearch.driversFound,
-    });
     //Update to the API
     let response = await axios.post(
       `${API_URI}/Trip/UpdateOrder`,

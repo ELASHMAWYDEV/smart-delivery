@@ -19,7 +19,6 @@ module.exports.clients = new Map();
 module.exports.drivers = new Map();
 module.exports.ordersInterval = new Map();
 module.exports.activeOrders = new Map();
-module.exports.activeOrderDrivers = new Map();
 
 //API's
 module.exports.GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_KEY || "";

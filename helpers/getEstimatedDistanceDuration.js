@@ -2,10 +2,10 @@
 const axios = require("axios");
 const { GOOGLE_MAPS_KEY } = require("../globals");
 
-module.exports = async ({ pickupLat, pickupLong, dropoffLat, dropoffLong }) => {
+module.exports = async ({ pickupLat, pickupLng, dropoffLat, dropoffLng }) => {
   try {
     const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLong}&destinations=${dropoffLat},${dropoffLong}&key=${GOOGLE_MAPS_KEY}`
+      `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${pickupLat},${pickupLng}&destinations=${dropoffLat},${dropoffLng}&key=${GOOGLE_MAPS_KEY}`
     );
     const data = await response.data;
 

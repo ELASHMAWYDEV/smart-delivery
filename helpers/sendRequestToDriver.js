@@ -1,8 +1,8 @@
-const DriverModel = require("../models/Driver");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
 const { drivers } = require("../globals");
 const { io } = require("../index");
+const DriverModel = require("../models/Driver");
 
 module.exports = async ({ driver, orderId }) => {
   try {
@@ -37,6 +37,15 @@ module.exports = async ({ driver, orderId }) => {
     //Get the order after update
     let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();
+
+    /******************************************************/
+    //Set the driver to be busy
+    await DriverModel.updateOne(
+      { driverId: driver.driverId },
+      {
+        isBusy: true,
+      }
+    );
 
     /******************************************************/
     let { master } = orderSearch;

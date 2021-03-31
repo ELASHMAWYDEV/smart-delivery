@@ -6,13 +6,17 @@ const orderValidator = require("../../validators/order");
 //Helpers
 const {
   createOrder,
-  checkDriversOnWay,
+  checkDriverOnWay,
   sendRequestToDriver,
   findNearestDriver,
   updateOrderStatus,
 } = require("../../helpers");
 
-const { activeOrderDrivers } = require("../../globals");
+const {
+  activeOrderDrivers,
+  ordersInterval,
+  clients,
+} = require("../../globals");
 
 /*
  *
@@ -61,28 +65,30 @@ router.post("/", orderValidator, async (req, res) => {
      *
      */
     /******************************************************/
-    //Check if any driver on the way to this restaurant
-    for (let order of ordersAfterSave) {
-      activeOrderDrivers.set(order.master.orderId, []);
 
-      let driversOnWay = await checkDriversOnWay({
+    //Loop through orders
+    for (let order of ordersAfterSave) {
+      //Put the trip at the ordersInterval map
+      ordersInterval.set(parseInt(order.master.orderId), {
+        order,
+      });
+
+      //Check if any driver on the way to this restaurant
+      let driverOnWay = await checkDriverOnWay({
         branchId: order.master.branchId,
         orderId: order.master.orderId,
       });
 
-      //Send request to driversOnWay
-      if (driversOnWay.status) {
-        let { drivers } = driversOnWay;
+      //Send request to driverOnWay
+      if (driverOnWay.status) {
+        let { driver } = driverOnWay;
         const result = await sendRequestToDriver({
-          driver: drivers[0],
+          driver,
           orderId: order.master.orderId,
         });
 
         //Continue if order was sent to the driver
         if (result.status) {
-          activeOrderDrivers.set(order.master.orderId, [
-            ...activeOrderDrivers.get(order.master.orderId),
-          ]);
           console.log(
             `Order ${order.master.orderId} was sent to driver ${drivers[0].driverId} on way`
           );
@@ -107,9 +113,6 @@ router.post("/", orderValidator, async (req, res) => {
 
         //Continue if order was sent to the driver
         if (result.status) {
-          activeOrderDrivers.set(order.master.orderId, [
-            ...activeOrderDrivers.get(order.master.orderId),
-          ]);
           console.log(
             `Order ${order.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
           );

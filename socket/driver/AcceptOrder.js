@@ -1,4 +1,7 @@
-const { updateOrderStatus } = require("../../helpers");
+const {
+  updateOrderStatus,
+  getEstimatedDistanceDuration,
+} = require("../../helpers");
 const { activeOrders, drivers } = require("../../globals");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
@@ -49,45 +52,54 @@ module.exports = (io, socket) => {
       console.log(
         `AcceptOrder event was called by driver: ${driverId}, order: ${orderId}`
       );
-      //Check if order exist on DB
-      let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
-      if (!orderSearch)
-        return socket.emit("AcceptOrder", {
-          status: false,
-          message: "لا يوجد طلب بهذا الرقم",
-        });
-
-      /******************************************************/
       //Check if order wasn't accepted by another driver
       //Check memory first for fast seacrch
       if (activeOrders.has(orderId))
         return socket.emit("AcceptOrder", {
           status: false,
+          isAuthorize: true,
           message: "Sorry another driver accepted this order",
         });
-
-      //Check DB after that
-      orderSearch = await OrderModel.findOne({
+      /******************************************************/
+      //Check if order exist on DB
+      let orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
-        "master.statusId": { $ne: 1 }, //Not Equal,
+        "master.statusId": { $nin: 1 },
+        "master.driverId": { $ne: driverId },
         driversFound: {
-          $elemMatch: { requestStatus: { $in: [2, 3, 4, 5] } },
+          $elemMatch: { driverId, requestStatus: { $ne: 1 } },
         },
       });
 
-      //If another driver accepted the order
       if (orderSearch)
         return socket.emit("AcceptOrder", {
           status: false,
-          message: "عذرا ، قام سائق أخر بقبول الطلب",
+          isAuthorize: true,
+          message:
+            "You may have reject this order or the board may have canceled it",
         });
 
       /******************************************************/
-
       //Save the driver to the active orders
-
       activeOrders.set(orderId, driverId);
+      /***************************************************/
+
+      orderSearch = await OrderModel.findOne({
+        orderId,
+      });
+
+      let branchDistance = 1.5; //default
+      //Get the driver distance & duration
+      let estimation = await getEstimatedDistanceDuration({
+        pickupLng: driverSearch.location.coordinates[0],
+        pickupLat: driverSearch.location.coordinates[1],
+        dropoffLng: orderSearch.master.branchLocation.coordinates[0],
+        dropoffLat: orderSearch.master.branchLocation.coordinates[1],
+      });
+
+      if (estimation.status) branchDistance = estimation.estimatedDistance;
+
       /******************************************************/
       //Set this driver as the accepter of this order
       await OrderModel.updateOne(
@@ -100,9 +112,17 @@ module.exports = (io, socket) => {
         {
           $set: {
             "driversFound.$.requestStatus": 1, //Accept
+            "driversFound.$.estimatedDistance": branchDistance,
+            "driversFound.$.location": {
+              coordinates: [
+                driverSearch.location.coordinates[0],
+                driverSearch.location.coordinates[1],
+              ],
+            },
             "driversFound.$.actionDate": new Date().constructor({
               timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
             }),
+
             "master.driverId": driverId,
           },
         }
@@ -118,9 +138,23 @@ module.exports = (io, socket) => {
 
       if (!updateResult.status) {
         activeOrders.delete(orderId);
+        //Update the order status on DB
+        await OrderModel.updateOne(
+          {
+            "master.orderId": orderId,
+          },
+          {
+            $set: {
+              "master.statusId": 1,
+              "master.branchDistance": 0,
+              "master.driverId": null,
+            },
+          }
+        );
         return socket.emit("AcceptOrder", updateResult);
       }
 
+      /******************************************************/
       //Update the order status on DB
       await OrderModel.updateOne(
         {
@@ -129,6 +163,8 @@ module.exports = (io, socket) => {
         {
           $set: {
             "master.statusId": 3,
+            "master.branchDistance": branchDistance,
+            "master.driverId": driverId,
           },
         }
       );
@@ -146,7 +182,7 @@ module.exports = (io, socket) => {
           io.to(parseInt(drivers.get(driver.driverId))).emit("AcceptTrip", {
             status: false,
             isAuthorize: true,
-            message: "عذرا لقد قام سائق أخر بقبول الطلب",
+            message: "Sorry, another driver accepted the trip",
           });
 
           //If the driver is on socket set isSeenNoCatch
@@ -165,11 +201,31 @@ module.exports = (io, socket) => {
       );
 
       /***************************************************/
-      return socket.emit("AcceptOrder", {
+      socket.emit("AcceptOrder", {
         status: true,
         message: "Order accepted successfully",
-        orderId: orderSearch.master.orderId,
+        orderId,
       });
+
+      /***************************************************/
+      //In case 2 drivers accepted at the same time
+      setTimeout(async () => {
+        let orderSearch = await OrderModel.findOne({
+          orderId,
+          driverId,
+        });
+
+        //Send error to the driver
+        if (!orderSearch) {
+          socket.emit("AcceptTrip", {
+            status: false,
+            isAuthorize: true,
+            message:
+              "Sorry, you couldn't catch that order. Another driver accepted it, hard luck next time :)",
+          });
+        }
+      }, 2000);
+
       /******************************************************/
     } catch (e) {
       return socket.emit("AcceptOrder", {

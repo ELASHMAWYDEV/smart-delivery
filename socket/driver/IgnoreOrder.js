@@ -1,16 +1,20 @@
 const {
-  checkDriversOnWay,
+  checkDriverOnWay,
   sendRequestToDriver,
   findNearestDriver,
   updateOrderStatus,
 } = require("../../helpers");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
-const { clients } = require("../../globals");
+const { clients, ordersInterval, drivers } = require("../../globals");
 
 module.exports = (io, socket) => {
   socket.on("IgnoreOrder", async ({ orderId, driverId, token }) => {
     try {
+      console.log(
+        `IgnoreOrder event was called by driver: ${driverId}, order: ${orderId}`
+      );
+
       //Developement errors
       if (!orderId)
         return socket.emit("IgnoreOrder", {
@@ -45,14 +49,31 @@ module.exports = (io, socket) => {
       }
 
       /******************************************************/
-      console.log(
-        `IgnoreOrder event was called by driver: ${driverId}, order: ${orderId}`
-      );
+      //Check if the order is in the ordersInterval or not
+      if (!ordersInterval.has(orderId)) {
+        return socket.emit("IgnoreOrder", {
+          status: false,
+          isAuthorize: true,
+          message: "The order is not available any more",
+        });
+      }
+
+      //Add driver to socket
+      drivers.set(driverId, socket.id);
+
+      /******************************************************/
+
       //Check if order exist on DB
       let orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
         "master.driverId": { $ne: driverId },
         "master.statusId": { $ne: 1 },
+        driversFound: {
+          $elemMatch: {
+            driverId,
+            requestStatus: 1,
+          },
+        },
       });
 
       if (orderSearch)
@@ -73,7 +94,7 @@ module.exports = (io, socket) => {
         },
         {
           $set: {
-            driverId: null,
+            "master.driverId": null,
             "driversFound.$.requestStatus": 3, //Ignore
             "driversFound.$.actionDate": new Date().constructor({
               timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
@@ -99,23 +120,21 @@ module.exports = (io, socket) => {
       );
 
       /******************************************************/
-
-      /******************************************************/
       orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
       });
 
       //Check if any driver on the way to this restaurant
-      let driversOnWay = await checkDriversOnWay({
+      let driverOnWay = await checkDriverOnWay({
         branchId: orderSearch.master.branchId,
-        orderId: orderId,
+        orderId,
       });
 
-      //Send request to driversOnWay
-      if (driversOnWay.status) {
-        let { drivers } = driversOnWay;
+      //Send request to driverOnWay
+      if (driverOnWay.status) {
+        let { driver } = driverOnWay;
         const result = await sendRequestToDriver({
-          driver: drivers[0],
+          driver,
           orderId: orderSearch.master.orderId,
         });
 

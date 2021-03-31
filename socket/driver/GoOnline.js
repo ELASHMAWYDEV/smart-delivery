@@ -47,20 +47,26 @@ module.exports = (io, socket) => {
       );
 
       console.log(drivers);
+
       /***************************************************/
       //Search for busy orders
-      let busyOrders = await OrderModel.find({
+      let busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [3, 4] },
         "master.driverId": driverId,
-        "master.statusId": { $nin: [2, 6] },
       });
 
       busyOrders = busyOrders.map((order) => order.master.orderId);
+
+      let isHasOrder = false;
+      if (busyOrders > 0) isHasOrder = true;
+
       /***************************************************/
       //Emit GoOnline with updated status
       return socket.emit("GoOnline", {
         status: true,
         isAuthorize: true,
         isOnline: status == 1 ? true : false,
+        isHasOrder,
         message: `The driver is set to ${status == 1 ? "online" : "offline"}`,
         busyOrders,
       });

@@ -1,16 +1,9 @@
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
-const DeliverySettingsModel = require("../models/DeliverySettings");
+const { activeOrderDrivers } = require("../globals");
 
-module.exports = async ({ location, orderId }) => {
+module.exports = async ({ branchId, orderId }) => {
   try {
-    //Get global intervals
-    let maxDistance;
-    const settings = await DeliverySettingsModel.findOne({});
-    if (settings && settings.globalIntervals) {
-      maxDistance = settings.globalIntervals[0].maxDistance || 10000;
-    }
-
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
     let driversIds = orderSearch.driversFound.map((d) => d.driverId);
@@ -18,7 +11,6 @@ module.exports = async ({ location, orderId }) => {
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
       isDeleted: false,
-      isBusy: false,
       driverId: { $nin: driversIds },
       location: {
         $nearSphere: {
@@ -35,14 +27,21 @@ module.exports = async ({ location, orderId }) => {
 
     //If no driver found , send message to client
     if (!driverSearch) {
-      return { status: false, message: "No drivers found" };
+      return { status: false, message: "No drivers on way found" };
     }
 
-    //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
-    // activeOrderDrivers.set(orderId, [
-    //   ...activeOrderDrivers.get(orderId),
-    //   driverSearch.driverId,
-    // ]);
+    /******************************************************/
+
+    //Check driver has how many orders
+    const busyOrders = await OrderModel.countDocuments({
+      "master.statusId": { $in: [1, 3] },
+      "master.branchId": branchId,
+      "master.driverId": driverSearch.driverId,
+    });
+
+    if (busyOrders > 1) {
+      return { status: false, message: "No drivers found" };
+    }
 
     /******************************************************/
 
@@ -50,10 +49,10 @@ module.exports = async ({ location, orderId }) => {
 
     /******************************************************/
   } catch (e) {
-    console.log(`Error in findNearestDriver()`, e);
+    console.log(`Error in checkDriverOnWay() method: ${e.message}`);
     return {
       status: false,
-      message: `Error in findNearestDriver(): ${e.message}`,
+      message: `Error in checkDriverOnWay() method: ${e.message}`,
     };
   }
 };

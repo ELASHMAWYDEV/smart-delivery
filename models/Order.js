@@ -28,6 +28,7 @@ const masterSchema = new mongoose.Schema({
   paymentTypeAr: String,
   deliveryPriceEn: String,
   deliveryPriceAr: String,
+  branchDistance: { type: Number, default: 1.5 },
   branchLocation: {
     type: pointSchema,
     index: "2dsphere",
@@ -72,7 +73,7 @@ const orderDriversSchema = new mongoose.Schema({
   },
   estimatedDriverDuration: {
     type: Number,
-    default: 0, //temp
+    default: 0,
   },
   timeSent: {
     type: Number,
