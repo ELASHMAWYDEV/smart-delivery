@@ -94,9 +94,10 @@ module.exports = async ({ token, orders }) => {
     //Save order to DB
     let ordersSave = await OrderModel.insertMany(ordersToStoreInDB);
 
+    console.log(ordersSave);
     return {
       status: true,
-      orders: ordersSave,
+      orders: ordersToStoreInDB,
     };
   } catch (e) {
     console.log(`Error in createOrder() method: ${e.message}`);

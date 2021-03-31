@@ -138,6 +138,8 @@ router.post("/", orderValidator, async (req, res) => {
           },
         }
       );
+
+      ordersInterval.delete(parseInt(order.master.orderId));
     }
 
     /******************************************************/
