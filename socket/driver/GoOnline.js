@@ -51,15 +51,19 @@ module.exports = (io, socket) => {
       /***************************************************/
       //Search for busy orders
       let busyOrders = await OrderModel.find({
+        "master.statusId": { $in: [3, 4] },
+        "master.driverId": driverId,
+      });
+
+      let isHasOrder = false;
+      if (busyOrders.length > 0) isHasOrder = true;
+
+      busyOrders = await OrderModel.find({
         "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
       });
 
       busyOrders = busyOrders.map((order) => order.master.orderId);
-
-      let isHasOrder = false;
-      if (busyOrders.length > 0) isHasOrder = true;
-
       /***************************************************/
       //Emit GoOnline with updated status
       return socket.emit("GoOnline", {
