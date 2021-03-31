@@ -43,7 +43,7 @@ module.exports = async ({ location, orderId }) => {
 
     //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
     activeOrderDrivers.set(orderId, [
-      ...(activeOrderDrivers.get(orderId),
+      ...(activeOrderDrivers.get(orderId) || []),
       driverSearch.driverId,
     ]);
 
