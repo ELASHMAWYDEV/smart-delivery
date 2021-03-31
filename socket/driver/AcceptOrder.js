@@ -59,7 +59,7 @@ module.exports = (io, socket) => {
         return socket.emit("AcceptOrder", {
           status: false,
           isAuthorize: true,
-          message: "Sorry another driver accepted this order",
+          message: `Sorry another driver accepted this order #${orderId}`,
         });
       /******************************************************/
       //Check if order exist on DB
@@ -76,8 +76,7 @@ module.exports = (io, socket) => {
         return socket.emit("AcceptOrder", {
           status: false,
           isAuthorize: true,
-          message:
-            "You may have reject this order or the board may have canceled it",
+          message: `You may have reject this order #${orderId} or the board may have canceled it`,
         });
 
       /******************************************************/
@@ -210,7 +209,7 @@ module.exports = (io, socket) => {
       /***************************************************/
       socket.emit("AcceptOrder", {
         status: true,
-        message: "Order accepted successfully",
+        message: `Order #${orderId} accepted successfully`,
         orderId,
       });
 
@@ -227,8 +226,7 @@ module.exports = (io, socket) => {
           socket.emit("AcceptTrip", {
             status: false,
             isAuthorize: true,
-            message:
-              "Sorry, you couldn't catch that order. Another driver accepted it, hard luck next time :)",
+            message: `Sorry, you couldn't catch order #${orderId}. Another driver accepted it, hard luck next time :)`,
           });
         }
       }, 2000);

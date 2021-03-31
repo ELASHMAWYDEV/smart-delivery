@@ -174,7 +174,7 @@ module.exports = (io, socket) => {
       return socket.emit("RejectOrder", {
         status: true,
         isAuthorize: true,
-        message: "order rejected successfully",
+        message: `Order #${orderId} rejected successfully`,
       });
     } catch (e) {
       console.log(`Error in RejectOrder event: ${e.message}`, e);

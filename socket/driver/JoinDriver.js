@@ -3,7 +3,7 @@ const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
 
 //Globals
-let { drivers } = require("../../globals");
+let { drivers, disconnectInterval } = require("../../globals");
 
 //Helpers
 // const checkForTripRequest = require("../../helpers/Join/checkForTripRequest");
@@ -66,7 +66,9 @@ module.exports = (io, socket) => {
 
       /********************************************************/
       //Add driver to the socket
-      drivers.set(parseInt(driverId), socket.id);
+      drivers.set(driverId, socket.id);
+      //Remove from the disconnect interval
+      disconnectInterval.delete(driverId);
 
       /********************************************************/
       //Send back to the driver

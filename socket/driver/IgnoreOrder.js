@@ -193,7 +193,7 @@ module.exports = (io, socket) => {
       return socket.emit("IgnoreOrder", {
         status: true,
         isAuthorize: true,
-        message: "order ignored successfully",
+        message: `Order #${orderId} ignored successfully`,
       });
       /******************************************************/
     } catch (e) {

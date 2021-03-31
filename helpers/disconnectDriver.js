@@ -9,6 +9,7 @@ const DriverModel = require("../models/Driver");
 // const getLanguage = require("./getLanguage");
 
 module.exports = async ({ driverId }) => {
+  driverId = parseInt(driverId);
   disconnectInterval.set(driverId, { count: 1 });
   let count = disconnectInterval.get(driverId).count;
 
