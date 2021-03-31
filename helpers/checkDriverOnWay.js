@@ -11,7 +11,7 @@ module.exports = async ({ branchId, orderId }) => {
     let driversIds = activeOrderDrivers.get(orderId);
 
     console.log("driversIds from on way:", driversIds);
-    let driverSearch = await DriverModel.findOne({
+    let driversSearch = await DriverModel.find({
       isOnline: true,
       isBusy: true,
       isDeleted: false,
@@ -30,40 +30,34 @@ module.exports = async ({ branchId, orderId }) => {
     });
 
     //If no driver found , send message to client
-    if (!driverSearch) {
+    if (driversSearch.length == 0) {
       return { status: false, message: "No drivers on way found" };
     }
 
     /******************************************************/
 
-    //Check driver has how many orders
-    const busyOrders = await OrderModel.find({
-      "master.statusId": { $in: [1, 3] },
-      "master.branchId": branchId,
-      "master.driverId": driverSearch.driverId,
-    });
+    for (let driver of driversSearch) {
+      //Check driver has how many orders
+      const busyOrders = await OrderModel.find({
+        "master.statusId": { $in: [1, 3] },
+        "master.branchId": branchId,
+        "master.driverId": driver.driverId,
+      });
 
-    console.log(
-      "busyOrders:",
-      busyOrders.length,
-      "driver:",
-      driverSearch.driverId,
-      "orders:",
-      busyOrders.map((order) => order.master.orderId)
-    );
-    if (busyOrders.length >= 2 || busyOrders.length == 0) {
-      return { status: false, message: "No drivers found" };
+      if (busyOrders.length >= 2 || busyOrders.length == 0) {
+        continue;
+      } else {
+        //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
+        activeOrderDrivers.set(orderId, [
+          ...(activeOrderDrivers.get(orderId) || []),
+          driverSearch.driverId,
+        ]);
+
+        return { status: true, driver: driverSearch };
+      }
     }
-
     /******************************************************/
-
-    //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
-    activeOrderDrivers.set(orderId, [
-      ...(activeOrderDrivers.get(orderId) || []),
-      driverSearch.driverId,
-    ]);
-
-    return { status: true, driver: driverSearch };
+    return { status: false, message: "No drivers on way found" };
 
     /******************************************************/
   } catch (e) {
