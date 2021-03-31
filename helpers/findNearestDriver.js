@@ -18,6 +18,8 @@ module.exports = async ({ location, orderId }) => {
 
     let driversIds = activeOrderDrivers.get(orderId);
 
+    console.log("driversIds:", driversIds);
+
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
       isDeleted: false,

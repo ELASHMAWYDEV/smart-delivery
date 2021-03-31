@@ -10,6 +10,7 @@ module.exports = async ({ branchId, orderId }) => {
 
     let driversIds = activeOrderDrivers.get(orderId);
 
+    console.log("driversIds from on way:", driversIds);
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
       isBusy: true,
