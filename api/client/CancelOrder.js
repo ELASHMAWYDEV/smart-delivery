@@ -4,6 +4,7 @@ const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 const { io } = require("../../index");
 const { drivers } = require("../../globals");
+const { sendNotification } = require("../../helpers");
 
 router.post("/", async (req, res) => {
   try {
@@ -55,6 +56,23 @@ router.post("/", async (req, res) => {
           isBusy: busyOrders > 0 ? true : false,
         }
       );
+
+      /******************************************************/
+      //Get the driver
+      const driverSearch = await DriverModel.findOne({
+        driverId: orderSearch.master.driverId,
+      });
+
+      /******************************************************/
+
+      //Send notification to the driver
+      await sendNotification({
+        firebaseToken: driverSearch.firebaseToken,
+        title: "You have a new order request, Hurry up !",
+        body: `Order #${orderSearch.master.orderId} was canceled by board`,
+        type: "2",
+        deviceType: +driverSearch.deviceType, // + To Number
+      });
 
       /******************************************************/
       //Send the cancel to the driver via socket

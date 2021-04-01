@@ -1,11 +1,27 @@
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
-const { drivers } = require("../globals");
+const { drivers, ordersInterval } = require("../globals");
 const { io } = require("../index");
 const DriverModel = require("../models/Driver");
+const { sendNotification } = require("../helpers");
 
 module.exports = async ({ driver, orderId }) => {
   try {
+    //Get the trip data from ordersInterval map
+    if (!ordersInterval.has(orderId)) {
+      return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
+        status: false,
+        message: "Couldn't find the trip in ordersInterval",
+      });
+    }
+    /**************************************************************/
+
+    let { timeoutFunction } = ordersInterval.get(orderId);
+
+    /**************************************************************/
+    //Clear the timeoutFunction
+    clearTimeout(timeoutFunction);
+
     //Get timerSeconds from settings
     let timerSeconds;
     const settings = await DeliverySettingsModel.findOne({});
@@ -49,6 +65,18 @@ module.exports = async ({ driver, orderId }) => {
 
     /******************************************************/
     let { master } = orderSearch;
+
+    /******************************************************/
+    //Send notification to the driver
+    await sendNotification({
+      firebaseToken: driver.firebaseToken,
+      title: "You have a new order request, Hurry up !",
+      body: `Order #${master.orderId} has been sent to you by ${master.branchNameEn}`,
+      type: "1",
+      deviceType: +driver.deviceType, // + To Number
+    });
+
+    /******************************************************/
 
     //Send a request to the driver
     io.to(drivers.get(parseInt(driver.driverId))).emit("NewOrderRequest", {

@@ -31,7 +31,7 @@ module.exports = (io, socket) => {
       });
 
       if (!driverSearch) {
-        return socket.emit("AcceptOrder", {
+        return socket.emit("ReceiveOrder", {
           status: false,
           isAuthorize: false,
           isOnline: false,
@@ -47,7 +47,7 @@ module.exports = (io, socket) => {
       const updateOrdersResult = await receiveOrder({ token, branchId });
 
       if (!updateOrdersResult.status) {
-        return socket.emit(updateOrdersResult);
+        return socket.emit("ReceiveOrder", updateOrdersResult);
       }
 
       let { ordersIds } = updateOrdersResult;
@@ -71,7 +71,7 @@ module.exports = (io, socket) => {
         isAuthorize: true,
         message: `Orders ${ordersIds.map(
           (order) => "#" + order
-        )} has been received successfully`,
+        )} have been received successfully`,
       });
       /******************************************************/
     } catch (e) {

@@ -8,4 +8,6 @@ module.exports = {
   deliverOrder: require("./deliverOrder"),
   getEstimatedDistanceDuration: require("./getEstimatedDistanceDuration"),
   disconnectDriver: require("./disconnectDriver"),
+  sendNotification: require("./sendNotification"),
+  checkForOrderRequest: require("./checkForOrderRequest"),
 };

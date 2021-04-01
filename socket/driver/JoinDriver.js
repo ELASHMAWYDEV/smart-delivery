@@ -6,7 +6,7 @@ const OrderModel = require("../../models/Order");
 let { drivers, disconnectInterval } = require("../../globals");
 
 //Helpers
-// const checkForTripRequest = require("../../helpers/Join/checkForTripRequest");
+const checkForOrderRequest = require("../../helpers");
 
 module.exports = (io, socket) => {
   socket.on("JoinDriver", async ({ driverId, token }) => {
@@ -49,7 +49,7 @@ module.exports = (io, socket) => {
       /********************************************************/
 
       //Check for busy orders
-      const busyOrders = await OrderModel.countDocuments({
+      let busyOrders = await OrderModel.countDocuments({
         "master.statusId": { $in: [3, 4] },
         "master.driverId": driverId,
       });
@@ -60,9 +60,7 @@ module.exports = (io, socket) => {
       /********************************************************/
 
       //Update the order Online state if isHasOrder = true
-      if (isHasOrder) {
-        await DriverModel.updateOne({ driverId }, { isOnline: true });
-      }
+      // Jo
 
       /********************************************************/
       //Add driver to the socket

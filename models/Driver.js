@@ -14,7 +14,6 @@ const pointSchema = new mongoose.Schema({
   },
 });
 
-
 const driverSchema = new mongoose.Schema({
   driverId: {
     type: Number,

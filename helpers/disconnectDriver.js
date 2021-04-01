@@ -5,7 +5,7 @@ let { drivers, disconnectInterval } = require("../globals");
 const DriverModel = require("../models/Driver");
 
 //Helpers
-// const sendNotification = require("./sendNotification");
+const sendNotification = require("./sendNotification");
 // const getLanguage = require("./getLanguage");
 
 module.exports = async ({ driverId }) => {
@@ -18,7 +18,7 @@ module.exports = async ({ driverId }) => {
     const driverSearch = await DriverModel.findOne({ driverId });
 
     //Check if the driver is connected again or the messages ended or driver put him self offline
-    if (count == 6) {
+    if (count == 4) {
       await DriverModel.updateOne({ driverId }, { isOnline: false });
       disconnectInterval.delete(driverId);
       clearInterval(interval);
@@ -35,23 +35,20 @@ module.exports = async ({ driverId }) => {
       return;
     }
 
-    // console.log(
-    //   `Sending notification ${count} to driver: ${driverId} after disconnect`,
-    //   disconnectInterval
-    // );
+    console.log(
+      `Sending notification ${count} to driver: ${driverId} after disconnect`,
+      disconnectInterval
+    );
 
     //Send notification to driver
-    // await sendNotification({
-    //   registrationToken: driverSearch.firebaseToken,
-    //   title: getLanguage(driverSearch.language)[
-    //     `CAPTAIN_DISCONNECTED_${count}`
-    //   ],
-    //   body: getLanguage(driverSearch.language)[
-    //     `CAPTAIN_DISCONNECTED_${count}_BODY`
-    //   ],
-    //   type: count != 5 ? "8" : "0",
-    //   deviceType: +driverSearch.deviceType, // + To Number
-    // });
+    await sendNotification({
+      firebaseToken: driverSearch.firebaseToken,
+      title: count <= 3 ? "You are still online" : "You are offline now",
+      body:
+        "You have closed the application but you can still receive new orders",
+      type: "3",
+      deviceType: +driverSearch.deviceType, // + To Number
+    });
 
     count++;
     disconnectInterval.set(driverId, { count });
@@ -59,7 +56,7 @@ module.exports = async ({ driverId }) => {
 
   let interval = setInterval(() => {
     intervalFunction();
-  }, 2 * 60 * 1000);
+  }, 4 * 60 * 1000);
   //Call the func immediateley
   intervalFunction();
 };
