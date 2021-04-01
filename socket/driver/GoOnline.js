@@ -45,18 +45,6 @@ module.exports = (io, socket) => {
         //Remove from the disconnect interval
         disconnectInterval.delete(driverId);
 
-        //Update the driver
-        await DriverModel.updateOne(
-          { driverId },
-          {
-            $set: {
-              isOnline: status == 1 ? true : false,
-              deviceType,
-              firebaseToken,
-            },
-          }
-        );
-
         console.log(drivers);
 
         /***************************************************/
@@ -75,6 +63,20 @@ module.exports = (io, socket) => {
         });
 
         busyOrders = busyOrders.map((order) => order.master.orderId);
+
+        /***************************************************/
+        //Update the driver
+        await DriverModel.updateOne(
+          { driverId },
+          {
+            $set: {
+              isOnline: status == 1 ? true : false,
+              isBusy: busyOrders.length > 0 ? true : false,
+              deviceType,
+              firebaseToken,
+            },
+          }
+        );
         /***************************************************/
         //Emit GoOnline with updated status
         return socket.emit("GoOnline", {

@@ -21,6 +21,16 @@ module.exports = (io, socket) => {
           status: false,
           message: "token is missing",
         });
+      if (lat === null)
+        return socket.emit("DeliverOrder", {
+          status: false,
+          message: "lat is missing",
+        });
+      if (lng === null)
+        return socket.emit("DeliverOrder", {
+          status: false,
+          message: "lng is missing",
+        });
 
       driverId = parseInt(driverId);
       orderId = parseInt(orderId);

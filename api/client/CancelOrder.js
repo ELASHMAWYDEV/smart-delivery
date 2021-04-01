@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
       /******************************************************/
       //Check if driver has any busy orders
       const busyOrders = await OrderModel.countDocuments({
-        "master.statusId": { $in: [1, 3, 4, 5] },
+        "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": orderSearch.master.driverId,
       });
 

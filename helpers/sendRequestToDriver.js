@@ -3,7 +3,7 @@ const OrderModel = require("../models/Order");
 const { drivers, ordersInterval } = require("../globals");
 const { io } = require("../index");
 const DriverModel = require("../models/Driver");
-const { sendNotification } = require("../helpers");
+const sendNotification = require("./sendNotification");
 
 module.exports = async ({ driver, orderId }) => {
   try {
@@ -22,6 +22,7 @@ module.exports = async ({ driver, orderId }) => {
     // //Clear the timeoutFunction
     // clearTimeout(timeoutFunction);
 
+    console.log("sending to driver:", driver.driverId);
     //Get timerSeconds from settings
     let timerSeconds;
     const settings = await DeliverySettingsModel.findOne({});
@@ -33,6 +34,7 @@ module.exports = async ({ driver, orderId }) => {
       {
         $set: {
           "master.driverId": driver.driverId,
+          "master.statuId": 1,
         },
         $push: {
           driversFound: {
