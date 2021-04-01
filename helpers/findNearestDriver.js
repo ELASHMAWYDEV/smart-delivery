@@ -14,8 +14,6 @@ module.exports = async ({ location, orderId }) => {
 
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
-    // let driversIds = orderSearch.driversFound.map((d) => d.driverId);
-
     let driversIds = activeOrderDrivers.get(orderId);
 
     console.log("driversIds:", driversIds);

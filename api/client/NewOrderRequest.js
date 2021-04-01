@@ -68,7 +68,7 @@ router.post("/", orderValidator, async (req, res) => {
       //Put the trip at the ordersInterval map
       ordersInterval.set(parseInt(order.master.orderId), {
         order,
-        
+        timeoutFunction: setTimeout(() => null, 0),
       });
 
       //Init the activeOrderDrivers array
