@@ -7,12 +7,8 @@ module.exports = async ({ orderId, lng, lat, token }) => {
   try {
     //Send to the API
     let response = await axios.post(
-      `${API_URI}/Trip/FinishOrder`,
-      {
-        orderId,
-        lng,
-        lat,
-      },
+      `${API_URI}/Trip/FinishOrder?orderId=${orderId}&lat=${lat}&lng=${lng}`,
+      {},
       {
         headers: {
           Authorization: `Bearer ${token}`,
