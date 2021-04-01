@@ -34,8 +34,8 @@ module.exports = async ({ branchId, token }) => {
     //Get the list of order Ids from response
     let ordersIds = [];
 
-    for (let trip of apiData.trips) {
-      ordersIds.push(trip.tripId);
+    for (let order of apiData.trips) {
+      ordersIds.push(order.orderId);
     }
 
     /*************************************************************/
