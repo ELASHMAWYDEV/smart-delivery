@@ -13,7 +13,7 @@ let { drivers, disconnectInterval } = require("../../globals");
 module.exports = (io, socket) => {
   socket.on(
     "GoOnline",
-    async ({ driverId, status, token, firebaseToken, deviceType }) => {
+    async ({ driverId, status, token, firebaseToken, deviceType = 1 }) => {
       try {
         console.log(
           `GoOnline Event Called, driver id: ${driverId}, ${

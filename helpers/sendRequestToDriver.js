@@ -7,20 +7,20 @@ const { sendNotification } = require("../helpers");
 
 module.exports = async ({ driver, orderId }) => {
   try {
-    //Get the trip data from ordersInterval map
-    if (!ordersInterval.has(orderId)) {
-      return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
-        status: false,
-        message: "Couldn't find the trip in ordersInterval",
-      });
-    }
+    // //Get the trip data from ordersInterval map
+    // if (!ordersInterval.has(orderId)) {
+    //   return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
+    //     status: false,
+    //     message: "Couldn't find the trip in ordersInterval",
+    //   });
+    // }
     /**************************************************************/
 
-    let { timeoutFunction } = ordersInterval.get(orderId);
+    // let { timeoutFunction } = ordersInterval.get(orderId);
 
     /**************************************************************/
-    //Clear the timeoutFunction
-    clearTimeout(timeoutFunction);
+    // //Clear the timeoutFunction
+    // clearTimeout(timeoutFunction);
 
     //Get timerSeconds from settings
     let timerSeconds;
@@ -110,11 +110,11 @@ module.exports = async ({ driver, orderId }) => {
     };
     /******************************************************/
   } catch (e) {
-    console.log(`Error in sendRequetToDrivers() method: ${e.message}`);
+    console.log(`Error in sendRequetToDriver() method: ${e.message}`, e);
 
     return {
       status: false,
-      message: `Error in sendRequetToDrivers endpoint: ${e.message}`,
+      message: `Error in sendRequetToDriver() method: ${e.message}`,
     };
   }
 };
