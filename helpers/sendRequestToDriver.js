@@ -12,11 +12,10 @@ const DriverModel = require("../models/Driver");
 //Helpers
 const sendNotification = require("./sendNotification");
 const updateOrderStatus = require("./updateOrderStatus");
-const sendRequestToDriver = require("./sendRequestToDriver");
 const checkDriverOnWay = require("./checkDriverOnWay");
 const findNearestDriver = require("./findNearestDriver");
 
-module.exports = async ({ driver, orderId }) => {
+const sendRequestToDriver = async ({ driver, orderId }) => {
   try {
     // //Get the trip data from ordersInterval map
     if (!ordersInterval.has(orderId)) {
@@ -230,3 +229,5 @@ module.exports = async ({ driver, orderId }) => {
     };
   }
 };
+
+module.exports = sendRequestToDriver;
