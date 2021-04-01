@@ -4,7 +4,7 @@ const OrderModel = require("../models/Order");
 
 const { API_URI, API_SECRET_KEY, ordersInterval } = require("../globals");
 
-module.exports = async ({ statusId, orderId, token }) => {
+module.exports = async ({ statusId, orderId }) => {
   try {
     orderId = parseInt(orderId);
 

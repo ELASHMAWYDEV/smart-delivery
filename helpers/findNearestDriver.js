@@ -1,9 +1,13 @@
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
-const { activeOrderDrivers } = require("../globals");
+const {
+  activeOrderDrivers,
+  ordersInterval,
+  activeOrders,
+} = require("../globals");
 
-module.exports = async ({ location, orderId }) => {
+module.exports = async ({ orderId }) => {
   try {
     //Get global intervals
     let maxDistance;
@@ -38,6 +42,13 @@ module.exports = async ({ location, orderId }) => {
 
     //If no driver found , send message to client
     if (!driverSearch) {
+      let { timeoutFunction } = ordersInterval.get(orderId);
+
+      //Clear all order intervals
+      clearTimeout(timeoutFunction);
+      activeOrderDrivers.delete(orderId);
+      ordersInterval.delete(orderId);
+      activeOrders.delete(orderId);
       return { status: false, message: "No drivers found" };
     }
 

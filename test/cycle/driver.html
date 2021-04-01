@@ -161,7 +161,9 @@
         socket.emit("GoOnline", {
           token,
           driverId,
-          status
+          status,
+          firebaseToken: "randomtoken",
+          deviceType: 1
         });
       }
 

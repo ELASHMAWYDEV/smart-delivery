@@ -1,26 +1,37 @@
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
-const { drivers, ordersInterval } = require("../globals");
+const {
+  drivers,
+  ordersInterval,
+  activeOrders,
+  activeOrderDrivers,
+} = require("../globals");
 const { io } = require("../index");
 const DriverModel = require("../models/Driver");
+
+//Helpers
 const sendNotification = require("./sendNotification");
+const updateOrderStatus = require("./updateOrderStatus");
+const sendRequestToDriver = require("./sendRequestToDriver");
+const checkDriverOnWay = require("./checkDriverOnWay");
+const findNearestDriver = require("./findNearestDriver");
 
 module.exports = async ({ driver, orderId }) => {
   try {
     // //Get the trip data from ordersInterval map
-    // if (!ordersInterval.has(orderId)) {
-    //   return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
-    //     status: false,
-    //     message: "Couldn't find the trip in ordersInterval",
-    //   });
-    // }
+    if (!ordersInterval.has(orderId)) {
+      return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
+        status: false,
+        message: "Couldn't find the trip in ordersInterval",
+      });
+    }
     /**************************************************************/
 
-    // let { timeoutFunction } = ordersInterval.get(orderId);
+    let { timeoutFunction } = ordersInterval.get(orderId);
 
     /**************************************************************/
-    // //Clear the timeoutFunction
-    // clearTimeout(timeoutFunction);
+    //Clear the timeoutFunction
+    clearTimeout(timeoutFunction);
 
     console.log("sending to driver:", driver.driverId);
     //Get timerSeconds from settings
@@ -103,6 +114,105 @@ module.exports = async ({ driver, orderId }) => {
           lat: master.branchLocation.coordinates[1],
         },
       },
+    });
+
+    /***********************************************************/
+    /*
+     *
+     *
+     *
+     *
+     * START the timeout function
+     * It should perform action if the driver didn't take any
+     *
+     *
+     *
+     * */
+    /***********************************************************/
+
+    //Set the timeout to be timerSeconds * 2
+    timeoutFunction = setTimeout(async () => {
+      //Check if the trip was accepted by any driver
+      let orderSearch = await OrderModel.findOne({
+        "master.orderId": orderId,
+        "master.statusId": 1,
+      });
+
+      if (orderSearch && !activeOrders.has(orderId)) {
+        //Check if any driver on the way to this restaurant
+        let driverOnWay = await checkDriverOnWay({
+          branchId: orderSearch.master.branchId,
+          orderId: orderSearch.master.orderId,
+        });
+
+        //Send request to driverOnWay
+        if (driverOnWay.status) {
+          let { driver } = driverOnWay;
+          const result = await sendRequestToDriver({
+            driver,
+            orderId: orderSearch.master.orderId,
+          });
+
+          //Continue if order was sent to the driver
+          if (result.status) {
+            console.log(
+              `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way after no action`
+            );
+            return;
+          }
+        }
+
+        /******************************************************/
+
+        //Find nearest driver & send request to him
+        let nearestDriverResult = await findNearestDriver({
+          orderId: orderSearch.master.orderId,
+        });
+
+        if (nearestDriverResult.status) {
+          //Send the request to driver
+          const result = await sendRequestToDriver({
+            driver: nearestDriverResult.driver,
+            orderId: orderSearch.master.orderId,
+          });
+
+          //Continue if order was sent to the driver
+          if (result.status) {
+            console.log(
+              `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}  after no action`
+            );
+            return;
+          }
+        }
+        /******************************************************/
+
+        console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
+        //Set the order to not found
+        await updateOrderStatus({
+          orderId: orderSearch.master.orderId,
+          statusId: 2,
+        });
+
+        //Update the order
+        await OrderModel.updateOne(
+          {
+            "master.orderId": orderSearch.master.orderId,
+          },
+          {
+            $set: {
+              "master.statusId": 2, //Not found
+              "master.driverId": null,
+            },
+          }
+        );
+      }
+    }, timerSeconds * 2 * 1000);
+
+    /******************************************************/
+    //Add the timeout to ordersInterval
+    ordersInterval.set(orderId, {
+      ...(ordersInterval.get(orderId) || {}),
+      timeoutFunction,
     });
 
     return {

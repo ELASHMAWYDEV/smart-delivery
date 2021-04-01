@@ -1,6 +1,7 @@
 const { deliverOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
+const { activeOrders } = require("../../globals");
 
 module.exports = (io, socket) => {
   socket.on("DeliverOrder", async ({ lat, lng, orderId, driverId, token }) => {
@@ -85,6 +86,9 @@ module.exports = (io, socket) => {
         }
       );
 
+      /******************************************************/
+      //Remove the order from activeOrders --> rubbish
+      activeOrders.delete(orderId);
       /******************************************************/
 
       return socket.emit("DeliverOrder", {

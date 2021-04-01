@@ -101,7 +101,6 @@ router.post("/", orderValidator, async (req, res) => {
 
       //Find nearest driver & send request to him
       let nearestDriverResult = await findNearestDriver({
-        location: order.master.branchLocation,
         orderId: order.master.orderId,
       });
 
@@ -127,7 +126,6 @@ router.post("/", orderValidator, async (req, res) => {
       await updateOrderStatus({
         orderId: order.master.orderId,
         statusId: 2,
-        token: req.token,
       });
 
       //Update the order

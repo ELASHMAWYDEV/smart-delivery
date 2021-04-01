@@ -1,6 +1,6 @@
-const { validationResult } = require("express-validator");
 const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
+const { activeOrders } = require("../../globals");
 
 module.exports = (io, socket) => {
   socket.on("ReceiveOrder", async ({ branchId, driverId, token }) => {
@@ -64,6 +64,9 @@ module.exports = (io, socket) => {
         }
       );
 
+      /******************************************************/
+      //Remove the orders from activeOrders --> rubbish
+      ordersIds.forEach((id) => activeOrders.delete(id));
       /******************************************************/
 
       return socket.emit("ReceiveOrder", {
