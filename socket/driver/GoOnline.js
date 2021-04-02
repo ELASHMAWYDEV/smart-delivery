@@ -8,7 +8,7 @@ const OrderModel = require("../../models/Order");
 let { drivers, disconnectInterval } = require("../../globals");
 
 //Helpers
-// const checkForTripRequest = require("../../helpers/Join/checkForTripRequest");
+const {checkForOrderRequest} = require("../../helpers");
 
 module.exports = (io, socket) => {
   socket.on(
