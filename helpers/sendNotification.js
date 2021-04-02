@@ -38,12 +38,13 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
         data: {
           type,
           typeDescription,
-          click_action: "MainActivity",
-          android_channel_id: "notification_channel_id",
+          
         },
         notification: {
           body,
           title,
+          click_action: "MainActivity",
+          android_channel_id: "notification_channel_id",
         },
       };
     }
