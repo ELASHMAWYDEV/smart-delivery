@@ -77,7 +77,7 @@ router.post("/", async (req, res) => {
         type: "2",
         deviceType: +driverSearch.deviceType, // + To Number
         data: {
-          brnachNameAr: orderSearch.master.brnachNameAr,
+          branchNameAr: orderSearch.master.branchNameAr,
           branchNameEn: orderSearch.master.branchNameEn,
           branchLogo: orderSearch.master.branchLogo,
           branchAddress: orderSearch.master.branchAddress,
