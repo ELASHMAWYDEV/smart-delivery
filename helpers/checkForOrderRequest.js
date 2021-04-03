@@ -47,7 +47,7 @@ module.exports = async ({ socket, driverId }) => {
           `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
         );
         //Emit to the driver the NewOrderRequest event
-        socket.emit("NewOrderRequest", {
+        socket.emit("GoOnline", {
           status: false,
           isAuthorize: true,
           message:

@@ -5,9 +5,6 @@ const OrderModel = require("../../models/Order");
 //Globals
 let { drivers, disconnectInterval } = require("../../globals");
 
-//Helpers
-const { checkForOrderRequest } = require("../../helpers");
-
 module.exports = (io, socket) => {
   socket.on("JoinDriver", async ({ driverId, token }) => {
     try {
@@ -47,26 +44,15 @@ module.exports = (io, socket) => {
       }
 
       /********************************************************/
-      //Search for busy orders
-      let busyOrders = await OrderModel.find({
-        "master.statusId": { $in: [1, 3, 4] },
+
+      //Check for busy orders
+      let busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [3, 4] },
         "master.driverId": driverId,
       });
 
       let isHasOrder = false;
-
-      let busyActiveOrders = busyOrders.filter((order) =>
-        [3, 4].includes(order.master.statusId)
-      );
-      if (busyActiveOrders.length > 0) isHasOrder = true;
-
-      let busyCreatedOrders = busyOrders.filter(
-        (order) => order.master.statusId == 1
-      );
-
-      if (busyCreatedOrders.length != 0) {
-        await checkForOrderRequest({ socket, driverId });
-      }
+      if (busyOrders > 0) isHasOrder = true;
 
       /********************************************************/
       //Add driver to the socket
