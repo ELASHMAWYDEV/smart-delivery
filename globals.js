@@ -15,7 +15,8 @@ module.exports.DB_URI =
     ? process.env.DB_URI_PRE_PROD
     : process.env.NODE_ENV == "production" && process.env.DB_URI_PRODUCTION;
 //Global variables
-module.exports.clients = new Map();
+module.exports.clients = new Map(); //Restaurants
+module.exports.customers = new Map(); 
 module.exports.drivers = new Map();
 module.exports.ordersInterval = new Map();
 module.exports.activeOrders = new Map();

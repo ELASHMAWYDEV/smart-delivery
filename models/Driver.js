@@ -41,6 +41,11 @@ const driverSchema = new mongoose.Schema({
     required: true,
     index: "2dsphere",
   },
+  oldLocation: {
+    type: pointSchema,
+    required: true,
+    index: "2dsphere",
+  },
   phoneNumber: {
     type: Number,
   },

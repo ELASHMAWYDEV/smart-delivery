@@ -22,20 +22,21 @@
 <body>
 
   <h2>Event Name:</h2>
-  <p class="data">AcceptOrder</p>
+  <p class="data">UpdateLocation</p>
   <br>
   <h3>Type:</h3>
   <p>Emmit / Listen</p>
   <br>
   <h3>Description: </h3>
-  <p>Driver should trigger this event when he wants to accept an order that was sent to him</p>
+  <p>Driver should trigger this event when he has orders to update his location</p>
   <hr>
   <h2>Request: </h2>
   <pre class="data">
     {
       driverId: 2,
-      orderId: 150,
-      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+      lat: 30.15615,
+      lng: 29.152651
     }
   </pre>
   <hr>
@@ -45,8 +46,7 @@
   <pre id="response" class="data">
     {
       "status": true,
-      "message": "Order accepted successfully",
-      "orderId": 216
+      "message": "Location Updated successfully",
     }
   </pre>
   <hr>

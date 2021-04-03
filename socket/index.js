@@ -31,7 +31,12 @@ module.exports = (io) => {
     }
 
     /**************************************************************/
-    require("./disconnect")(io, socket);
+    //Client --> Restaurant
+    require("./customer/JoinCustomer")(io, socket);
+
+    /**************************************************************/
+    //Client --> Restaurant
+    require("./client/JoinClient")(io, socket);
 
     /**************************************************************/
     //driver
@@ -42,5 +47,9 @@ module.exports = (io) => {
     require("./driver/IgnoreOrder")(io, socket);
     require("./driver/ReceiveOrder")(io, socket);
     require("./driver/DeliverOrder")(io, socket);
+    require("./driver/UpdateLocation")(io, socket);
+
+    /**************************************************************/
+    require("./disconnect")(io, socket);
   });
 };
