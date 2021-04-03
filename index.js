@@ -13,6 +13,7 @@ require("./init");
 //Middlewares
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 //Database connection
 require("./db");
@@ -25,9 +26,8 @@ app.use(express.static("docs"));
 
 /********************************************/
 
-
 app.get("/docs", (req, res) => {
-  res.sendFile(path.join(__dirname, "docs", "index.html"))
+  res.sendFile(path.join(__dirname, "docs", "index.html"));
 });
 /********************************************/
 

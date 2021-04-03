@@ -25,7 +25,7 @@ router.post("/", async (req, res) => {
     const { orders, drivers, orderDriversLimit } = req.body;
 
     //Validation
-    if (!orders || Array.isArray(orders))
+    if (!orders || !Array.isArray(orders))
       return res.json({
         status: false,
         message: "You have not sent any orders !",
@@ -43,17 +43,18 @@ router.post("/", async (req, res) => {
 
     //Extract not found orders Ids
     for (let originalOrderId of orders) {
-      let isFound = true;
+      let isFound = false;
 
       for (let savedOrder of ordersSearch) {
         if (originalOrderId == savedOrder.master.orderId) {
           isFound = true;
           ordersExist.push(savedOrder);
-          break;
         }
       }
 
-      if (!isFound) ordersNotExist.push(originalOrderId);
+      if (!isFound) {
+        ordersNotExist.push(originalOrderId);
+      }
     }
 
     res.json({
@@ -75,6 +76,12 @@ router.post("/", async (req, res) => {
 
       //Init the activeOrderDrivers array
       activeOrderDrivers.set(order.master.orderId, []);
+
+      //Update Order status
+      await OrderModel.updateOne(
+        { "master.orderId": order.master.orderId },
+        { "master.statusId": 1 }
+      );
 
       //Check if any driver on the way to this restaurant
       let driverOnWay = await checkDriverOnWay({
