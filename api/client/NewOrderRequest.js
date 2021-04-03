@@ -37,7 +37,6 @@ router.post("/", orderValidator, async (req, res) => {
 
     /******************************************************/
     //Create the order on DB & API
-
     const createOrderResult = await createOrder({
       token: req.token,
       orders,
@@ -146,13 +145,13 @@ router.post("/", orderValidator, async (req, res) => {
 
     /******************************************************/
   } catch (e) {
+    console.log(`Error in NewOrderRequest endpoint: ${e.message}`, e);
     if (!res.headersSent) {
       return res.json({
         status: false,
         message: `Error in NewOrderRequest endpoint: ${e.message}`,
       });
     }
-    console.log(`Error in NewOrderRequest endpoint: ${e.message}`, e);
   }
 });
 

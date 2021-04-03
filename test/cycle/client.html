@@ -115,7 +115,7 @@
       ]
     }
 
-    let orders = Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, referenceNumber: Math.random().toString(36).slice(2) }))
+    let orders = Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) }))
 
 
     branchIdInput.oninput = (e) => branchId = e.target.value;
@@ -124,7 +124,7 @@
     numberOfOrdersInput.oninput = (e) => {
       numberOfOrders = e.target.value;
 
-      orders = Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, referenceNumber: Math.random().toString(36).slice(2) }))
+      orders = Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) }))
     }
 
 
