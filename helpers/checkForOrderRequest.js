@@ -4,8 +4,18 @@ const DeliverySettingsModel = require("../models/DeliverySettings");
 
 module.exports = async ({ socket, driverId }) => {
   try {
+    /*************************************************************/
+
+    //Get timerSeconds
+    let timerSeconds = 20; //default
+    let deliverySettings = await DeliverySettingsModel.findOne({});
+    deliverySettings = deliverySettings && deliverySettings.toObject();
+    if (deliverySettings.timerSeconds)
+      timerSeconds = deliverySettings.timerSeconds;
+
+    /*************************************************************/
     //Search for this driver on a order with & requestStatus = 4 & isSeenNoCatch = false
-    let orderSearch = await OrderModel.findOne({
+    let ordersSearch = await OrderModel.find({
       "master.driverId": driverId,
       driversFound: {
         $elemMatch: {
@@ -16,95 +26,87 @@ module.exports = async ({ socket, driverId }) => {
       },
     });
 
-    if (!orderSearch) return;
-    orderSearch = orderSearch.toObject();
+    if (ordersSearch.length == 0) return;
 
-    let { master, driversFound } = orderSearch;
+    for (let order in ordersSearch) {
+      let { master, driversFound } = order;
 
-    //Get the order timeSent
-    let { timeSent } = driversFound.find(
-      (driver) => driver.driverId == driverId
-    );
-
-    /*************************************************************/
-
-    //Get the remaining seconds to accept the order
-    let timerSeconds = 20; //default
-    let deliverySettings = await DeliverySettingsModel.findOne({});
-    deliverySettings = deliverySettings && deliverySettings.toObject();
-    if (deliverySettings.timerSeconds)
-      timerSeconds = deliverySettings.timerSeconds;
-
-    /*************************************************************/
-
-    //If the timePassed was more than timerSeconds --> send false
-    const timePassed = (new Date().getTime() - timeSent) / 1000;
-
-    if (timePassed >= timerSeconds - 1) {
-      console.log(
-        `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
-      );
-      //Emit to the driver the NewOrderRequest event
-      socket.emit("NewOrderRequest", {
-        status: false,
-        isAuthorize: true,
-        message:
-          "Sorry, you couldn't catch the order request !\nHard luck next time",
-      });
-
-      /*************************************************************/
-
-      //Set the isSeenRequest to true
-      await OrderModel.updateOne(
-        {
-          "master.orderId": master.orderId,
-          driversFound: {
-            $elemMatch: {
-              isSeenNoCatch: false,
-              requestStatus: 4,
-              driverId,
-            },
-          },
-        },
-        {
-          $set: {
-            "driversFound.$.isSeenNoCatch": true,
-          },
-        }
+      //Get the order timeSent
+      let { timeSent } = driversFound.find(
+        (driver) => driver.driverId == driverId
       );
 
       /*************************************************************/
-    } else {
-      console.log(
-        `Sent the new order request ${master.orderId} to driver ${driverId} on GoOnline`
-      );
 
-      setTimeout(() => {
+      //If the timePassed was more than timerSeconds --> send false
+      const timePassed = (new Date().getTime() - timeSent) / 1000;
+
+      if (timePassed >= timerSeconds - 1) {
+        console.log(
+          `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
+        );
         //Emit to the driver the NewOrderRequest event
         socket.emit("NewOrderRequest", {
-          status: true,
-          message: "You have a new order request",
-          timerSeconds,
-          order: {
-            orderId: master.orderId,
-            branchId: master.branchId,
-            branchNameAr: master.branchNameAr,
-            branchNameEn: master.branchNameEn,
-            branchAddress: master.branchAddress,
-            receiverAddress: master.receiverAddress,
-            receiverDistance: master.receiverDistance,
-            branchLogo: master.branchLogo,
-            paymentTypeEn: master.paymentTypeEn,
-            paymentTypeAr: master.paymentTypeAr,
-            deliveryPriceEn: master.deliveryPriceEn,
-            deliveryPriceAr: master.deliveryPriceAr,
-            branchLocation: {
-              lng: master.branchLocation.coordinates[0],
-              lat: master.branchLocation.coordinates[1],
+          status: false,
+          isAuthorize: true,
+          message:
+            "Sorry, you couldn't catch the order request !\nHard luck next time",
+        });
+
+        /*************************************************************/
+
+        //Set the isSeenRequest to true
+        await OrderModel.updateOne(
+          {
+            "master.orderId": master.orderId,
+            driversFound: {
+              $elemMatch: {
+                isSeenNoCatch: false,
+                requestStatus: 4,
+                driverId,
+              },
             },
           },
-        });
-      }, 750);
+          {
+            $set: {
+              "driversFound.$.isSeenNoCatch": true,
+            },
+          }
+        );
+
+        /*************************************************************/
+      } else {
+        console.log(
+          `Sent the new order request ${master.orderId} to driver ${driverId} on GoOnline`
+        );
+
+        setTimeout(() => {
+          //Emit to the driver the NewOrderRequest event
+          socket.emit("NewOrderRequest", {
+            status: true,
+            message: "You have a new order request",
+            timerSeconds,
+            order: {
+              orderId: master.orderId,
+              branchId: master.branchId,
+              branchNameAr: master.branchNameAr,
+              branchNameEn: master.branchNameEn,
+              branchAddress: master.branchAddress,
+              receiverAddress: master.receiverAddress,
+              receiverDistance: master.receiverDistance,
+              branchLogo: master.branchLogo,
+              paymentTypeEn: master.paymentTypeEn,
+              paymentTypeAr: master.paymentTypeAr,
+              deliveryPriceEn: master.deliveryPriceEn,
+              deliveryPriceAr: master.deliveryPriceAr,
+              branchLocation: {
+                lng: master.branchLocation.coordinates[0],
+                lat: master.branchLocation.coordinates[1],
+              },
+            },
+          });
+        }, 500);
+      }
     }
 
     /*************************************************************/
