@@ -47,20 +47,26 @@ module.exports = (io, socket) => {
       }
 
       /********************************************************/
-
-      //Check for busy orders
-      let busyOrders = await OrderModel.countDocuments({
-        "master.statusId": { $in: [3, 4] },
+      //Search for busy orders
+      let busyOrders = await OrderModel.find({
+        "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
       });
 
       let isHasOrder = false;
-      if (busyOrders > 0) isHasOrder = true;
 
-      /********************************************************/
+      let busyActiveOrders = busyOrders.filter((order) =>
+        [3, 4].includes(order.master.statusId)
+      );
+      if (busyActiveOrders.length > 0) isHasOrder = true;
 
-      //Update the order Online state if isHasOrder = true
-      // Jo
+      let busyCreatedOrders = busyOrders.filter(
+        (order) => order.master.statusId == 1
+      );
+
+      if (busyCreatedOrders.length != 0) {
+        await checkForOrderRequest({ socket, driverId });
+      }
 
       /********************************************************/
       //Add driver to the socket

@@ -1,6 +1,13 @@
 const admin = require("firebase-admin");
 
-module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
+module.exports = async ({
+  firebaseToken,
+  title,
+  body,
+  type,
+  deviceType,
+  data = {},
+}) => {
   try {
     if (!firebaseToken) {
       console.log("Firbase token is missing");
@@ -30,7 +37,6 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
           body,
           type,
           typeDescription,
-          
         },
       };
     } else {
@@ -38,7 +44,7 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
         data: {
           type,
           typeDescription,
-          
+          ...data,
         },
         notification: {
           body,
