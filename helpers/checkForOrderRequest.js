@@ -42,7 +42,7 @@ module.exports = async ({ socket, driverId }) => {
 
     if (timePassed >= timerSeconds - 1) {
       console.log(
-        `Sent false about new order request to driver ${driverId} on Join`
+        `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
       );
       //Emit to the driver the NewOrderRequest event
       socket.emit("NewOrderRequest", {
@@ -76,7 +76,7 @@ module.exports = async ({ socket, driverId }) => {
       /*************************************************************/
     } else {
       console.log(
-        `Sent the new order request to driver ${driverId} on Goonline`
+        `Sent the new order request ${master.orderId} to driver ${driverId} on GoOnline`
       );
 
       //Emit to the driver the NewOrderRequest event
