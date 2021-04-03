@@ -50,7 +50,10 @@ router.post("/", orderValidator, async (req, res) => {
     res.json({
       status: true,
       message: "تم ارسال جميع الطلبات ويتم توزيعها علي السائقين الأن",
-      orders: ordersAfterSave.map((order) => order.master.orderId),
+      orders:
+        (ordersAfterSave &&
+          ordersAfterSave.map((order) => order.master.orderId)) ||
+        [],
     });
     /******************************************************/
     /*

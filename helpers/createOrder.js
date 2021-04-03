@@ -67,8 +67,9 @@ module.exports = async ({ token, orders }) => {
         */
 
     //Transform to be like DB schema
-    const ordersToStoreInDB = apiData.map((order) => {
-      if (order.status) {
+    const ordersToStoreInDB = apiData
+      .filter((order) => order.status)
+      .map((order) => {
         return {
           master: {
             orderId: order.orderId,
@@ -88,8 +89,7 @@ module.exports = async ({ token, orders }) => {
             },
           },
         };
-      }
-    });
+      });
 
     //Save order to DB
     let ordersSave = await OrderModel.insertMany(ordersToStoreInDB);

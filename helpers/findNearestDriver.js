@@ -24,7 +24,10 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
       isOnline: true,
       isDeleted: false,
       isBusy: false,
-      driverId: { $nin: driversIds, $in: choosedDrivers },
+      $or: [
+        { driverId: { $nin: driversIds } },
+        { driverId: { $in: choosedDrivers } },
+      ],
       location: {
         $nearSphere: {
           $geometry: {
