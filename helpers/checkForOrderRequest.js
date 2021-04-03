@@ -79,30 +79,32 @@ module.exports = async ({ socket, driverId }) => {
         `Sent the new order request ${master.orderId} to driver ${driverId} on GoOnline`
       );
 
-      //Emit to the driver the NewOrderRequest event
-      socket.emit("NewOrderRequest", {
-        status: true,
-        message: "You have a new order request",
-        timerSeconds,
-        order: {
-          orderId: master.orderId,
-          branchId: master.branchId,
-          branchNameAr: master.branchNameAr,
-          branchNameEn: master.branchNameEn,
-          branchAddress: master.branchAddress,
-          receiverAddress: master.receiverAddress,
-          receiverDistance: master.receiverDistance,
-          branchLogo: master.branchLogo,
-          paymentTypeEn: master.paymentTypeEn,
-          paymentTypeAr: master.paymentTypeAr,
-          deliveryPriceEn: master.deliveryPriceEn,
-          deliveryPriceAr: master.deliveryPriceAr,
-          branchLocation: {
-            lng: master.branchLocation.coordinates[0],
-            lat: master.branchLocation.coordinates[1],
+      setTimeout(() => {
+        //Emit to the driver the NewOrderRequest event
+        socket.emit("NewOrderRequest", {
+          status: true,
+          message: "You have a new order request",
+          timerSeconds,
+          order: {
+            orderId: master.orderId,
+            branchId: master.branchId,
+            branchNameAr: master.branchNameAr,
+            branchNameEn: master.branchNameEn,
+            branchAddress: master.branchAddress,
+            receiverAddress: master.receiverAddress,
+            receiverDistance: master.receiverDistance,
+            branchLogo: master.branchLogo,
+            paymentTypeEn: master.paymentTypeEn,
+            paymentTypeAr: master.paymentTypeAr,
+            deliveryPriceEn: master.deliveryPriceEn,
+            deliveryPriceAr: master.deliveryPriceAr,
+            branchLocation: {
+              lng: master.branchLocation.coordinates[0],
+              lat: master.branchLocation.coordinates[1],
+            },
           },
-        },
-      });
+        });
+      }, 2000);
     }
 
     /*************************************************************/
