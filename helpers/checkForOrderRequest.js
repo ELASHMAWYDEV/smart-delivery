@@ -17,6 +17,7 @@ module.exports = async ({ socket, driverId }) => {
     //Search for this driver on a order with & requestStatus = 4 & isSeenNoCatch = false
     let ordersSearch = await OrderModel.find({
       "master.driverId": driverId,
+      "master.statusId": 1,
       driversFound: {
         $elemMatch: {
           isSeenNoCatch: false,
@@ -28,7 +29,7 @@ module.exports = async ({ socket, driverId }) => {
 
     if (ordersSearch.length == 0) return;
 
-    for (let order in ordersSearch) {
+    for (let order of ordersSearch) {
       let { master, driversFound } = order;
 
       //Get the order timeSent
