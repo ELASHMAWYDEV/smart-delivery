@@ -22,7 +22,7 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
 
     let payload;
     //1 ==> ios, 2 ==> android
-    if (deviceType == 2) {
+    if (deviceType == 1) {
       //Set the data object
       payload = {
         data: {
@@ -30,8 +30,7 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
           body,
           type,
           typeDescription,
-          click_action: "MainActivity",
-          android_channel_id: "notification_channel_id",
+          
         },
       };
     } else {
@@ -39,10 +38,13 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType }) => {
         data: {
           type,
           typeDescription,
+          
         },
         notification: {
           body,
           title,
+          click_action: "MainActivity",
+          android_channel_id: "notification_channel_id",
         },
       };
     }

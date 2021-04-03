@@ -75,7 +75,9 @@ module.exports = async ({ socket, driverId }) => {
 
       /*************************************************************/
     } else {
-      console.log(`Sent the new order request to driver ${driverId} on Goonline`);
+      console.log(
+        `Sent the new order request to driver ${driverId} on Goonline`
+      );
 
       //Emit to the driver the NewOrderRequest event
       socket.emit("NewOrderRequest", {

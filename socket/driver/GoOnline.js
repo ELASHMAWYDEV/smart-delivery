@@ -11,7 +11,7 @@ const { checkForOrderRequest } = require("../../helpers");
 module.exports = (io, socket) => {
   socket.on(
     "GoOnline",
-    async ({ driverId, status, token, firebaseToken, deviceType = 1 }) => {
+    async ({ driverId, status, token, firebaseToken, deviceType = 2 }) => {
       try {
         console.log(
           `GoOnline Event Called, driver id: ${driverId}, ${
