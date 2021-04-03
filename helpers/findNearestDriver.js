@@ -7,7 +7,7 @@ const {
   activeOrders,
 } = require("../globals");
 
-module.exports = async ({ orderId }) => {
+module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
   try {
     //Get global intervals
     let maxDistance;
@@ -24,7 +24,7 @@ module.exports = async ({ orderId }) => {
       isOnline: true,
       isDeleted: false,
       isBusy: false,
-      driverId: { $nin: driversIds },
+      driverId: { $nin: driversIds, $in: choosedDrivers },
       location: {
         $nearSphere: {
           $geometry: {

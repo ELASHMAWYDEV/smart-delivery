@@ -32,11 +32,122 @@ router.post("/", async (req, res) => {
       });
 
     //Init vars
-    let ordersNotExist = [];
+    let ordersNotExist = []; //Ids
+    let ordersExist = []; //Orders Objects from search
     /******************************************************/
     //Check if orders exist
+    let ordersSearch = await OrderModel.find({
+      "master.orderId": { $in: orders },
+      "master.statusId": 2,
+    });
 
-    
+    //Extract not found orders Ids
+    for (let originalOrderId of orders) {
+      let isFound = true;
+
+      for (let savedOrder of ordersSearch) {
+        if (originalOrderId == savedOrder.master.orderId) {
+          isFound = true;
+          ordersExist.push(savedOrder);
+          break;
+        }
+      }
+
+      if (!isFound) ordersNotExist.push(originalOrderId);
+    }
+
+    res.json({
+      status: true,
+      message: "Request have been resent to drivers",
+      successfullOrders: ordersExist.map((order) => order.master.orderId),
+      failedOrders: ordersNotExist,
+    });
+
+    /******************************************************/
+
+    //Loop through orders
+    for (let order of ordersExist) {
+      //Put the trip at the ordersInterval map
+      ordersInterval.set(parseInt(order.master.orderId), {
+        order,
+        timeoutFunction: setTimeout(() => null, 0),
+      });
+
+      //Init the activeOrderDrivers array
+      activeOrderDrivers.set(order.master.orderId, []);
+
+      //Check if any driver on the way to this restaurant
+      let driverOnWay = await checkDriverOnWay({
+        branchId: order.master.branchId,
+        orderId: order.master.orderId,
+        driversIds: drivers,
+        orderDriversLimit: orderDriversLimit || 2,
+      });
+
+      //Send request to driverOnWay
+      if (driverOnWay.status) {
+        let { driver } = driverOnWay;
+        const result = await sendRequestToDriver({
+          driver,
+          orderId: order.master.orderId,
+        });
+
+        //Continue if order was sent to the driver
+        if (result.status) {
+          console.log(
+            `Order ${order.master.orderId} was Resent to driver ${driver.driverId} on way`
+          );
+          continue;
+        }
+      }
+
+      /******************************************************/
+
+      //Find nearest driver & send request to him
+      let nearestDriverResult = await findNearestDriver({
+        orderId: order.master.orderId,
+        driversIds: drivers,
+      });
+
+      if (nearestDriverResult.status) {
+        //Send the request to driver
+        const result = await sendRequestToDriver({
+          driver: nearestDriverResult.driver,
+          orderId: order.master.orderId,
+        });
+
+        //Continue if order was sent to the driver
+        if (result.status) {
+          console.log(
+            `Order ${order.master.orderId} was Resent to driver ${nearestDriverResult.driver.driverId}`
+          );
+          continue;
+        }
+      }
+      /******************************************************/
+
+      console.log(`Order ${order.master.orderId}, no drivers found`);
+      //Set the order to not found
+      await updateOrderStatus({
+        orderId: order.master.orderId,
+        statusId: 2,
+      });
+
+      //Update the order
+      await OrderModel.updateOne(
+        {
+          "master.orderId": order.master.orderId,
+        },
+        {
+          $set: {
+            "master.statusId": 2, //Not found
+            "master.driverId": null,
+          },
+        }
+      );
+
+      ordersInterval.delete(parseInt(order.master.orderId));
+    }
 
     /******************************************************/
   } catch (e) {

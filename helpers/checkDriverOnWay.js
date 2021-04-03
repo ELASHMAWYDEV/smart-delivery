@@ -2,7 +2,12 @@ const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const { activeOrderDrivers } = require("../globals");
 
-module.exports = async ({ branchId, orderId }) => {
+module.exports = async ({
+  branchId,
+  orderId,
+  driversIds: choosedDrivers = [],
+  orderDriversLimit = 2,
+}) => {
   try {
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
@@ -14,7 +19,7 @@ module.exports = async ({ branchId, orderId }) => {
       isOnline: true,
       isBusy: true,
       isDeleted: false,
-      driverId: { $nin: driversIds },
+      driverId: { $nin: driversIds, $in: choosedDrivers },
       location: {
         $nearSphere: {
           $geometry: {
@@ -43,7 +48,7 @@ module.exports = async ({ branchId, orderId }) => {
         "master.driverId": driver.driverId,
       });
 
-      if (busyOrders.length >= 2 || busyOrders.length == 0) {
+      if (busyOrders.length >= orderDriversLimit || busyOrders.length == 0) {
         continue;
       } else {
         //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
