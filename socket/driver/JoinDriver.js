@@ -6,7 +6,7 @@ const OrderModel = require("../../models/Order");
 let { drivers, disconnectInterval } = require("../../globals");
 
 //Helpers
-const checkForOrderRequest = require("../../helpers");
+const { checkForOrderRequest } = require("../../helpers");
 
 module.exports = (io, socket) => {
   socket.on("JoinDriver", async ({ driverId, token }) => {

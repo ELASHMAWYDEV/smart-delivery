@@ -75,7 +75,7 @@ module.exports = async ({ socket, driverId }) => {
 
       /*************************************************************/
     } else {
-      console.log(`Sent the new order request to driver ${driverId} on Join`);
+      console.log(`Sent the new order request to driver ${driverId} on Goonline`);
 
       //Emit to the driver the NewOrderRequest event
       socket.emit("NewOrderRequest", {
@@ -106,7 +106,7 @@ module.exports = async ({ socket, driverId }) => {
     /*************************************************************/
   } catch (e) {
     console.log(`Error in checkForOrderRequest() : ${e.message}`, e);
-    socket.emit("JoinDriver", {
+    socket.emit("GoOnline", {
       status: false,
       message: `Error in checkForOrderRequest() : ${e.message}`,
     });

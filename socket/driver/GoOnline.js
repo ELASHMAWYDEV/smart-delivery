@@ -1,5 +1,3 @@
-const { v4: uuidv4 } = require("uuid");
-
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
@@ -8,7 +6,7 @@ const OrderModel = require("../../models/Order");
 let { drivers, disconnectInterval } = require("../../globals");
 
 //Helpers
-// const checkForTripRequest = require("../../helpers/Join/checkForTripRequest");
+const { checkForOrderRequest } = require("../../helpers");
 
 module.exports = (io, socket) => {
   socket.on(
@@ -50,17 +48,24 @@ module.exports = (io, socket) => {
         /***************************************************/
         //Search for busy orders
         let busyOrders = await OrderModel.find({
-          "master.statusId": { $in: [3, 4] },
+          "master.statusId": { $in: [1, 3, 4] },
           "master.driverId": driverId,
         });
 
         let isHasOrder = false;
-        if (busyOrders.length > 0) isHasOrder = true;
 
-        busyOrders = await OrderModel.find({
-          "master.statusId": { $in: [1, 3, 4] },
-          "master.driverId": driverId,
-        });
+        let busyActiveOrders = busyOrders.filter((order) =>
+          [3, 4].includes(order.master.statusId)
+        );
+        if (busyActiveOrders.length > 0) isHasOrder = true;
+
+        let busyCreatedOrders = busyOrders.filter(
+          (order) => order.master.statusId == 1
+        );
+
+        if (busyCreatedOrders.length != 0) {
+          await checkForOrderRequest({ socket, driverId });
+        }
 
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
