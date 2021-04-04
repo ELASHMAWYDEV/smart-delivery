@@ -76,7 +76,10 @@ module.exports = (io, socket) => {
           {
             $set: {
               isOnline: status == 1 ? true : false,
-              isBusy: busyOrders.length > 0 ? true : false,
+              isBusy:
+                busyOrders.length > 0 && busyCreatedOrders.length == 0
+                  ? true
+                  : false,
               deviceType,
               firebaseToken,
             },
