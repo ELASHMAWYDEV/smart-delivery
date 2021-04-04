@@ -52,12 +52,9 @@ module.exports = (io, socket) => {
           "master.driverId": driverId,
         });
 
-        let isHasOrder = false;
-
         let busyActiveOrders = busyOrders.filter((order) =>
           [3, 4].includes(order.master.statusId)
         );
-        if (busyActiveOrders.length > 0) isHasOrder = true;
 
         let busyCreatedOrders = busyOrders.filter(
           (order) => order.master.statusId == 1
@@ -69,10 +66,6 @@ module.exports = (io, socket) => {
 
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
-        console.log(
-          `busyOrders: ${busyOrders.length}, busyCreatedOrders: ${busyCreatedOrders.length}`
-        );
-
         /***************************************************/
         //Update the driver
         await DriverModel.updateOne(
@@ -80,10 +73,7 @@ module.exports = (io, socket) => {
           {
             $set: {
               isOnline: status == 1 ? true : false,
-              isBusy:
-                busyOrders.length > 0 && busyCreatedOrders.length == 0
-                  ? true
-                  : false,
+              isBusy: busyOrders.length > 0 ? true : false,
               deviceType,
               firebaseToken,
             },
@@ -95,7 +85,10 @@ module.exports = (io, socket) => {
           status: true,
           isAuthorize: true,
           isOnline: status == 1 ? true : false,
-          isHasOrder,
+          isHasOrder:
+            busyActiveOrders.length > 0 && busyCreatedOrders.length == 0
+              ? true
+              : false,
           message: `The driver is set to ${status == 1 ? "online" : "offline"}`,
           busyOrders,
         });
