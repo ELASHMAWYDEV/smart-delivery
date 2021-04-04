@@ -4,9 +4,9 @@ const { drivers } = require("../globals");
 module.exports = (io) => {
   io.on("connection", async (socket) => {
     const { query } = socket.handshake;
-    console.log(
-      `New user connected: ${socket.id}, driverId: ${query.driverId}`
-    );
+    // console.log(
+    //   `New user connected: ${socket.id}, driverId: ${query.driverId}`
+    // );
 
     if (query.driverId && query.token) {
       query.driverId = parseInt(query.driverId); //Parse the driverId

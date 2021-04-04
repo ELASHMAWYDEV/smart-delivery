@@ -24,7 +24,7 @@ module.exports = (io, socket) => {
       }
 
       //Add driver to socket
-      drivers.set(driverId, socket.id);
+      drivers.set(parseInt(driverId), socket.id);
 
       await DriverModel.updateOne(
         { driverId },
@@ -51,6 +51,7 @@ module.exports = (io, socket) => {
       socket.emit("UpdateLocation", {
         status: true,
         isAuthorize: true,
+        isOnline: driverSearch.isOnline,
         message: "Location updated successfully",
       });
 
