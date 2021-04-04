@@ -69,6 +69,10 @@ module.exports = (io, socket) => {
 
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
+        console.log(
+          `busyOrders: ${busyOrders.length}, busyCreatedOrders: ${busyCreatedOrders.length}`
+        );
+
         /***************************************************/
         //Update the driver
         await DriverModel.updateOne(
