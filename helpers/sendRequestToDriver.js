@@ -154,6 +154,7 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
           "master.driverId": orderSearch.master.driverId,
         });
 
+        console.log("His busyOrders:", busyOrders);
         //Set the driver to be not busy
         await DriverModel.updateOne(
           {
