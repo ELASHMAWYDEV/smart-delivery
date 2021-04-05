@@ -21,7 +21,7 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
     if (!ordersInterval.has(orderId)) {
       return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
         status: false,
-        message: "Couldn't find the trip in ordersInterval",
+        message: `Sorry you couldn't catch the order, Error Code: 59`,
       });
     }
     /**************************************************************/
