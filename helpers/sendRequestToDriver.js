@@ -28,6 +28,12 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
     //Get the driver again
     let driverSearch = await DriverModel.findOne({ driverId: driver.driverId });
 
+    if (!driverSearch)
+      return {
+        status: false,
+        message: `Couldn't send request to driver: #${driver.driverId}`,
+      };
+
     /**************************************************************/
 
     let { timeoutFunction } = ordersInterval.get(orderId);

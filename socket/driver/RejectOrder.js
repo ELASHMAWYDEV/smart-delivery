@@ -163,8 +163,6 @@ module.exports = (io, socket) => {
 
       /******************************************************/
 
-      console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
-
       const updateResult = await updateOrderStatus({
         statusId: 2,
         orderId: orderSearch.master.orderId,
