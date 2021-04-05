@@ -67,12 +67,19 @@ module.exports = (io, socket) => {
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
         /***************************************************/
+
+        let isOnline = status == 1 ? true : false;
+        if (busyOrders.length > 0 && status == 1) isOnline = true;
+        if (busyOrders.length > 0 && status == 2) isOnline = true;
+        if (busyOrders.length == 0 && status == 1) isOnline = true;
+        if (busyOrders.length == 0 && status == 2) isOnline = false;
+
         //Update the driver
         await DriverModel.updateOne(
           { driverId },
           {
             $set: {
-              isOnline: status == 1 ? true : false,
+              isOnline,
               isBusy: busyOrders.length > 0 ? true : false,
               deviceType,
               firebaseToken,
@@ -84,12 +91,12 @@ module.exports = (io, socket) => {
         return socket.emit("GoOnline", {
           status: true,
           isAuthorize: true,
-          isOnline: status == 1 ? true : false,
+          isOnline,
           isHasOrder:
             busyActiveOrders.length > 0 && busyCreatedOrders.length == 0
               ? true
               : false,
-          message: `The driver is set to ${status == 1 ? "online" : "offline"}`,
+          message: `The driver is set to ${isOnline ? "online" : "offline"}`,
           busyOrders,
         });
         /***********************************************************/

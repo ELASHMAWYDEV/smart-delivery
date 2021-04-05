@@ -64,7 +64,7 @@ module.exports = async ({
       .messaging()
       .sendToDevice(firebaseToken, payload, options);
 
-    console.log(`Firebase sent,`, result);
+    // console.log(`Firebase sent,`, result);
   } catch (e) {
     console.log(`Error in sendNotification, error: ${e.message}`);
   }

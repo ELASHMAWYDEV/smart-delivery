@@ -47,7 +47,7 @@ module.exports = async ({ socket, driverId }) => {
           `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
         );
         //Emit to the driver the NewOrderRequest event
-        socket.emit("GoOnline", {
+        socket.emit("NewOrderRequest", {
           status: false,
           isAuthorize: true,
           message:
@@ -113,7 +113,7 @@ module.exports = async ({ socket, driverId }) => {
     /*************************************************************/
   } catch (e) {
     console.log(`Error in checkForOrderRequest() : ${e.message}`, e);
-    socket.emit("GoOnline", {
+    socket.emit("NewOrderRequest", {
       status: false,
       message: `Error in checkForOrderRequest() : ${e.message}`,
     });
