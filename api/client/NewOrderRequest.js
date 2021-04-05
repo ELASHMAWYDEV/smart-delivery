@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { validationResult } = require("express-validator");
 const orderValidator = require("../../validators/order");
+const DeliverySettingsModel = require("../../models/DeliverySettings");
 
 //Helpers
 const {
@@ -64,6 +65,8 @@ router.post("/", orderValidator, async (req, res) => {
      *
      */
     /******************************************************/
+
+    //Get globalIntervals
 
     //Loop through orders
     for (let order of ordersAfterSave) {

@@ -32,7 +32,6 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
     //Clear the timeoutFunction
     clearTimeout(timeoutFunction);
 
-    console.log("sending to driver:", driver.driverId);
     //Get timerSeconds from settings
     let timerSeconds;
     const settings = await DeliverySettingsModel.findOne({});
@@ -136,6 +135,28 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
         "master.orderId": orderId,
         "master.statusId": 1,
       });
+
+      /************************************/
+
+      //Check if last driver has any busy orders
+      if (orderSearch.master.driverId) {
+        const busyOrders = await OrderModel.countDocuments({
+          "master.statusId": { $in: [1, 3, 4] },
+          "master.driverId": orderSearch.master.driverId,
+        });
+
+        //Set the driver to be not busy
+        await DriverModel.updateOne(
+          {
+            driverId: orderSearch.master.driverId,
+          },
+          {
+            isBusy: busyOrders > 0 ? true : false,
+          }
+        );
+      }
+
+      /************************************/
 
       if (orderSearch && !activeOrders.has(orderId)) {
         //Check if any driver on the way to this restaurant
