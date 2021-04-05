@@ -143,6 +143,7 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
         "master.statusId": 1,
       });
 
+      if (!orderSearch) return clearTimeout(timeoutFunction);
       /************************************/
 
       //Check if last driver has any busy orders
