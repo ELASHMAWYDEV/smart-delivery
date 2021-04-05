@@ -138,13 +138,12 @@ module.exports = (io, socket) => {
 
       //Find nearest driver & send request to him
       let nearestDriverResult = await findNearestDriver({
-        location: orderSearch.master.branchLocation,
         orderId: orderSearch.master.orderId,
       });
 
       if (nearestDriverResult.status) {
         const result = await sendRequestToDriver({
-          driver: nearestDriverResult.driver.driverId,
+          driver: nearestDriverResult.driver,
           orderId: orderSearch.master.orderId,
         });
 
