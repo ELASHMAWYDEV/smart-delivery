@@ -102,6 +102,7 @@ module.exports = (io, socket) => {
           },
         }
       );
+
       /******************************************************/
       //Check if driver has any busy orders
       const busyOrders = await OrderModel.countDocuments({
@@ -123,6 +124,8 @@ module.exports = (io, socket) => {
       orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
       });
+
+      console.log("order drivers after ignore", orderSearch.driversFound);
 
       //Check if any driver on the way to this restaurant
       let driverOnWay = await checkDriverOnWay({
@@ -156,7 +159,6 @@ module.exports = (io, socket) => {
 
       //Find nearest driver & send request to him
       let nearestDriverResult = await findNearestDriver({
-        location: orderSearch.master.branchLocation,
         orderId: orderSearch.master.orderId,
       });
 
@@ -184,7 +186,6 @@ module.exports = (io, socket) => {
       const updateResult = await updateOrderStatus({
         statusId: 2,
         orderId: orderSearch.master.orderId,
-        token,
       });
 
       if (!updateResult.status) {

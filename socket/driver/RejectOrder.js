@@ -104,6 +104,8 @@ module.exports = (io, socket) => {
         "master.orderId": orderId,
       });
 
+      console.log("order drivers after reject", orderSearch.driversFound);
+
       //Check if any driver on the way to this restaurant
       let driverOnWay = await checkDriverOnWay({
         branchId: orderSearch.master.branchId,
