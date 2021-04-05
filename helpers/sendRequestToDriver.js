@@ -139,6 +139,7 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
       /************************************/
 
       //Check if last driver has any busy orders
+      console.log("Driver id with no action:", orderSearch.master.driverId);
       if (orderSearch.master.driverId) {
         const busyOrders = await OrderModel.countDocuments({
           "master.statusId": { $in: [1, 3, 4] },
