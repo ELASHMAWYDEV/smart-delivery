@@ -25,6 +25,10 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
       });
     }
     /**************************************************************/
+    //Get the driver again
+    let driverSearch = await DriverModel.findOne({ driverId: driver.driverId });
+
+    /**************************************************************/
 
     let { timeoutFunction } = ordersInterval.get(orderId);
 
@@ -42,15 +46,15 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
       { "master.orderId": orderId },
       {
         $set: {
-          "master.driverId": driver.driverId,
+          "master.driverId": driverSearch.driverId,
           "master.statuId": 1,
         },
         $push: {
           driversFound: {
-            _id: driver._id,
-            driverId: driver.driverId,
+            _id: driverSearch._id,
+            driverId: driverSearch.driverId,
             requestStatus: 4, // 4 => noCatch (default), 1 => accept, 2 => ignore, 3 => reject
-            location: driver.location,
+            location: driverSearch.location,
             actionDate: new Date().constructor({
               timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
             }),
@@ -68,7 +72,7 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
     /******************************************************/
     //Set the driver to be busy
     await DriverModel.updateOne(
-      { driverId: driver.driverId },
+      { driverId: driverSearch.driverId },
       {
         isBusy: true,
       }
@@ -80,39 +84,42 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
     /******************************************************/
     //Send notification to the driver
     await sendNotification({
-      firebaseToken: driver.firebaseToken,
+      firebaseToken: driverSearch.firebaseToken,
       title: "You have a new order request, Hurry up !",
       body: `Order #${master.orderId} has been sent to you by ${master.branchNameEn}`,
       type: "1",
-      deviceType: +driver.deviceType, // + To Number
+      deviceType: +driverSearch.deviceType, // + To Number
     });
 
     /******************************************************/
 
     //Send a request to the driver
-    io.to(drivers.get(parseInt(driver.driverId))).emit("NewOrderRequest", {
-      status: true,
-      message: "You have a new order request",
-      timerSeconds,
-      order: {
-        orderId: master.orderId,
-        branchId: master.branchId,
-        branchNameAr: master.branchNameAr,
-        branchNameEn: master.branchNameEn,
-        branchAddress: master.branchAddress,
-        receiverAddress: master.receiverAddress,
-        receiverDistance: master.receiverDistance,
-        branchLogo: master.branchLogo,
-        paymentTypeEn: master.paymentTypeEn,
-        paymentTypeAr: master.paymentTypeAr,
-        deliveryPriceEn: master.deliveryPriceEn,
-        deliveryPriceAr: master.deliveryPriceAr,
-        branchLocation: {
-          lng: master.branchLocation.coordinates[0],
-          lat: master.branchLocation.coordinates[1],
+    io.to(drivers.get(parseInt(driverSearch.driverId))).emit(
+      "NewOrderRequest",
+      {
+        status: true,
+        message: "You have a new order request",
+        timerSeconds,
+        order: {
+          orderId: master.orderId,
+          branchId: master.branchId,
+          branchNameAr: master.branchNameAr,
+          branchNameEn: master.branchNameEn,
+          branchAddress: master.branchAddress,
+          receiverAddress: master.receiverAddress,
+          receiverDistance: master.receiverDistance,
+          branchLogo: master.branchLogo,
+          paymentTypeEn: master.paymentTypeEn,
+          paymentTypeAr: master.paymentTypeAr,
+          deliveryPriceEn: master.deliveryPriceEn,
+          deliveryPriceAr: master.deliveryPriceAr,
+          branchLocation: {
+            lng: master.branchLocation.coordinates[0],
+            lat: master.branchLocation.coordinates[1],
+          },
         },
-      },
-    });
+      }
+    );
 
     /***********************************************************/
     /*
