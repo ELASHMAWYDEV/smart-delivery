@@ -147,14 +147,24 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
       /************************************/
 
       //Check if last driver has any busy orders
-      console.log("Driver id with no action:", orderSearch.master.driverId);
       if (orderSearch.master.driverId) {
+        //Remove the driver from the order
+        await OrderModel.updateOne(
+          {
+            "master.orderId": orderSearch.master.orderId,
+          },
+          {
+            $set: {
+              "master.driverId": null,
+            },
+          }
+        );
+
         const busyOrders = await OrderModel.countDocuments({
           "master.statusId": { $in: [1, 3, 4] },
           "master.driverId": orderSearch.master.driverId,
         });
 
-        console.log("His busyOrders:", busyOrders);
         //Set the driver to be not busy
         await DriverModel.updateOne(
           {
