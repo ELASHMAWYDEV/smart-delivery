@@ -69,10 +69,10 @@ module.exports = (io, socket) => {
         /***************************************************/
 
         let isOnline = status == 1 ? true : false;
-        if (busyOrders.length > 0 && status == 1) isOnline = true;
-        if (busyOrders.length > 0 && status == 2) isOnline = true;
-        if (busyOrders.length == 0 && status == 1) isOnline = true;
-        if (busyOrders.length == 0 && status == 2) isOnline = false;
+        if (busyActiveOrders.length > 0 && status == 1) isOnline = true;
+        if (busyActiveOrders.length > 0 && status == 2) isOnline = true;
+        if (busyActiveOrders.length == 0 && status == 1) isOnline = true;
+        if (busyActiveOrders.length == 0 && status == 2) isOnline = false;
 
         //Update the driver
         await DriverModel.updateOne(
