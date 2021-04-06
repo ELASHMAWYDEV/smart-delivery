@@ -46,13 +46,16 @@ module.exports = async ({ socket, driverId }) => {
         console.log(
           `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
         );
-        //Emit to the driver the NewOrderRequest event
-        socket.emit("NewOrderRequest", {
-          status: false,
-          isAuthorize: true,
-          message:
-            "Sorry, you couldn't catch the order request !\nHard luck next time",
-        });
+
+        setTimeout(() => {
+          //Emit to the driver the NewOrderRequest event
+          socket.emit("NewOrderRequest", {
+            status: false,
+            isAuthorize: true,
+            message:
+              "Sorry, you couldn't catch the order request !\nHard luck next time",
+          });
+        }, 1000);
 
         /*************************************************************/
 
@@ -113,9 +116,12 @@ module.exports = async ({ socket, driverId }) => {
     /*************************************************************/
   } catch (e) {
     console.log(`Error in checkForOrderRequest() : ${e.message}`, e);
-    socket.emit("NewOrderRequest", {
-      status: false,
-      message: `Error in checkForOrderRequest() : ${e.message}`,
-    });
+
+    setTimeout(() => {
+      socket.emit("NewOrderRequest", {
+        status: false,
+        message: `Error in checkForOrderRequest() : ${e.message}`,
+      });
+    }, 1000);
   }
 };
