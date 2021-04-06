@@ -13,7 +13,11 @@ const {
   updateOrderStatus,
 } = require("../../helpers");
 
-const { ordersInterval, activeOrderDrivers } = require("../../globals");
+const {
+  ordersInterval,
+  activeOrderDrivers,
+  driverBusyOrdersAndBranch,
+} = require("../../globals");
 
 const OrderModel = require("../../models/Order");
 /*

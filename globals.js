@@ -18,6 +18,7 @@ module.exports.DB_URI =
 module.exports.clients = new Map(); //Restaurants
 module.exports.customers = new Map(); 
 module.exports.drivers = new Map();
+module.exports.driverBusyOrdersAndBranch = new Map();
 module.exports.ordersInterval = new Map();
 module.exports.activeOrders = new Map();
 module.exports.activeOrderDrivers = new Map();
