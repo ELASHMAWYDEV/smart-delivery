@@ -136,9 +136,10 @@
 
     newOrderBtn.onclick = async () => {
       let resultContainer = document.querySelector("#new-order-result");
-      resultContainer.textContent = "";
-      for (token of tokens) {
+      resultContainer.innerHTML = "";
 
+
+      const sendRequest = async (token) => {
         let response = await axios.post("/api/client/NewOrderRequest",
           Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) })), {
           headers: {
@@ -156,9 +157,11 @@
           resultContainer.classList.add("bg-success");
 
         }
-        resultContainer.textContent = JSON.stringify(data, null, 2);
+        resultContainer.innerHTML = JSON.stringify(data, null, 2);
         resultContainer.innerHTML += "<hr>";
       }
+
+      Promise.all(tokens.map(token => sendRequest(token)))
     }
 
 
