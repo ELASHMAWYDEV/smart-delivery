@@ -72,9 +72,11 @@ module.exports = (io, socket) => {
       /******************************************************/
       //Check if driver has any busy orders
       const busyOrders = await OrderModel.countDocuments({
-        "master.statusId": { $in: [1, 3, 4, 5] },
+        "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
       });
+
+      console.log("busyOrders after delivery:", busyOrders);
 
       //Set the driver to be not busy
       await DriverModel.updateOne(
