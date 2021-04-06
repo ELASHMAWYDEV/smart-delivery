@@ -42,7 +42,7 @@ module.exports = async ({ socket, driverId }) => {
       //If the timePassed was more than timerSeconds --> send false
       const timePassed = (new Date().getTime() - timeSent) / 1000;
 
-      if (timePassed >= timerSeconds - 0.5) {
+      if (timePassed >= timerSeconds) {
         console.log(
           `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
         );
@@ -89,7 +89,7 @@ module.exports = async ({ socket, driverId }) => {
           socket.emit("NewOrderRequest", {
             status: true,
             message: "You have a new order request",
-            timerSeconds: timePassed,
+            timerSeconds: timerSeconds - timePassed,
             order: {
               orderId: master.orderId,
               branchId: master.branchId,
