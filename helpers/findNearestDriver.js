@@ -45,10 +45,12 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
 
     //If no driver found , send message to client
     if (!driverSearch) {
-      let { timeoutFunction } = ordersInterval.get(orderId);
+      let { timeoutFunction } = ordersInterval.get(orderId) || {};
 
       //Clear all order intervals
-      clearTimeout(timeoutFunction);
+      if (timeoutFunction) {
+        clearTimeout(timeoutFunction);
+      }
       activeOrderDrivers.delete(orderId);
       ordersInterval.delete(orderId);
       activeOrders.delete(orderId);
