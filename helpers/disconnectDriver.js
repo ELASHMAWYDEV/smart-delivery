@@ -3,6 +3,7 @@ let { drivers, disconnectInterval } = require("../globals");
 
 //Models
 const DriverModel = require("../models/Driver");
+const OrderModel = require("../models/Order");
 
 //Helpers
 const sendNotification = require("./sendNotification");
@@ -19,8 +20,16 @@ module.exports = async ({ driverId }) => {
 
     //Check if the driver is connected again or the messages ended or driver put him self offline
     if (count == 4) {
-      await DriverModel.updateOne({ driverId }, { isOnline: false });
-      disconnectInterval.delete(driverId);
+      //Check if he is has any busy orders or not
+      let busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [3, 4] },
+        "master.driverId": driverId,
+      });
+
+      if (busyOrders == 0) {
+        await DriverModel.updateOne({ driverId }, { isOnline: false });
+        disconnectInterval.delete(driverId);
+      }
       clearInterval(interval);
       return;
     }
