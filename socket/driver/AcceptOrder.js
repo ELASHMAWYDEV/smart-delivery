@@ -60,6 +60,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: true,
           message: `Sorry another driver accepted this order #${orderId}`,
+          orderId,
         });
       /******************************************************/
       //Check if order exist on DB
@@ -77,6 +78,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: true,
           message: `You may have reject this order #${orderId} or the board may have canceled it`,
+          orderId,
         });
 
       /******************************************************/
@@ -93,6 +95,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: true,
           message: `There is no order with id #${orderId}`,
+          orderId,
         });
 
       let branchDistance = 1.5; //default
@@ -137,7 +140,6 @@ module.exports = (io, socket) => {
 
       //Update the order
       const updateResult = await updateOrderStatus({
-        token: token,
         orderId,
         statusId: 3,
       });
@@ -237,6 +239,7 @@ module.exports = (io, socket) => {
       return socket.emit("AcceptOrder", {
         status: false,
         message: `Error in AcceptOrder event: ${e.message}`,
+        orderId,
       });
     }
   });

@@ -43,6 +43,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: false,
           message: "You are not authorized",
+          orderId,
         });
       }
       /******************************************************/
@@ -61,6 +62,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: true,
           message: `You may have accepted this order #${orderId} or the board may have canceled it`,
+          orderId,
         });
 
       /******************************************************/
@@ -128,6 +130,7 @@ module.exports = (io, socket) => {
             status: true,
             isAuthorize: true,
             message: `Order #${orderId} rejected successfully`,
+            orderId,
           });
         }
       }
@@ -155,6 +158,7 @@ module.exports = (io, socket) => {
             status: true,
             isAuthorize: true,
             message: `Order #${orderId} rejected successfully`,
+            orderId,
           });
         }
       }
@@ -198,12 +202,14 @@ module.exports = (io, socket) => {
         status: true,
         isAuthorize: true,
         message: `Order #${orderId} rejected successfully`,
+        orderId,
       });
     } catch (e) {
       console.log(`Error in RejectOrder event: ${e.message}`, e);
       return socket.emit("RejectOrder", {
         status: false,
         message: `Error in RejectOrder event: ${e.message}`,
+        orderId,
       });
     }
   });

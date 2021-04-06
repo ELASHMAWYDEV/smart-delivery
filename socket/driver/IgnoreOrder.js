@@ -45,6 +45,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: false,
           message: "You are not authorized",
+          orderId,
         });
       }
 
@@ -55,6 +56,7 @@ module.exports = (io, socket) => {
           status: false,
           isAuthorize: true,
           message: "The order is not available any more",
+          orderId,
         });
       }
 
@@ -149,6 +151,7 @@ module.exports = (io, socket) => {
             status: true,
             isAuthorize: true,
             message: `Order #${orderId} ignored successfully`,
+            orderId,
           });
         }
       }
@@ -175,6 +178,7 @@ module.exports = (io, socket) => {
             status: true,
             isAuthorize: true,
             message: `Order #${orderId} ignored successfully`,
+            orderId,
           });
         }
       }
@@ -188,7 +192,7 @@ module.exports = (io, socket) => {
 
       if (!updateResult.status) {
         //Send to the driver all is OK
-        return socket.emit("IgnoreOrder", updateResult);
+        return socket.emit("IgnoreOrder", { ...updateResult, orderId });
       }
 
       //Update the order
@@ -216,6 +220,7 @@ module.exports = (io, socket) => {
         status: true,
         isAuthorize: true,
         message: `Order #${orderId} ignored successfully`,
+        orderId,
       });
       /******************************************************/
     } catch (e) {
@@ -223,6 +228,8 @@ module.exports = (io, socket) => {
       return socket.emit("IgnoreOrder", {
         status: false,
         message: `Error in IgnoreOrder event: ${e.message}`,
+        orderId,
+
       });
     }
   });
