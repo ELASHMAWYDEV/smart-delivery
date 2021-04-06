@@ -10,10 +10,10 @@ const {
 module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
   try {
     //Get global intervals
-    let maxDistance;
+    let maxDistance = 10 * 1000; //Km
     const settings = await DeliverySettingsModel.findOne({});
-    if (settings && settings.globalIntervals) {
-      maxDistance = settings.globalIntervals[0].maxDistance || 10000;
+    if (settings && settings.maxDistance) {
+      maxDistance = settings.maxDistance * 1000;
     }
 
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
@@ -37,6 +37,7 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
               orderSearch.master.branchLocation.coordinates[1],
             ],
           },
+          $maxDistance: maxDistance,
         },
       },
     });
