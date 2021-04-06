@@ -20,7 +20,6 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
 
     let driversIds = activeOrderDrivers.get(orderId);
 
-    console.log("maxDistance:", maxDistance, "settings:", settings);
 
     let driverSearch = await DriverModel.findOne({
       isOnline: true,

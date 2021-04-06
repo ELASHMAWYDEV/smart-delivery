@@ -10,13 +10,18 @@ const deliverySettingsSchema = new mongoose.Schema({
     type: Number,
     default: 15,
   },
+  maxDistance: {
+    type: Number,
+    default: 20,
+  },
   globalIntervals: {
     type: [globalIntervalSchema],
   },
 });
 
-
-
-const DeliverySettings = mongoose.model("DeliverySettings", deliverySettingsSchema, "deliverySettings");
+const DeliverySettings = mongoose.model(
+  "DeliverySettings",
+  deliverySettingsSchema,
+  "deliverySettings"
+);
 module.exports = DeliverySettings;
-
