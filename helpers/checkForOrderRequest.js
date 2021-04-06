@@ -89,7 +89,7 @@ module.exports = async ({ socket, driverId }) => {
           socket.emit("NewOrderRequest", {
             status: true,
             message: "You have a new order request",
-            timerSeconds,
+            timerSeconds: timePassed,
             order: {
               orderId: master.orderId,
               branchId: master.branchId,

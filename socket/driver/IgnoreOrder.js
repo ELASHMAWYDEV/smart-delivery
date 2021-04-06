@@ -229,7 +229,6 @@ module.exports = (io, socket) => {
         status: false,
         message: `Error in IgnoreOrder event: ${e.message}`,
         orderId,
-
       });
     }
   });
