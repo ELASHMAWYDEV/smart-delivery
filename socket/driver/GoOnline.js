@@ -1,3 +1,5 @@
+const { Mutex } = require("async-mutex");
+
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
@@ -7,6 +9,12 @@ let { drivers, disconnectInterval } = require("../../globals");
 
 //Helpers
 const { checkForOrderRequest } = require("../../helpers");
+
+/*
+ * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
+ * race condition is when user triggers the event twice at the same milli second
+ */
+let EventLocks = new Map();
 
 module.exports = (io, socket) => {
   socket.on(
@@ -45,61 +53,75 @@ module.exports = (io, socket) => {
 
         console.log(drivers);
 
-        /***************************************************/
-        //Search for busy orders
-        let busyOrders = await OrderModel.find({
-          "master.statusId": { $in: [1, 3, 4] },
-          "master.driverId": driverId,
-        });
+        /******************************************************/
+        /*
+         * Start the Event Locker from here
+         */
 
-        let busyActiveOrders = busyOrders.filter((order) =>
-          [3, 4].includes(order.master.statusId)
-        );
+        if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
 
-        let busyCreatedOrders = busyOrders.filter(
-          (order) => order.master.statusId == 1
-        );
-
-        if (busyCreatedOrders.length != 0) {
-          await checkForOrderRequest({ socket, driverId });
-        }
-
-        busyOrders = busyOrders.map((order) => order.master.orderId);
+        const releaseEvent = await EventLocks.get(driverId).acquire();
 
         /***************************************************/
+        try {
+          //Search for busy orders
+          let busyOrders = await OrderModel.find({
+            "master.statusId": { $in: [1, 3, 4] },
+            "master.driverId": driverId,
+          });
 
-        let isOnline = status == 1 ? true : false;
-        if (busyActiveOrders.length > 0 && status == 1) isOnline = true;
-        if (busyActiveOrders.length > 0 && status == 2) isOnline = true;
-        if (busyActiveOrders.length == 0 && status == 1) isOnline = true;
-        if (busyActiveOrders.length == 0 && status == 2) isOnline = false;
+          let busyActiveOrders = busyOrders.filter((order) =>
+            [3, 4].includes(order.master.statusId)
+          );
 
-        //Update the driver
-        await DriverModel.updateOne(
-          { driverId },
-          {
-            $set: {
-              isOnline,
-              isBusy: busyOrders.length > 0 ? true : false,
-              deviceType,
-              firebaseToken,
-            },
+          let busyCreatedOrders = busyOrders.filter(
+            (order) => order.master.statusId == 1
+          );
+
+          if (busyCreatedOrders.length != 0) {
+            await checkForOrderRequest({ socket, driverId });
           }
-        );
-        /***************************************************/
-        //Emit GoOnline with updated status
-        return socket.emit("GoOnline", {
-          status: true,
-          isAuthorize: true,
-          isOnline,
-          isHasOrder:
-            busyActiveOrders.length > 0 && busyCreatedOrders.length == 0
-              ? true
-              : false,
-          message: `The driver is set to ${isOnline ? "online" : "offline"}`,
-          busyOrders,
-        });
-        /***********************************************************/
+
+          busyOrders = busyOrders.map((order) => order.master.orderId);
+
+          /***************************************************/
+
+          let isOnline = status == 1 ? true : false;
+          if (busyActiveOrders.length > 0 && status == 1) isOnline = true;
+          if (busyActiveOrders.length > 0 && status == 2) isOnline = true;
+          if (busyActiveOrders.length == 0 && status == 1) isOnline = true;
+          if (busyActiveOrders.length == 0 && status == 2) isOnline = false;
+
+          //Update the driver
+          await DriverModel.updateOne(
+            { driverId },
+            {
+              $set: {
+                isOnline,
+                isBusy: busyOrders.length > 0 ? true : false,
+                deviceType,
+                firebaseToken,
+              },
+            }
+          );
+          /***************************************************/
+          //Emit GoOnline with updated status
+          socket.emit("GoOnline", {
+            status: true,
+            isAuthorize: true,
+            isOnline,
+            isHasOrder:
+              busyActiveOrders.length > 0 && busyCreatedOrders.length == 0
+                ? true
+                : false,
+            message: `The driver is set to ${isOnline ? "online" : "offline"}`,
+            busyOrders,
+          });
+
+          /***************************************************/
+        } finally {
+          releaseEvent(); //Stop event locker
+        }
       } catch (e) {
         console.log(`Error in GoOnline, error: ${e.message}`);
         return socket.emit("GoOnline", {

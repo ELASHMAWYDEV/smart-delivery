@@ -1,10 +1,23 @@
+const { Mutex } = require("async-mutex");
 const { deliverOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
 const { activeOrders } = require("../../globals");
 
+/*
+ * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
+ * race condition is when user triggers the event twice at the same milli second
+ */
+let EventLocks = new Map();
+
 module.exports = (io, socket) => {
   socket.on("DeliverOrder", async ({ lat, lng, orderId, driverId, token }) => {
+    console.log(
+      `DeliverOrder event was called by driver: ${driverId}, order: ${orderId}`
+    );
+
+    /****************************************************/
+
     try {
       //Developement errors
       if (!orderId)
@@ -53,51 +66,60 @@ module.exports = (io, socket) => {
       }
 
       /******************************************************/
+      /*
+       * Start the Event Locker from here
+       */
 
-      console.log(
-        `DeliverOrder event was called by driver: ${driverId}, order: ${orderId}`
-      );
-      //Update the orders
-      const updateOrdersResult = await deliverOrder({
-        token,
-        orderId,
-        lat,
-        lng,
-      });
+      if (!EventLocks.has(orderId)) EventLocks.set(orderId, new Mutex());
 
-      if (!updateOrdersResult.status) {
-        return socket.emit("DeliverOrder", updateOrdersResult);
-      }
-
+      const releaseEvent = await EventLocks.get(orderId).acquire();
       /******************************************************/
-      //Check if driver has any busy orders
-      const busyOrders = await OrderModel.countDocuments({
-        "master.statusId": { $in: [1, 3, 4] },
-        "master.driverId": driverId,
-      });
 
+      try {
+        //Update the orders
+        const updateOrdersResult = await deliverOrder({
+          token,
+          orderId,
+          lat,
+          lng,
+        });
 
-      //Set the driver to be not busy
-      await DriverModel.updateOne(
-        {
-          driverId,
-        },
-        {
-          isBusy: busyOrders > 0 ? true : false,
+        if (!updateOrdersResult.status) {
+          return socket.emit("DeliverOrder", updateOrdersResult);
         }
-      );
 
-      /******************************************************/
-      //Remove the order from activeOrders --> rubbish
-      activeOrders.delete(orderId);
-      /******************************************************/
+        /******************************************************/
+        //Check if driver has any busy orders
+        const busyOrders = await OrderModel.countDocuments({
+          "master.statusId": { $in: [1, 3, 4] },
+          "master.driverId": driverId,
+        });
 
-      return socket.emit("DeliverOrder", {
-        status: true,
-        isAuthorize: true,
-        message: `Order #${orderId} has been delivered successfully`,
-      });
-      /******************************************************/
+        //Set the driver to be not busy
+        await DriverModel.updateOne(
+          {
+            driverId,
+          },
+          {
+            isBusy: busyOrders > 0 ? true : false,
+          }
+        );
+
+        /******************************************************/
+        //Remove the order from activeOrders --> rubbish
+        activeOrders.delete(orderId);
+        /******************************************************/
+
+        socket.emit("DeliverOrder", {
+          status: true,
+          isAuthorize: true,
+          message: `Order #${orderId} has been delivered successfully`,
+        });
+
+        /***************************************************/
+      } finally {
+        releaseEvent(); //Stop event locker
+      }
     } catch (e) {
       console.log(`Error in DeliverOrder event: ${e.message}`, e);
       return socket.emit("DeliverOrder", {

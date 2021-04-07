@@ -77,9 +77,9 @@
     let tokensInput = document.querySelectorAll("textarea[name='token']");
     let numberOfOrdersInput = document.querySelector("#number-of-orders");
 
-    let orderId = orderIdInput.value;
+    let orderId = +orderIdInput.value;
     let tokens = [];
-    tokensInput.forEach(input => input.value != "" && tokens.push(input.value))
+    tokensInput.forEach(input => tokens.push(input.value))
     let numberOfOrders = numberOfOrdersInput.value;
 
     let orderObject = {
@@ -121,10 +121,10 @@
 
 
 
-    orderIdInput.oninput = (e) => orderId = e.target.value;
+    orderIdInput.oninput = (e) => orderId = +e.target.value;
     tokensInput.forEach((input, i) => input.oninput = (e) => tokens[i] = e.target.value)
     numberOfOrdersInput.oninput = (e) => {
-      numberOfOrders = e.target.value;
+      numberOfOrders = +e.target.value;
 
     }
 
@@ -157,11 +157,11 @@
           resultContainer.classList.add("bg-success");
 
         }
-        resultContainer.innerHTML = JSON.stringify(data, null, 2);
+        resultContainer.innerHTML += JSON.stringify(data, null, 2);
         resultContainer.innerHTML += "<hr>";
       }
 
-      Promise.all(tokens.map(token => sendRequest(token)))
+      Promise.all(tokens.map(token => token && sendRequest(token)))
     }
 
 

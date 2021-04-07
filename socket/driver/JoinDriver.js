@@ -1,9 +1,17 @@
+const { Mutex } = require("async-mutex");
+
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
 
 //Globals
 let { drivers, disconnectInterval } = require("../../globals");
+
+/*
+ * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
+ * race condition is when user triggers the event twice at the same milli second
+ */
+let EventLocks = new Map();
 
 module.exports = (io, socket) => {
   socket.on("JoinDriver", async ({ driverId, token }) => {
@@ -43,34 +51,47 @@ module.exports = (io, socket) => {
         });
       }
 
-      /********************************************************/
+      /******************************************************/
+      /*
+       * Start the Event Locker from here
+       */
 
-      //Check for busy orders
-      let busyOrders = await OrderModel.countDocuments({
-        "master.statusId": { $in: [3, 4] },
-        "master.driverId": driverId,
-      });
+      if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
 
-      let isHasOrder = false;
-      if (busyOrders > 0) isHasOrder = true;
+      const releaseEvent = await EventLocks.get(driverId).acquire();
 
       /********************************************************/
-      //Add driver to the socket
-      drivers.set(driverId, socket.id);
-      //Remove from the disconnect interval
-      disconnectInterval.delete(driverId);
 
-      /********************************************************/
-      //Send back to the driver
-      return socket.emit("JoinDriver", {
-        status: true,
-        isAuthorize: true,
-        isHasOrder,
-        isOnline: isHasOrder || driverSearch.isOnline,
-        message: `join success, socket id: ${socket.id}`,
-      });
+      try {
+        //Check for busy orders
+        let busyOrders = await OrderModel.countDocuments({
+          "master.statusId": { $in: [3, 4] },
+          "master.driverId": driverId,
+        });
 
-      /********************************************************/
+        let isHasOrder = false;
+        if (busyOrders > 0) isHasOrder = true;
+
+        /********************************************************/
+        //Add driver to the socket
+        drivers.set(driverId, socket.id);
+        //Remove from the disconnect interval
+        disconnectInterval.delete(driverId);
+
+        /********************************************************/
+        //Send back to the driver
+        socket.emit("JoinDriver", {
+          status: true,
+          isAuthorize: true,
+          isHasOrder,
+          isOnline: isHasOrder || driverSearch.isOnline,
+          message: `join success, socket id: ${socket.id}`,
+        });
+
+        /***************************************************/
+      } finally {
+        releaseEvent(); //Stop event locker
+      }
     } catch (e) {
       console.log(`Error in JoinDriver, error: ${e.message}`);
       socket.emit("JoinDriver", {

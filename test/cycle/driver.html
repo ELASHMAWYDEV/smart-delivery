@@ -112,15 +112,15 @@
       let orderIdInput = document.querySelector("#orderId");
       let branchIdInput = document.querySelector("#branchId");
 
-      let driverId = driverIdInput.value;
+      let driverId = +driverIdInput.value;
       let token = tokenInput.value;
-      let orderId = orderIdInput.value;
+      let orderId = +orderIdInput.value;
       let branchId;
 
-      driverIdInput.oninput = (e) => driverId = e.target.value;
+      driverIdInput.oninput = (e) => driverId = +e.target.value;
       tokenInput.oninput = (e) => token = e.target.value;
-      orderIdInput.oninput = (e) => orderId = e.target.value;
-      branchIdInput.oninput = (e) => branchId = e.target.value;
+      orderIdInput.oninput = (e) => orderId = +e.target.value;
+      branchIdInput.oninput = (e) => branchId = +e.target.value;
 
 
       //Initialize Socket

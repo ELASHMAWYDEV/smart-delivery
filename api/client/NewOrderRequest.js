@@ -90,7 +90,6 @@ router.post("/", orderValidator, async (req, res) => {
       const release = await mutex.acquire(); //Block code execution for sequentially placing orders
 
       /***********************************************************/
-      console.log(`Started order: ${order.master.orderId}`);
       try {
         //Put the trip at the ordersInterval map
         ordersInterval.set(parseInt(order.master.orderId), {

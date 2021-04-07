@@ -1,10 +1,21 @@
+const { Mutex } = require("async-mutex");
 const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 const { activeOrders } = require("../../globals");
 
+/*
+ * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
+ * race condition is when user triggers the event twice at the same milli second
+ */
+let EventLocks = new Map();
+
 module.exports = (io, socket) => {
   socket.on("ReceiveOrder", async ({ branchId, driverId, token }) => {
     try {
+      console.log(
+        `ReceiveOrder event was called by driver: ${driverId}, branch: ${branchId}`
+      );
+      /********************************************************/
       //Developement errors
       if (!branchId)
         return socket.emit("ReceiveOrder", {
@@ -40,43 +51,54 @@ module.exports = (io, socket) => {
       }
 
       /******************************************************/
-      console.log(
-        `ReceiveOrder event was called by driver: ${driverId}, branch: ${branchId}`
-      );
-      //Update the orders
-      const updateOrdersResult = await receiveOrder({ token, branchId });
+      /*
+       * Start the Event Locker from here
+       */
 
-      if (!updateOrdersResult.status) {
-        return socket.emit("ReceiveOrder", updateOrdersResult);
-      }
+      if (!EventLocks.has(branchId)) EventLocks.set(branchId, new Mutex());
 
-      let { ordersIds } = updateOrdersResult;
+      const releaseEvent = await EventLocks.get(branchId).acquire();
 
       /******************************************************/
+      try {
+        //Update the orders
+        const updateOrdersResult = await receiveOrder({ token, branchId });
 
-      //Make sure driver is busy
-      await DriverModel.updateOne(
-        {
-          driverId,
-        },
-        {
-          isBusy: true,
+        if (!updateOrdersResult.status) {
+          return socket.emit("ReceiveOrder", updateOrdersResult);
         }
-      );
 
-      /******************************************************/
-      //Remove the orders from activeOrders --> rubbish
-      ordersIds.forEach((id) => activeOrders.delete(id));
-      /******************************************************/
+        let { ordersIds } = updateOrdersResult;
 
-      return socket.emit("ReceiveOrder", {
-        status: true,
-        isAuthorize: true,
-        message: `Orders ${ordersIds.map(
-          (order) => "#" + order
-        )} have been received successfully`,
-      });
-      /******************************************************/
+        /******************************************************/
+
+        //Make sure driver is busy
+        await DriverModel.updateOne(
+          {
+            driverId,
+          },
+          {
+            isBusy: true,
+          }
+        );
+
+        /******************************************************/
+        //Remove the orders from activeOrders --> rubbish
+        ordersIds.forEach((id) => activeOrders.delete(id));
+        /******************************************************/
+
+        socket.emit("ReceiveOrder", {
+          status: true,
+          isAuthorize: true,
+          message: `Orders ${ordersIds.map(
+            (order) => "#" + order
+          )} have been received successfully`,
+        });
+
+        /***************************************************/
+      } finally {
+        releaseEvent(); //Stop event locker
+      }
     } catch (e) {
       console.log(`Error in ReceiveOrder event: ${e.message}`, e);
       return socket.emit("ReceiveOrder", {
