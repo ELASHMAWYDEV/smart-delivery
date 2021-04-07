@@ -92,7 +92,7 @@ module.exports = async ({ token, orders }) => {
       });
 
     const failedOrders = apiData
-      .filter((order) => order.status)
+      .filter((order) => !order.status)
       .map((order) => ({ orderId: order.orderId, message: order.message }));
 
     //Save order to DB
