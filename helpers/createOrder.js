@@ -91,12 +91,17 @@ module.exports = async ({ token, orders }) => {
         };
       });
 
+    const failedOrders = apiData
+      .filter((order) => order.status)
+      .map((order) => ({ orderId: order.orderId, message: order.message }));
+
     //Save order to DB
     let ordersSave = await OrderModel.insertMany(ordersToStoreInDB);
 
     return {
       status: true,
       orders: ordersSave,
+      failedOrders,
     };
   } catch (e) {
     console.log(`Error in createOrder() method: ${e.message}`);

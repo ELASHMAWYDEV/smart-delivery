@@ -51,16 +51,17 @@ router.post("/", orderValidator, async (req, res) => {
 
     if (!createOrderResult.status) return res.json(createOrderResult);
 
-    let { orders: ordersAfterSave } = createOrderResult;
+    let { orders: ordersAfterSave, failedOrders } = createOrderResult;
 
     //Send response to client
     res.json({
       status: true,
       message: "تم ارسال جميع الطلبات ويتم توزيعها علي السائقين الأن",
-      orders:
+      successOrders:
         (ordersAfterSave &&
           ordersAfterSave.map((order) => order.master.orderId)) ||
         [],
+      failedOrders,
     });
     /******************************************************/
     /*
