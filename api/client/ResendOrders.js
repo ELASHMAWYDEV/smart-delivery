@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const { Mutex } = require("async-mutex");
+const mutex = new Mutex();
 
 //Helpers
 const {
@@ -68,92 +70,110 @@ router.post("/", async (req, res) => {
 
     //Loop through orders
     for (let order of ordersExist) {
-      //Put the trip at the ordersInterval map
-      ordersInterval.set(parseInt(order.master.orderId), {
-        order,
-        timeoutFunction: setTimeout(() => null, 0),
-      });
+      /*
+       *
+       *
+       * @@@@@WARNING@@@@
+       *   Mutext is BLOCKING code execution here
+       *   Make sure to RELEASE in finally
+       * @@@@@WARNING@@@@
+       *
+       *
+       * */
 
-      //Init the activeOrderDrivers array
-      activeOrderDrivers.set(order.master.orderId, []);
+      const release = await mutex.acquire(); //Block code execution for sequentially placing orders
 
-      //Update Order status
-      await OrderModel.updateOne(
-        { "master.orderId": order.master.orderId },
-        { "master.statusId": 1 }
-      );
-
-      //Check if any driver on the way to this restaurant
-      let driverOnWay = await checkDriverOnWay({
-        branchId: order.master.branchId,
-        orderId: order.master.orderId,
-        driversIds: drivers,
-        orderDriversLimit: orderDriversLimit || 2,
-      });
-
-      //Send request to driverOnWay
-      if (driverOnWay.status) {
-        let { driver } = driverOnWay;
-        const result = await sendRequestToDriver({
-          driver,
-          orderId: order.master.orderId,
+      /***********************************************************/
+      try {
+        //Put the trip at the ordersInterval map
+        ordersInterval.set(parseInt(order.master.orderId), {
+          order,
+          timeoutFunction: setTimeout(() => null, 0),
         });
 
-        //Continue if order was sent to the driver
-        if (result.status) {
-          console.log(
-            `Order ${order.master.orderId} was Resent to driver ${driver.driverId} on way`
-          );
-          continue;
-        }
-      }
+        //Init the activeOrderDrivers array
+        activeOrderDrivers.set(order.master.orderId, []);
 
-      /******************************************************/
+        //Update Order status
+        await OrderModel.updateOne(
+          { "master.orderId": order.master.orderId },
+          { "master.statusId": 1 }
+        );
 
-      //Find nearest driver & send request to him
-      let nearestDriverResult = await findNearestDriver({
-        orderId: order.master.orderId,
-        driversIds: drivers,
-      });
-
-      if (nearestDriverResult.status) {
-        //Send the request to driver
-        const result = await sendRequestToDriver({
-          driver: nearestDriverResult.driver,
+        //Check if any driver on the way to this restaurant
+        let driverOnWay = await checkDriverOnWay({
+          branchId: order.master.branchId,
           orderId: order.master.orderId,
+          driversIds: drivers,
+          orderDriversLimit: orderDriversLimit || 2,
         });
 
-        //Continue if order was sent to the driver
-        if (result.status) {
-          console.log(
-            `Order ${order.master.orderId} was Resent to driver ${nearestDriverResult.driver.driverId}`
-          );
-          continue;
+        //Send request to driverOnWay
+        if (driverOnWay.status) {
+          let { driver } = driverOnWay;
+          const result = await sendRequestToDriver({
+            driver,
+            orderId: order.master.orderId,
+          });
+
+          //Continue if order was sent to the driver
+          if (result.status) {
+            console.log(
+              `Order ${order.master.orderId} was Resent to driver ${driver.driverId} on way`
+            );
+            continue;
+          }
         }
-      }
-      /******************************************************/
 
-      console.log(`Order ${order.master.orderId}, no drivers found`);
-      //Set the order to not found
-      await updateOrderStatus({
-        orderId: order.master.orderId,
-        statusId: 2,
-      });
+        /******************************************************/
 
-      //Update the order
-      await OrderModel.updateOne(
-        {
-          "master.orderId": order.master.orderId,
-        },
-        {
-          $set: {
-            "master.statusId": 2, //Not found
-            "master.driverId": null,
+        //Find nearest driver & send request to him
+        let nearestDriverResult = await findNearestDriver({
+          orderId: order.master.orderId,
+          driversIds: drivers,
+        });
+
+        if (nearestDriverResult.status) {
+          //Send the request to driver
+          const result = await sendRequestToDriver({
+            driver: nearestDriverResult.driver,
+            orderId: order.master.orderId,
+          });
+
+          //Continue if order was sent to the driver
+          if (result.status) {
+            console.log(
+              `Order ${order.master.orderId} was Resent to driver ${nearestDriverResult.driver.driverId}`
+            );
+            continue;
+          }
+        }
+        /******************************************************/
+
+        console.log(`Order ${order.master.orderId}, no drivers found`);
+        //Set the order to not found
+        await updateOrderStatus({
+          orderId: order.master.orderId,
+          statusId: 2,
+        });
+
+        //Update the order
+        await OrderModel.updateOne(
+          {
+            "master.orderId": order.master.orderId,
           },
-        }
-      );
+          {
+            $set: {
+              "master.statusId": 2, //Not found
+              "master.driverId": null,
+            },
+          }
+        );
 
-      ordersInterval.delete(parseInt(order.master.orderId));
+        ordersInterval.delete(parseInt(order.master.orderId));
+      } finally {
+        release(); //Release the mutex blocking
+      }
     }
 
     /******************************************************/
