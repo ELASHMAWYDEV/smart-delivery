@@ -221,6 +221,8 @@ const sendRequestToDriver = async ({
             const result = await sendRequestToDriver({
               driver,
               orderId: orderSearch.master.orderId,
+              driversIds,
+              orderDriversLimit: orderDriversLimit || 2,
             });
 
             //Continue if order was sent to the driver
@@ -244,6 +246,8 @@ const sendRequestToDriver = async ({
             const result = await sendRequestToDriver({
               driver: nearestDriverResult.driver,
               orderId: orderSearch.master.orderId,
+              driversIds,
+              orderDriversLimit: orderDriversLimit || 2,
             });
 
             //Continue if order was sent to the driver
