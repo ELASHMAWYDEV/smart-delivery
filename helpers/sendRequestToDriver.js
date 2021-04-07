@@ -269,7 +269,7 @@ const sendRequestToDriver = async ({
           });
 
           if (!result.status) {
-            throw new Error(result.message);
+            throw result.message;
           }
           //Update the order
           await OrderModel.updateOne(
@@ -284,6 +284,15 @@ const sendRequestToDriver = async ({
             }
           );
         }
+      } catch (e) {
+        Sentry.captureException(e);
+
+        console.log(`Error in sendRequetToDriver() method: ${e.message}`, e);
+
+        return {
+          status: false,
+          message: `Error in sendRequetToDriver() method: ${e.message}`,
+        };
       } finally {
         release(); //Release the mutex blocking
       }

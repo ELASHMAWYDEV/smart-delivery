@@ -163,7 +163,7 @@ router.post("/", async (req, res) => {
         });
 
         if (!result.status) {
-          throw new Error(result.message);
+          throw result.message;
         }
 
         //Update the order
@@ -180,6 +180,19 @@ router.post("/", async (req, res) => {
         );
 
         ordersInterval.delete(parseInt(order.master.orderId));
+      } catch (e) {
+        Sentry.captureException(e);
+
+        console.log(
+          `Error in ResendOrders endpoint, order: ${order.master.orderId}, ${e.message}`,
+          e
+        );
+        if (!res.headersSent) {
+          return res.json({
+            status: false,
+            message: `Error in ResendOrders endpoint: ${e.message}`,
+          });
+        }
       } finally {
         release(); //Release the mutex blocking
       }

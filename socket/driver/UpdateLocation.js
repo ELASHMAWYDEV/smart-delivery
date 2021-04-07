@@ -15,6 +15,14 @@ let EventLocks = new Map();
 
 module.exports = (io, socket) => {
   socket.on("UpdateLocation", async ({ driverId, token, lat, lng }) => {
+    /*
+     * Start the Event Locker from here
+     */
+
+    if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
+
+    const releaseEvent = await EventLocks.get(driverId).acquire();
+    /******************************************************/
     try {
       console.log(`UpdateLocation Event Called, driver id: ${driverId}`);
       /***************************************************/
@@ -33,67 +41,54 @@ module.exports = (io, socket) => {
 
       /******************************************************/
 
-      /*
-       * Start the Event Locker from here
-       */
+      //Add driver to socket
+      drivers.set(parseInt(driverId), socket.id);
 
-      if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
-
-      const releaseEvent = await EventLocks.get(driverId).acquire();
-      /******************************************************/
-
-      try {
-        //Add driver to socket
-        drivers.set(parseInt(driverId), socket.id);
-
-        await DriverModel.updateOne(
-          { driverId },
-          {
-            $set: {
-              oldLocation: {
-                coordinates: [
-                  driverSearch.location.coordinates[0],
-                  driverSearch.location.coordinates[1],
-                ],
-                type: "Point",
-              },
-              location: {
-                coordinates: [lng, lat],
-                type: "Point",
-              },
-              updateLocationDate: new Date().constructor({
-                timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
-              }),
+      await DriverModel.updateOne(
+        { driverId },
+        {
+          $set: {
+            oldLocation: {
+              coordinates: [
+                driverSearch.location.coordinates[0],
+                driverSearch.location.coordinates[1],
+              ],
+              type: "Point",
             },
-          }
-        );
-
-        socket.emit("UpdateLocation", {
-          status: true,
-          isAuthorize: true,
-          isOnline: driverSearch.isOnline,
-          message: "Location updated successfully",
-        });
-
-        /***************************************************/
-        //Check if the driver has a trip with statusId [3, 4]
-
-        const busyOrders = await OrderModel.find({
-          "master.statusId": { $in: [3, 4] },
-          "master.driverId": driverId,
-        });
-
-        for (let order of busyOrders) {
-          //Send the driver's location to the customer
-          io.to(customers.get(order.master.orderId)).emit("TrackOrder", {
-            lat,
-            lng,
-          });
+            location: {
+              coordinates: [lng, lat],
+              type: "Point",
+            },
+            updateLocationDate: new Date().constructor({
+              timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
+            }),
+          },
         }
-        /***************************************************/
-      } finally {
-        releaseEvent(); //Stop event locker
+      );
+
+      socket.emit("UpdateLocation", {
+        status: true,
+        isAuthorize: true,
+        isOnline: driverSearch.isOnline,
+        message: "Location updated successfully",
+      });
+
+      /***************************************************/
+      //Check if the driver has a trip with statusId [3, 4]
+
+      const busyOrders = await OrderModel.find({
+        "master.statusId": { $in: [3, 4] },
+        "master.driverId": driverId,
+      });
+
+      for (let order of busyOrders) {
+        //Send the driver's location to the customer
+        io.to(customers.get(order.master.orderId)).emit("TrackOrder", {
+          lat,
+          lng,
+        });
       }
+      /***************************************************/
     } catch (e) {
       Sentry.captureException(e);
 
@@ -102,6 +97,8 @@ module.exports = (io, socket) => {
         status: false,
         message: e.message,
       });
+    } finally {
+      releaseEvent(); //Stop event locker
     }
   });
 };

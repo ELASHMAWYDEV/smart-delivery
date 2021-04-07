@@ -16,6 +16,15 @@ let EventLocks = new Map();
 
 module.exports = (io, socket) => {
   socket.on("JoinDriver", async ({ driverId, token }) => {
+    /*
+     * Start the Event Locker from here
+     */
+
+    if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
+
+    const releaseEvent = await EventLocks.get(driverId).acquire();
+
+    /********************************************************/
     try {
       console.log(`JoinDriver Event Called, driver id: ${driverId}`);
 
@@ -53,46 +62,33 @@ module.exports = (io, socket) => {
       }
 
       /******************************************************/
-      /*
-       * Start the Event Locker from here
-       */
 
-      if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
+      //Check for busy orders
+      let busyOrders = await OrderModel.countDocuments({
+        "master.statusId": { $in: [3, 4] },
+        "master.driverId": driverId,
+      });
 
-      const releaseEvent = await EventLocks.get(driverId).acquire();
+      let isHasOrder = false;
+      if (busyOrders > 0) isHasOrder = true;
 
       /********************************************************/
+      //Add driver to the socket
+      drivers.set(driverId, socket.id);
+      //Remove from the disconnect interval
+      disconnectInterval.delete(driverId);
 
-      try {
-        //Check for busy orders
-        let busyOrders = await OrderModel.countDocuments({
-          "master.statusId": { $in: [3, 4] },
-          "master.driverId": driverId,
-        });
+      /********************************************************/
+      //Send back to the driver
+      socket.emit("JoinDriver", {
+        status: true,
+        isAuthorize: true,
+        isHasOrder,
+        isOnline: isHasOrder || driverSearch.isOnline,
+        message: `join success, socket id: ${socket.id}`,
+      });
 
-        let isHasOrder = false;
-        if (busyOrders > 0) isHasOrder = true;
-
-        /********************************************************/
-        //Add driver to the socket
-        drivers.set(driverId, socket.id);
-        //Remove from the disconnect interval
-        disconnectInterval.delete(driverId);
-
-        /********************************************************/
-        //Send back to the driver
-        socket.emit("JoinDriver", {
-          status: true,
-          isAuthorize: true,
-          isHasOrder,
-          isOnline: isHasOrder || driverSearch.isOnline,
-          message: `join success, socket id: ${socket.id}`,
-        });
-
-        /***************************************************/
-      } finally {
-        releaseEvent(); //Stop event locker
-      }
+      /***************************************************/
     } catch (e) {
       Sentry.captureException(e);
 
@@ -101,6 +97,8 @@ module.exports = (io, socket) => {
         status: false,
         message: `Error in JoinDriver, error: ${e.message}`,
       });
+    } finally {
+      releaseEvent(); //Stop event locker
     }
   });
 };
