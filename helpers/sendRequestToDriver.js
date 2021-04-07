@@ -17,7 +17,12 @@ const updateOrderStatus = require("./updateOrderStatus");
 const checkDriverOnWay = require("./checkDriverOnWay");
 const findNearestDriver = require("./findNearestDriver");
 
-const sendRequestToDriver = async ({ driver, orderId }) => {
+const sendRequestToDriver = async ({
+  driver,
+  orderId,
+  driversIds = [],
+  orderDriversLimit = 2,
+}) => {
   try {
     // //Get the trip data from ordersInterval map
     if (!ordersInterval.has(orderId)) {
@@ -206,6 +211,8 @@ const sendRequestToDriver = async ({ driver, orderId }) => {
           let driverOnWay = await checkDriverOnWay({
             branchId: orderSearch.master.branchId,
             orderId: orderSearch.master.orderId,
+            driversIds,
+            orderDriversLimit: orderDriversLimit || 2,
           });
 
           //Send request to driverOnWay

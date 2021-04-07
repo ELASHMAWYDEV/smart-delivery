@@ -114,6 +114,8 @@ router.post("/", async (req, res) => {
           const result = await sendRequestToDriver({
             driver,
             orderId: order.master.orderId,
+            driversIds: drivers,
+            orderDriversLimit: orderDriversLimit || 2,
           });
 
           //Continue if order was sent to the driver
@@ -138,6 +140,8 @@ router.post("/", async (req, res) => {
           const result = await sendRequestToDriver({
             driver: nearestDriverResult.driver,
             orderId: order.master.orderId,
+            driversIds: drivers,
+            orderDriversLimit: orderDriversLimit || 2,
           });
 
           //Continue if order was sent to the driver
