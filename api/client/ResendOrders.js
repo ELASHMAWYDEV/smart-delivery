@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const express = require("express");
 const router = express.Router();
 const { Mutex } = require("async-mutex");
@@ -156,10 +157,14 @@ router.post("/", async (req, res) => {
 
         console.log(`Order ${order.master.orderId}, no drivers found`);
         //Set the order to not found
-        await updateOrderStatus({
+        const result = await updateOrderStatus({
           orderId: order.master.orderId,
           statusId: 2,
         });
+
+        if (!result.status) {
+          throw new Error(result.message);
+        }
 
         //Update the order
         await OrderModel.updateOne(
@@ -182,13 +187,15 @@ router.post("/", async (req, res) => {
 
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
+    console.log(`Error in ResendOrders endpoint: ${e.message}`, e);
     if (!res.headersSent) {
       return res.json({
         status: false,
         message: `Error in ResendOrders endpoint: ${e.message}`,
       });
     }
-    console.log(`Error in ResendOrders endpoint: ${e.message}`, e);
   }
 });
 

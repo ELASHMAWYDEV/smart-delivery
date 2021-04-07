@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 const { customers } = require("../../globals");
@@ -39,6 +40,9 @@ module.exports = (io, socket) => {
         },
       });
     } catch (e) {
+      Sentry.captureException(e);
+
+      console.log(`Error in JoinCustomer event, ${e.message}`);
       socket.emit("JoinCustomer", {
         status: false,
         message: `Error in JoinCustomer event: ${e.message}`,

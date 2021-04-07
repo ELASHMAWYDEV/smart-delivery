@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 //Models
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
@@ -115,6 +116,8 @@ module.exports = async ({ socket, driverId }) => {
 
     /*************************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in checkForOrderRequest() : ${e.message}`, e);
 
     setTimeout(() => {

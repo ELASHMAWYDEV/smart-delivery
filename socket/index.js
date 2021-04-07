@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const DriverModel = require("../models/Driver");
 const { drivers } = require("../globals");
 

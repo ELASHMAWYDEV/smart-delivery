@@ -1,4 +1,4 @@
-// @ts-nocheck
+const Sentry = require("@sentry/node");
 const axios = require("axios");
 const { GOOGLE_MAPS_KEY } = require("../globals");
 
@@ -24,6 +24,8 @@ module.exports = async ({ pickupLat, pickupLng, dropoffLat, dropoffLng }) => {
       ),
     };
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in getEstimatedDistanceDuration, error: ${e.message}`);
 
     return {

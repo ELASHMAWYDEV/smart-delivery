@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const { activeOrderDrivers } = require("../globals");
@@ -68,6 +69,8 @@ module.exports = async ({
 
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in checkDriverOnWay() method: ${e.message}`);
     return {
       status: false,

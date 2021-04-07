@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
@@ -100,6 +101,8 @@ module.exports = (io, socket) => {
         releaseEvent(); //Stop event locker
       }
     } catch (e) {
+      Sentry.captureException(e);
+
       console.log(`Error in ReceiveOrder event: ${e.message}`, e);
       return socket.emit("ReceiveOrder", {
         status: false,

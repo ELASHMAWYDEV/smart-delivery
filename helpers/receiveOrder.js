@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const axios = require("axios");
 const OrderModel = require("../models/Order");
 
@@ -55,6 +56,8 @@ module.exports = async ({ branchId, token }) => {
 
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in receiveOrder(): ${e.message}`);
 
     return {

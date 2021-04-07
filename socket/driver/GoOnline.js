@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 
 //Models
@@ -123,6 +124,8 @@ module.exports = (io, socket) => {
           releaseEvent(); //Stop event locker
         }
       } catch (e) {
+        Sentry.captureException(e);
+
         console.log(`Error in GoOnline, error: ${e.message}`);
         return socket.emit("GoOnline", {
           status: false,

@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 const {
   checkDriverOnWay,
@@ -246,6 +247,8 @@ module.exports = (io, socket) => {
         releaseEvent(); //Stop event locker
       }
     } catch (e) {
+      Sentry.captureException(e);
+
       console.log(`Error in IgnoreOrder event: ${e.message}`, e);
       return socket.emit("IgnoreOrder", {
         status: false,

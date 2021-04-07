@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const express = require("express");
 const router = express.Router();
 const OrderModel = require("../../models/Order");
@@ -106,13 +107,14 @@ router.post("/", async (req, res) => {
 
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+    console.log(`Error in CancelOrder endpoint: ${e.message}`, e);
     if (!res.headersSent) {
       return res.json({
         status: false,
         message: `Error in CancelOrder endpoint: ${e.message}`,
       });
     }
-    console.log(`Error in CancelOrder endpoint: ${e.message}`, e);
   }
 });
 

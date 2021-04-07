@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const admin = require("firebase-admin");
 
 module.exports = async ({
@@ -66,6 +67,8 @@ module.exports = async ({
 
     // console.log(`Firebase sent,`, result);
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in sendNotification, error: ${e.message}`);
   }
 };

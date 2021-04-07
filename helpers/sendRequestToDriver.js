@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 const mutex = new Mutex();
 const DeliverySettingsModel = require("../models/DeliverySettings");
@@ -262,11 +263,14 @@ const sendRequestToDriver = async ({
 
           console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
           //Set the order to not found
-          await updateOrderStatus({
+          const result = await updateOrderStatus({
             orderId: orderSearch.master.orderId,
             statusId: 2,
           });
 
+          if (!result.status) {
+            throw new Error(result.message);
+          }
           //Update the order
           await OrderModel.updateOne(
             {
@@ -299,6 +303,8 @@ const sendRequestToDriver = async ({
     };
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in sendRequetToDriver() method: ${e.message}`, e);
 
     return {

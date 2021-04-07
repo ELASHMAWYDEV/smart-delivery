@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
@@ -69,6 +70,8 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
 
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in findNearestDriver()`, e);
     return {
       status: false,

@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 //Models
 const DriverModel = require("../../models/Driver");
@@ -94,6 +95,8 @@ module.exports = (io, socket) => {
         releaseEvent(); //Stop event locker
       }
     } catch (e) {
+      Sentry.captureException(e);
+
       console.log(`Error in UpdateLocation, error: ${e.message}`);
       socket.emit("UpdateLocation", {
         status: false,

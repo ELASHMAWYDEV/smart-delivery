@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const axios = require("axios");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
@@ -49,6 +50,8 @@ module.exports = async ({ statusId, orderId }) => {
 
     /******************************************************/
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in updateOrderStatus(): ${e.message}`);
 
     return {

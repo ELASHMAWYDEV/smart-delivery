@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const axios = require("axios");
 const { API_URI } = require("../globals");
 const OrderModel = require("../models/Order");
@@ -104,6 +105,8 @@ module.exports = async ({ token, orders }) => {
       failedOrders,
     };
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in createOrder() method: ${e.message}`);
     return {
       status: false,

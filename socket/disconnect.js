@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const { disconnectDriver } = require("../helpers");
 
 //Models
@@ -38,6 +39,8 @@ module.exports = (io, socket) => {
         console.log(`Client ${clientId[0]} disconnected`);
       }
     } catch (e) {
+      Sentry.captureException(e);
+
       console.log(`Error on disconnect, error: ${e.message}`, e);
     }
   });
