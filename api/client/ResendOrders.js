@@ -1,7 +1,7 @@
 const Sentry = require("@sentry/node");
 const express = require("express");
 const router = express.Router();
-const { ordersMutex } = require("./NewOrderRequest");
+const { ordersMutex } = require("../../globals");
 
 //Helpers
 const {

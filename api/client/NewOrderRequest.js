@@ -4,11 +4,7 @@ const router = express.Router();
 const { validationResult } = require("express-validator");
 const orderValidator = require("../../validators/order");
 const DeliverySettingsModel = require("../../models/DeliverySettings");
-const { Mutex } = require("async-mutex");
-const ordersMutex = new Mutex();
-
-
-module.exports.ordersMutex = ordersMutex;
+const { ordersMutex } = require("../../globals");
 
 //Helpers
 const {

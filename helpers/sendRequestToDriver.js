@@ -1,6 +1,5 @@
 const Sentry = require("@sentry/node");
-const { Mutex } = require("async-mutex");
-const mutex = new Mutex();
+const { ordersMutex } = require("../globals");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
@@ -107,10 +106,6 @@ const sendRequestToDriver = async ({
     });
 
     /******************************************************/
-
-    console.log(
-      `Emitted order ${master.orderId} to driver ${driverSearch.driverId}`
-    );
     //Send a request to the driver
     io.to(drivers.get(parseInt(driverSearch.driverId))).emit(
       "NewOrderRequest",
@@ -166,7 +161,7 @@ const sendRequestToDriver = async ({
        *
        * */
 
-      const release = await mutex.acquire(); //Block code execution for sequentially placing orders
+      const release = await ordersMutex.acquire(); //Block code execution for sequentially placing orders
 
       /***********************************************************/
       try {
