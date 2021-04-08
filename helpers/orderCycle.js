@@ -30,6 +30,8 @@ module.exports = async ({
   const release = await mutex.acquire(); //Block code execution for sequentially placing orders
 
   try {
+
+    console.log(sendRequestToDriver);
     orderId = parseInt(orderId);
     //Put the order at the ordersInterval map
     if (!ordersInterval.has(orderId))
@@ -122,57 +124,57 @@ module.exports = async ({
           message: `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way`,
         };
       }
-
-      /******************************************************/
-
-      //Find nearest driver & send request to him
-      let nearestDriverResult = await findNearestDriver({
-        orderId: orderSearch.master.orderId,
-        driversIds,
-      });
-
-      if (nearestDriverResult.status) {
-        let { driverId } = nearestDriverResult;
-
-        //Send the request to driver
-        const result = await sendRequestToDriver({
-          driverId,
-          orderId: orderSearch.master.orderId,
-        });
-
-        //Continue if order was sent to the driver
-        if (result.status) {
-          return {
-            status: true,
-            message: `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}  after no action`,
-          };
-        }
-      }
-      /******************************************************/
-
-      //Set the order to not found
-      result = await updateOrderStatus({
-        orderId: orderSearch.master.orderId,
-        statusId: 2,
-      });
-
-      if (!result.status) {
-        Sentry.captureMessage(result.message);
-        return result;
-      }
-      //Update the order
-      await OrderModel.updateOne(
-        {
-          "master.orderId": orderSearch.master.orderId,
-        },
-        {
-          $set: {
-            "master.statusId": 2, //Not found
-            "master.driverId": null,
-          },
-        }
-      );
     }
+
+    /******************************************************/
+
+    //Find nearest driver & send request to him
+    let nearestDriverResult = await findNearestDriver({
+      orderId: orderSearch.master.orderId,
+      driversIds,
+    });
+
+    if (nearestDriverResult.status) {
+      let { driverId } = nearestDriverResult;
+
+      //Send the request to driver
+      const result = await sendRequestToDriver({
+        driverId,
+        orderId: orderSearch.master.orderId,
+      });
+
+      //Continue if order was sent to the driver
+      if (result.status) {
+        return {
+          status: true,
+          message: `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}  after no action`,
+        };
+      }
+    }
+    /******************************************************/
+
+    //Set the order to not found
+    const result = await updateOrderStatus({
+      orderId: orderSearch.master.orderId,
+      statusId: 2,
+    });
+
+    if (!result.status) {
+      Sentry.captureMessage(result.message);
+      return result;
+    }
+    //Update the order
+    await OrderModel.updateOne(
+      {
+        "master.orderId": orderSearch.master.orderId,
+      },
+      {
+        $set: {
+          "master.statusId": 2, //Not found
+          "master.driverId": null,
+        },
+      }
+    );
 
     /********************************************************/
     //Clear all intervals in memory related to this orders
