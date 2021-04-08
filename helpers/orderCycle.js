@@ -30,8 +30,6 @@ module.exports = async ({
   const release = await mutex.acquire(); //Block code execution for sequentially placing orders
 
   try {
-
-    console.log(sendRequestToDriver);
     orderId = parseInt(orderId);
     //Put the order at the ordersInterval map
     if (!ordersInterval.has(orderId))
@@ -121,7 +119,7 @@ module.exports = async ({
       if (result.status) {
         return {
           status: true,
-          message: `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way`,
+          message: `Order ${orderSearch.master.orderId} was sent to driver ${driverId} on way`,
         };
       }
     }
@@ -147,7 +145,7 @@ module.exports = async ({
       if (result.status) {
         return {
           status: true,
-          message: `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}  after no action`,
+          message: `Order ${orderSearch.master.orderId} was sent to driver ${driverId}  after no action`,
         };
       }
     }
