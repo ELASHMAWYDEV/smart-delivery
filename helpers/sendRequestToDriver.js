@@ -108,6 +108,9 @@ const sendRequestToDriver = async ({
 
     /******************************************************/
 
+    console.log(
+      `Emitted order ${master.orderId} to driver ${driverSearch.driverId}`
+    );
     //Send a request to the driver
     io.to(drivers.get(parseInt(driverSearch.driverId))).emit(
       "NewOrderRequest",
