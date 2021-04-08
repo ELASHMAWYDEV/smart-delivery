@@ -103,7 +103,7 @@ const sendRequestToDriver = async ({
       body: `Order #${master.orderId} has been sent to you by ${master.branchNameEn}`,
       type: "1",
       deviceType: +driverSearch.deviceType, // + To Number
-      data: { orderId: master.orderId },
+      data: { orderId: master.orderId.toString() },
     });
 
     /******************************************************/
