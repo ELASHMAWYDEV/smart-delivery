@@ -83,7 +83,7 @@ module.exports = (io, socket) => {
 
       for (let order of busyOrders) {
         //Send the driver's location to the customer
-        io.to(customers.get(order.master.orderId)).emit("TrackOrder", {
+        io.to(customers.get(parseInt(order.master.orderId))).emit("TrackOrder", {
           lat,
           lng,
         });
