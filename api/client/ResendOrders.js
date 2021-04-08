@@ -1,8 +1,7 @@
 const Sentry = require("@sentry/node");
 const express = require("express");
 const router = express.Router();
-const { Mutex } = require("async-mutex");
-const mutex = new Mutex();
+const { ordersMutex } = require("./NewOrderRequest");
 
 //Helpers
 const {
@@ -82,7 +81,7 @@ router.post("/", async (req, res) => {
        *
        * */
 
-      const release = await mutex.acquire(); //Block code execution for sequentially placing orders
+      const release = await ordersMutex.acquire(); //Block code execution for sequentially placing orders
 
       /***********************************************************/
       try {

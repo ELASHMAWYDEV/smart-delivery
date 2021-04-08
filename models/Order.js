@@ -17,7 +17,7 @@ const pointSchema = new mongoose.Schema({
 const masterSchema = new mongoose.Schema({
   orderId: Number,
   branchId: Number,
-  driverId: { type: Number, default: null },
+  driverId: Number,
   branchNameAr: String,
   branchNameEn: String,
   branchAddress: String,

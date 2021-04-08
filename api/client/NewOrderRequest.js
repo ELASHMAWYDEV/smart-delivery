@@ -5,7 +5,10 @@ const { validationResult } = require("express-validator");
 const orderValidator = require("../../validators/order");
 const DeliverySettingsModel = require("../../models/DeliverySettings");
 const { Mutex } = require("async-mutex");
-const mutex = new Mutex();
+const ordersMutex = new Mutex();
+
+
+module.exports.ordersMutex = ordersMutex;
 
 //Helpers
 const {
@@ -89,7 +92,7 @@ router.post("/", orderValidator, async (req, res) => {
        *
        * */
 
-      const release = await mutex.acquire(); //Block code execution for sequentially placing orders
+      const release = await ordersMutex.acquire(); //Block code execution for sequentially placing orders
 
       /***********************************************************/
       try {
