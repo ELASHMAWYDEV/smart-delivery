@@ -2,7 +2,6 @@ const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
-const { activeOrders } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -83,9 +82,6 @@ module.exports = (io, socket) => {
         }
       );
 
-      /******************************************************/
-      //Remove the orders from activeOrders --> rubbish
-      ordersIds.forEach((id) => activeOrders.delete(id));
       /******************************************************/
 
       socket.emit("ReceiveOrder", {

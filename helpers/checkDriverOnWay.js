@@ -61,7 +61,7 @@ module.exports = async ({
           driver.driverId,
         ]);
 
-        return { status: true, driver: driver };
+        return { status: true, driverId: driver.driverId };
       }
     }
     /******************************************************/

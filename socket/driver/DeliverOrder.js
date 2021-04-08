@@ -3,7 +3,6 @@ const { Mutex } = require("async-mutex");
 const { deliverOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
-const { activeOrders } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -106,9 +105,6 @@ module.exports = (io, socket) => {
           }
         );
 
-        /******************************************************/
-        //Remove the order from activeOrders --> rubbish
-        activeOrders.delete(orderId);
         /******************************************************/
 
         socket.emit("DeliverOrder", {

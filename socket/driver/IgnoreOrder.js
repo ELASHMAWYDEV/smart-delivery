@@ -1,19 +1,9 @@
 const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
-const {
-  checkDriverOnWay,
-  sendRequestToDriver,
-  findNearestDriver,
-  updateOrderStatus,
-} = require("../../helpers");
+const { orderCycle } = require("../../helpers");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
-const {
-  clients,
-  ordersInterval,
-  drivers,
-  ordersMutex,
-} = require("../../globals");
+const { ordersInterval, drivers } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -152,126 +142,11 @@ module.exports = (io, socket) => {
         orderId,
       });
 
-      /******************************************************/
-
-      /*
-       *
-       *
-       * @@@@@WARNING@@@@
-       *   Mutext is BLOCKING code execution here
-       *   Make sure to RELEASE in finally
-       * @@@@@WARNING@@@@
-       *
-       *
-       * */
-
-      const releaseOrder = await ordersMutex.acquire(); //Block code execution for sequentially placing orders
-
       /***********************************************************/
-      try {
-        orderSearch = await OrderModel.findOne({
-          "master.orderId": orderId,
-        });
 
-        //Check if any driver on the way to this restaurant
-        let driverOnWay = await checkDriverOnWay({
-          branchId: orderSearch.master.branchId,
-          orderId,
-        });
-
-        //Send request to driverOnWay
-        if (driverOnWay.status) {
-          let { driver } = driverOnWay;
-          const result = await sendRequestToDriver({
-            driver,
-            orderId: orderSearch.master.orderId,
-          });
-
-          if (result.status) {
-            console.log(
-              `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way`
-            );
-
-            //Send to the driver all is OK
-            return socket.emit("IgnoreOrder", {
-              status: true,
-              isAuthorize: true,
-              message: `Order #${orderId} ignored successfully`,
-              orderId,
-            });
-          }
-        }
-
-        /******************************************************/
-
-        //Find nearest driver & send request to him
-        let nearestDriverResult = await findNearestDriver({
-          orderId: orderSearch.master.orderId,
-        });
-
-        if (nearestDriverResult.status) {
-          const result = await sendRequestToDriver({
-            driver: nearestDriverResult.driver.driverId,
-            orderId: orderSearch.master.orderId,
-          });
-
-          if (result.status) {
-            console.log(
-              `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}`
-            );
-            //Send to the driver all is OK
-            return socket.emit("IgnoreOrder", {
-              status: true,
-              isAuthorize: true,
-              message: `Order #${orderId} ignored successfully`,
-              orderId,
-            });
-          }
-        }
-
-        console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
-
-        const updateResult = await updateOrderStatus({
-          statusId: 2,
-          orderId: orderSearch.master.orderId,
-        });
-
-        if (!updateResult.status) {
-          //Send to the driver all is OK
-          return socket.emit("IgnoreOrder", { ...updateResult, orderId });
-        }
-
-        //Update the order
-        await OrderModel.updateOne(
-          {
-            "master.orderId": orderId,
-          },
-          {
-            $set: {
-              "master.statusId": 2, //Not found
-              "master.driverId": null,
-            },
-          }
-        );
-
-        //Send to the client
-        io.to(clients.get(orderSearch.master.branchId)).emit("NoDriversFound", {
-          status: true,
-          message: `No drivers found for order #${orderSearch.master.orderId}`,
-          orderSearch,
-        });
-      } catch (e) {
-        Sentry.captureException(e);
-
-        console.log(`Error in IgnoreOrder event: ${e.message}`, e);
-        return socket.emit("IgnoreOrder", {
-          status: false,
-          message: `Error in IgnoreOrder event: ${e.message}`,
-          orderId,
-        });
-      } finally {
-        releaseOrder(); //Stop orders locker
-      }
+      //Send the order to the next driver
+      const result = await orderCycle({ orderId });
+      console.log(result.message);
 
       /******************************************************/
     } catch (e) {

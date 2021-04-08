@@ -1,53 +1,48 @@
 const Sentry = require("@sentry/node");
-const { ordersMutex } = require("../globals");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const {
-  drivers,
-  ordersInterval,
-  activeOrders,
-  activeOrderDrivers,
-} = require("../globals");
+const { drivers, ordersInterval } = require("../globals");
 const { io } = require("../index");
 
 //Helpers
 const sendNotification = require("./sendNotification");
-const updateOrderStatus = require("./updateOrderStatus");
-const checkDriverOnWay = require("./checkDriverOnWay");
-const findNearestDriver = require("./findNearestDriver");
+const orderCycle = require("./orderCycle");
 
-const sendRequestToDriver = async ({
-  driver,
-  orderId,
-  driversIds = [],
-  orderDriversLimit = 2,
-}) => {
+module.exports = async ({ driverId, orderId }) => {
   try {
-    // //Get the trip data from ordersInterval map
+    driverId = parseInt(driverId);
+
+    //Get the trip data from ordersInterval map
     if (!ordersInterval.has(orderId)) {
-      return io.to(drivers.get(driver.driverId)).emit("NewOrderRequest", {
+      return io.to(drivers.get(driverId)).emit("NewOrderRequest", {
         status: false,
         message: `Sorry you couldn't catch the order, Error Code: 59`,
       });
     }
     /**************************************************************/
     //Get the driver again
-    let driverSearch = await DriverModel.findOne({ driverId: driver.driverId });
+    let driverSearch = await DriverModel.findOne({ driverId });
 
-    if (!driverSearch)
+    if (!driverSearch) {
+      Sentry.captureMessage(
+        `Couldn't send request to driver: #${driver.driverId}`
+      );
       return {
         status: false,
         message: `Couldn't send request to driver: #${driver.driverId}`,
       };
+    }
 
     /**************************************************************/
 
-    let { timeoutFunction } = ordersInterval.get(orderId);
+    //Clear last timeout of the order if exist
+    let { timeoutFunction } = ordersInterval.get(orderId) || {};
 
+    if (timeoutFunction) {
+      clearTimeout(timeoutFunction);
+    }
     /**************************************************************/
-    //Clear the timeoutFunction
-    clearTimeout(timeoutFunction);
 
     //Get timerSeconds from settings
     let timerSeconds;
@@ -107,32 +102,29 @@ const sendRequestToDriver = async ({
 
     /******************************************************/
     //Send a request to the driver
-    io.to(drivers.get(parseInt(driverSearch.driverId))).emit(
-      "NewOrderRequest",
-      {
-        status: true,
-        message: "You have a new order request",
-        timerSeconds,
-        order: {
-          orderId: master.orderId,
-          branchId: master.branchId,
-          branchNameAr: master.branchNameAr,
-          branchNameEn: master.branchNameEn,
-          branchAddress: master.branchAddress,
-          receiverAddress: master.receiverAddress,
-          receiverDistance: master.receiverDistance,
-          branchLogo: master.branchLogo,
-          paymentTypeEn: master.paymentTypeEn,
-          paymentTypeAr: master.paymentTypeAr,
-          deliveryPriceEn: master.deliveryPriceEn,
-          deliveryPriceAr: master.deliveryPriceAr,
-          branchLocation: {
-            lng: master.branchLocation.coordinates[0],
-            lat: master.branchLocation.coordinates[1],
-          },
+    io.to(drivers.get(driverId)).emit("NewOrderRequest", {
+      status: true,
+      message: "You have a new order request",
+      timerSeconds,
+      order: {
+        orderId: master.orderId,
+        branchId: master.branchId,
+        branchNameAr: master.branchNameAr,
+        branchNameEn: master.branchNameEn,
+        branchAddress: master.branchAddress,
+        receiverAddress: master.receiverAddress,
+        receiverDistance: master.receiverDistance,
+        branchLogo: master.branchLogo,
+        paymentTypeEn: master.paymentTypeEn,
+        paymentTypeAr: master.paymentTypeAr,
+        deliveryPriceEn: master.deliveryPriceEn,
+        deliveryPriceAr: master.deliveryPriceAr,
+        branchLocation: {
+          lng: master.branchLocation.coordinates[0],
+          lat: master.branchLocation.coordinates[1],
         },
-      }
-    );
+      },
+    });
 
     /***********************************************************/
     /*
@@ -150,151 +142,13 @@ const sendRequestToDriver = async ({
 
     //Set the timeout to be timerSeconds * 2
     timeoutFunction = setTimeout(async () => {
-      /*
-       *
-       *
-       * @@@@@WARNING@@@@
-       *   Mutext is BLOCKING code execution here
-       *   Make sure to RELEASE in finally
-       * @@@@@WARNING@@@@
-       *
-       *
-       * */
-
-      const release = await ordersMutex.acquire(); //Block code execution for sequentially placing orders
-
       /***********************************************************/
-      try {
-        //Check if the trip was accepted by any driver
-        let orderSearch = await OrderModel.findOne({
-          "master.orderId": orderId,
-          "master.statusId": 1,
-        });
 
-        if (!orderSearch) return clearTimeout(timeoutFunction);
-        /************************************/
+      //Send the order to the next driver
+      const result = await orderCycle({ orderId });
+      console.log(result.message);
 
-        //Check if last driver has any busy orders
-        if (orderSearch.master.driverId) {
-          //Remove the driver from the order
-          await OrderModel.updateOne(
-            {
-              "master.orderId": orderSearch.master.orderId,
-            },
-            {
-              $set: {
-                "master.driverId": null,
-              },
-            }
-          );
-
-          const busyOrders = await OrderModel.countDocuments({
-            "master.statusId": { $in: [1, 3, 4] },
-            "master.driverId": orderSearch.master.driverId,
-          });
-
-          //Set the driver to be not busy
-          await DriverModel.updateOne(
-            {
-              driverId: orderSearch.master.driverId,
-            },
-            {
-              isBusy: busyOrders > 0 ? true : false,
-            }
-          );
-        }
-
-        /************************************/
-
-        if (orderSearch && !activeOrders.has(orderId)) {
-          //Check if any driver on the way to this restaurant
-          let driverOnWay = await checkDriverOnWay({
-            branchId: orderSearch.master.branchId,
-            orderId: orderSearch.master.orderId,
-            driversIds,
-            orderDriversLimit: orderDriversLimit || 2,
-          });
-
-          //Send request to driverOnWay
-          if (driverOnWay.status) {
-            let { driver } = driverOnWay;
-            const result = await sendRequestToDriver({
-              driver,
-              orderId: orderSearch.master.orderId,
-              driversIds,
-              orderDriversLimit: orderDriversLimit || 2,
-            });
-
-            //Continue if order was sent to the driver
-            if (result.status) {
-              console.log(
-                `Order ${orderSearch.master.orderId} was sent to driver ${driver.driverId} on way after no action`
-              );
-              return;
-            }
-          }
-
-          /******************************************************/
-
-          //Find nearest driver & send request to him
-          let nearestDriverResult = await findNearestDriver({
-            orderId: orderSearch.master.orderId,
-          });
-
-          if (nearestDriverResult.status) {
-            //Send the request to driver
-            const result = await sendRequestToDriver({
-              driver: nearestDriverResult.driver,
-              orderId: orderSearch.master.orderId,
-              driversIds,
-              orderDriversLimit: orderDriversLimit || 2,
-            });
-
-            //Continue if order was sent to the driver
-            if (result.status) {
-              console.log(
-                `Order ${orderSearch.master.orderId} was sent to driver ${nearestDriverResult.driver.driverId}  after no action`
-              );
-              return;
-            }
-          }
-          /******************************************************/
-
-          console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
-          //Set the order to not found
-          const result = await updateOrderStatus({
-            orderId: orderSearch.master.orderId,
-            statusId: 2,
-          });
-
-          if (!result.status) {
-            throw result.message;
-          }
-          //Update the order
-          await OrderModel.updateOne(
-            {
-              "master.orderId": orderSearch.master.orderId,
-            },
-            {
-              $set: {
-                "master.statusId": 2, //Not found
-                "master.driverId": null,
-              },
-            }
-          );
-        }
-      } catch (e) {
-        Sentry.captureException(e);
-
-        console.log(`Error in sendRequetToDriver() method: ${e.message}`, e);
-
-        return {
-          status: false,
-          message: `Error in sendRequetToDriver() method: ${e.message}`,
-        };
-      } finally {
-        release(); //Release the mutex blocking
-      }
+      /******************************************************/
     }, timerSeconds * 2 * 1000);
 
     /******************************************************/
@@ -307,7 +161,6 @@ const sendRequestToDriver = async ({
     return {
       status: true,
       message: "request sent successfully",
-      order: orderSearch,
     };
     /******************************************************/
   } catch (e) {
@@ -321,5 +174,3 @@ const sendRequestToDriver = async ({
     };
   }
 };
-
-module.exports = sendRequestToDriver;

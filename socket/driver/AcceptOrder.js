@@ -4,7 +4,7 @@ const {
   updateOrderStatus,
   getEstimatedDistanceDuration,
 } = require("../../helpers");
-const { activeOrders, drivers } = require("../../globals");
+const { drivers } = require("../../globals");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 
@@ -70,17 +70,6 @@ module.exports = (io, socket) => {
       }
 
       /******************************************************/
-
-      //Check if order wasn't accepted by another driver
-      //Check memory first for fast seacrch
-      if (activeOrders.has(orderId))
-        return socket.emit("AcceptOrder", {
-          status: false,
-          isAuthorize: true,
-          message: `Sorry another driver accepted this order #${orderId}`,
-          orderId,
-        });
-      /******************************************************/
       //Check if order exist on DB
       let orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
@@ -99,9 +88,6 @@ module.exports = (io, socket) => {
           orderId,
         });
 
-      /******************************************************/
-      //Save the driver to the active orders
-      activeOrders.set(orderId, driverId);
       /***************************************************/
 
       orderSearch = await OrderModel.findOne({
@@ -166,7 +152,6 @@ module.exports = (io, socket) => {
         Sentry.captureMessage(
           `Error in API, AcceptOrder event, order: ${orderId}, error: ${updateResult.message}`
         );
-        activeOrders.delete(orderId);
         //Update the order status on DB
         await OrderModel.updateOne(
           {
@@ -213,8 +198,6 @@ module.exports = (io, socket) => {
             isAuthorize: true,
             message: "Sorry, another driver accepted the trip",
           });
-
-          //If the driver is on socket set isSeenNoCatch
         }
       }
       /******************************************************/
@@ -230,31 +213,11 @@ module.exports = (io, socket) => {
       );
 
       /***************************************************/
-      socket.emit("AcceptOrder", {
+      return socket.emit("AcceptOrder", {
         status: true,
         message: `Order #${orderId} accepted successfully`,
         orderId,
       });
-
-      /***************************************************/
-
-      /***************************************************/
-      //In case 2 drivers accepted at the same time  -------> EventLocks solved this issue
-      // setTimeout(async () => {
-      //   let orderSearch = await OrderModel.findOne({
-      //     orderId,
-      //     driverId,
-      //   });
-
-      //   //Send error to the driver
-      //   if (!orderSearch) {
-      //     socket.emit("AcceptTrip", {
-      //       status: false,
-      //       isAuthorize: true,
-      //       message: `Sorry, you couldn't catch order #${orderId}. Another driver accepted it, hard luck next time :)`,
-      //     });
-      //   }
-      // }, 2000);
 
       /******************************************************/
     } catch (e) {

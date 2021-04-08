@@ -4,7 +4,7 @@ const router = express.Router();
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 const { io } = require("../../index");
-const { drivers, activeOrders } = require("../../globals");
+const { drivers } = require("../../globals");
 const { sendNotification } = require("../../helpers");
 
 router.post("/", async (req, res) => {
@@ -63,10 +63,6 @@ router.post("/", async (req, res) => {
       const driverSearch = await DriverModel.findOne({
         driverId: orderSearch.master.driverId,
       });
-
-      /******************************************************/
-      //Remove the trip from activeOrders
-      activeOrders.delete(orderId);
 
       /******************************************************/
 

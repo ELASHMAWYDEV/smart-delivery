@@ -2,12 +2,7 @@ const Sentry = require("@sentry/node");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
-const {
-  activeOrderDrivers,
-  ordersInterval,
-  activeOrders,
-  // driverBusyOrdersAndBranch,
-} = require("../globals");
+const { activeOrderDrivers } = require("../globals");
 
 module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
   try {
@@ -44,17 +39,8 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
       },
     });
 
-    //If no driver found , send message to client
+    //If no driver found
     if (!driverSearch) {
-      let { timeoutFunction } = ordersInterval.get(orderId) || {};
-
-      //Clear all order intervals
-      if (timeoutFunction) {
-        clearTimeout(timeoutFunction);
-      }
-      activeOrderDrivers.delete(orderId);
-      ordersInterval.delete(orderId);
-      activeOrders.delete(orderId);
       return { status: false, message: "No drivers found" };
     }
 
@@ -66,7 +52,7 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
 
     /******************************************************/
 
-    return { status: true, driver: driverSearch };
+    return { status: true, driverId: driverSearch.driverId };
 
     /******************************************************/
   } catch (e) {
