@@ -112,10 +112,8 @@ module.exports = (io, socket) => {
           status: true,
           isAuthorize: true,
           isOnline,
-          isHasOrder:
-            busyActiveOrders.length > 0 && busyCreatedOrders.length == 0
-              ? true
-              : false,
+          isHasOrder: busyActiveOrders.length > 0 ? true : false,
+          isHasCreatedOrder: busyCreatedOrders.length > 0 ? true : false,
           message: `The driver is set to ${isOnline ? "online" : "offline"}`,
           busyOrders,
         });
