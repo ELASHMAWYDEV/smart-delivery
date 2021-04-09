@@ -1,6 +1,6 @@
 const Sentry = require("@sentry/node");
 const DriverModel = require("../models/Driver");
-const { drivers } = require("../globals");
+const { drivers, disconnectInterval } = require("../globals");
 
 module.exports = (io) => {
   io.on("connection", async (socket) => {
@@ -12,23 +12,26 @@ module.exports = (io) => {
     if (query.driverId && query.token) {
       query.driverId = parseInt(query.driverId); //Parse the driverId
 
-      //Check if token is valid
-      let driverSearch = await DriverModel.findOne({
-        driverId: query.driverId,
-        accessToken: query.token,
-      });
+      //Remove from the disconnect interval
+      disconnectInterval.delete(driverId);
 
-      if (!driverSearch) {
-        socket.emit("JoinDriver", {
-          status: false,
-          isAuthorize: false,
-          isOnline: false,
-          message: "You are not authorized",
-        });
-      } else {
-        //Update the driver on drivers Map
-        drivers.set(query.driverId, socket.id);
-      }
+      // //Check if token is valid
+      // let driverSearch = await DriverModel.findOne({
+      //   driverId: query.driverId,
+      //   accessToken: query.token,
+      // });
+
+      // if (!driverSearch) {
+      //   socket.emit("JoinDriver", {
+      //     status: false,
+      //     isAuthorize: false,
+      //     isOnline: false,
+      //     message: "You are not authorized",
+      //   });
+      // } else {
+      //   //Update the driver on drivers Map
+      //   drivers.set(query.driverId, socket.id);
+      // }
     }
 
     /**************************************************************/

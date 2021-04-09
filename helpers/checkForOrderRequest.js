@@ -15,13 +15,13 @@ module.exports = async ({ socket, driverId }) => {
       timerSeconds = deliverySettings.timerSeconds;
 
     /*************************************************************/
-    //Search for this driver on a order with & requestStatus = 4 & isSeenNoCatch = false
+    //Search for this driver on a order with & requestStatus = 4 & isSeenOrder = false
     let ordersSearch = await OrderModel.find({
-      "master.driverId": driverId,
+      // "master.driverId": driverId,
       "master.statusId": 1,
       driversFound: {
         $elemMatch: {
-          isSeenNoCatch: false,
+          isSeenOrder: false,
           requestStatus: 4,
           driverId,
         },
@@ -45,7 +45,7 @@ module.exports = async ({ socket, driverId }) => {
 
       if (timePassed >= timerSeconds - 0.5) {
         console.log(
-          `Sent false about new order request ${master.orderId} to driver ${driverId} on GoOnline`
+          `Sent false about new order request ${master.orderId} to driver ${driverId} on Join`
         );
 
         setTimeout(() => {
@@ -56,7 +56,7 @@ module.exports = async ({ socket, driverId }) => {
             message:
               "Sorry, you couldn't catch the order request !\nHard luck next time",
           });
-        }, 1000);
+        }, 500);
 
         /*************************************************************/
 
@@ -66,15 +66,13 @@ module.exports = async ({ socket, driverId }) => {
             "master.orderId": master.orderId,
             driversFound: {
               $elemMatch: {
-                isSeenNoCatch: false,
-                requestStatus: 4,
                 driverId,
               },
             },
           },
           {
             $set: {
-              "driversFound.$.isSeenNoCatch": true,
+              "driversFound.$.isSeenOrder": true,
             },
           }
         );
@@ -110,7 +108,7 @@ module.exports = async ({ socket, driverId }) => {
               },
             },
           });
-        }, 1000);
+        }, 200);
       }
     }
 

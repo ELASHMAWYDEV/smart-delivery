@@ -79,7 +79,7 @@ const orderDriversSchema = new mongoose.Schema({
     type: Number,
     default: new Date().getTime(),
   },
-  isSeenNoCatch: {
+  isSeenOrder: {
     type: Boolean,
     default: false,
   },

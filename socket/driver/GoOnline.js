@@ -68,31 +68,17 @@ module.exports = (io, socket) => {
 
         //Search for busy orders
         let busyOrders = await OrderModel.find({
-          "master.statusId": { $in: [1, 3, 4] },
+          "master.statusId": { $in: [3, 4] },
           "master.driverId": driverId,
         });
-
-        let busyActiveOrders = busyOrders.filter((order) =>
-          [3, 4].includes(order.master.statusId)
-        );
-
-        let busyCreatedOrders = busyOrders.filter(
-          (order) => order.master.statusId == 1
-        );
-
-        if (busyCreatedOrders.length != 0) {
-          await checkForOrderRequest({ socket, driverId });
-        }
-
-        busyOrders = busyOrders.map((order) => order.master.orderId);
 
         /***************************************************/
 
         let isOnline = status == 1 ? true : false;
-        if (busyActiveOrders.length > 0 && status == 1) isOnline = true;
-        if (busyActiveOrders.length > 0 && status == 2) isOnline = true;
-        if (busyActiveOrders.length == 0 && status == 1) isOnline = true;
-        if (busyActiveOrders.length == 0 && status == 2) isOnline = false;
+        if (busyOrders.length > 0 && status == 1) isOnline = true;
+        if (busyOrders.length > 0 && status == 2) isOnline = true;
+        if (busyOrders.length == 0 && status == 1) isOnline = true;
+        if (busyOrders.length == 0 && status == 2) isOnline = false;
 
         //Update the driver
         await DriverModel.updateOne(
@@ -112,10 +98,7 @@ module.exports = (io, socket) => {
           status: true,
           isAuthorize: true,
           isOnline,
-          isHasOrder: busyActiveOrders.length > 0 ? true : false,
-          isHasCreatedOrder: busyCreatedOrders.length > 0 ? true : false,
           message: `The driver is set to ${isOnline ? "online" : "offline"}`,
-          busyOrders,
         });
 
         /***************************************************/
