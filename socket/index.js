@@ -49,6 +49,7 @@ module.exports = (io) => {
     require("./driver/ReceiveOrder")(io, socket);
     require("./driver/DeliverOrder")(io, socket);
     require("./driver/UpdateLocation")(io, socket);
+    require("./driver/HaveSeenOrder")(io, socket);
 
     /**************************************************************/
     require("./disconnect")(io, socket);
