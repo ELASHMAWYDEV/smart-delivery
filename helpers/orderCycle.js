@@ -11,7 +11,7 @@ const sendRequestToDriver = require("./sendRequestToDriver");
 const findNearestDriver = require("./findNearestDriver");
 const updateOrderStatus = require("./updateOrderStatus");
 
-module.exports = async ({
+const orderCycle = async ({
   orderId,
   driversIds = [],
   orderDriversLimit = 2,
@@ -203,3 +203,5 @@ module.exports = async ({
     release();
   }
 };
+
+module.exports = orderCycle;
