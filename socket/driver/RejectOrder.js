@@ -1,6 +1,6 @@
 const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
-const { orderCycle } = require("../../helpers");
+const orderCycle = require("../../helpers/orderCycle");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 

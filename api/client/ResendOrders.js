@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 //Helpers
-const { orderCycle } = require("../../helpers");
+const orderCycle = require("../../helpers/orderCycle");
 
 const OrderModel = require("../../models/Order");
 /*

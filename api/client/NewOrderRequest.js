@@ -5,8 +5,8 @@ const { validationResult } = require("express-validator");
 const orderValidator = require("../../validators/order");
 
 //Helpers
-const { createOrder, orderCycle } = require("../../helpers");
-
+const { createOrder } = require("../../helpers");
+const orderCycle = require("../../helpers/orderCycle");
 /*
  *
  * This route handles new order requests sent from the client (restaurant)
