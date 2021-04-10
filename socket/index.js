@@ -13,7 +13,7 @@ module.exports = (io) => {
       query.driverId = parseInt(query.driverId); //Parse the driverId
 
       //Remove from the disconnect interval
-      disconnectInterval.delete(driverId);
+      //disconnectInterval.delete(driverId);
 
       // //Check if token is valid
       // let driverSearch = await DriverModel.findOne({
