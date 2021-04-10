@@ -7,9 +7,8 @@ const { io } = require("../index");
 
 //Helpers
 const sendNotification = require("./sendNotification");
-const orderCycle = require("./orderCycle");
 
-module.exports = async ({ driverId, orderId }) => {
+const sendRequestToDriver = async ({ driverId, orderId }) => {
   try {
     driverId = parseInt(driverId);
 
@@ -144,6 +143,8 @@ module.exports = async ({ driverId, orderId }) => {
     timeoutFunction = setTimeout(async () => {
       /***********************************************************/
 
+      const orderCycle = require("./orderCycle");
+
       //Send the order to the next driver
       const result = await orderCycle({ orderId });
       console.log(result.message);
@@ -174,3 +175,5 @@ module.exports = async ({ driverId, orderId }) => {
     };
   }
 };
+
+module.exports = sendRequestToDriver;
