@@ -22,22 +22,20 @@
 <body>
 
   <h2>Event Name:</h2>
-  <p class="data">GoOnline</p>
+  <p class="data">HaveSeenOrder</p>
   <br>
   <h3>Type:</h3>
   <p>Emmit / Listen</p>
   <br>
   <h3>Description: </h3>
-  <p>Driver should trigger this event when he wants to online or set himself offline</p>
+  <p>Driver should trigger this event once he listens for NewOrderRequest event</p>
   <hr>
   <h2>Request: </h2>
   <pre class="data">
     {
+      orderId: 150,
       driverId: 2,
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
-      status: 1, ===> 1 `online`|| 2 `offline`,
-      firebaseToken: "fdsacdsacdsc4dcadsc54dsacf",
-      deviceType: 1, 1 ==> android, 2 ==> ios
+      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
     }
   </pre>
   <hr>
@@ -46,10 +44,8 @@
 
   <pre id="response" class="data">
     {
-      status: true,
-      isAuthorize: true,
-      isOnline: true | false,
-      message: "The driver is set to online",
+      "status": true,
+      "message": "Order have been marked as seen successfully"
     }
   </pre>
   <hr>
