@@ -56,10 +56,6 @@ const orderCycle = async ({
       }
       activeOrderDrivers.delete(orderId);
       ordersInterval.delete(orderId);
-
-      Sentry.captureMessage(
-        `Order ${orderId} has changed from created to another status`
-      );
       return {
         status: false,
         message: `Order ${orderId} has changed from created to another status`,

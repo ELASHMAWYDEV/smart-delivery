@@ -18,114 +18,119 @@ const { checkForOrderRequest } = require("../../helpers");
 let EventLocks = new Map();
 
 module.exports = (io, socket) => {
-  socket.on("JoinDriver", async ({ driverId, token }) => {
-    /*
-     * Start the Event Locker from here
-     */
+  socket.on(
+    "JoinDriver",
+    async ({ driverId, token, firebaseToken, deviceType = 2 }) => {
+      /*
+       * Start the Event Locker from here
+       */
 
-    if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
+      if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
 
-    const releaseEvent = await EventLocks.get(driverId).acquire();
+      const releaseEvent = await EventLocks.get(driverId).acquire();
 
-    /********************************************************/
-    try {
-      console.log(`JoinDriver Event Called, driver id: ${driverId}`);
+      /********************************************************/
+      try {
+        console.log(`JoinDriver Event Called, driver id: ${driverId}`);
 
-      //Developement errors
-      if (!driverId)
-        return socket.emit("AcceptOrder", {
-          status: false,
-          message: "driverId is missing",
+        //Developement errors
+        if (!driverId)
+          return socket.emit("AcceptOrder", {
+            status: false,
+            message: "driverId is missing",
+          });
+        if (!token)
+          return socket.emit("AcceptOrder", {
+            status: false,
+            message: "token is missing",
+          });
+
+        /********************************************************/
+        //Parse driverId
+        driverId = parseInt(driverId);
+
+        /********************************************************/
+
+        //Check if token is valid
+        let driverSearch = await DriverModel.findOne({
+          driverId,
+          accessToken: token,
         });
-      if (!token)
-        return socket.emit("AcceptOrder", {
-          status: false,
-          message: "token is missing",
+
+        if (!driverSearch) {
+          return socket.emit("JoinDriver", {
+            status: false,
+            isAuthorize: false,
+            isOnline: false,
+            message: "You are not authorized",
+          });
+        }
+
+        /******************************************************/
+
+        //Add driver to the socket
+        drivers.set(driverId, socket.id);
+        //Remove from the disconnect interval
+        disconnectInterval.delete(driverId);
+
+        /********************************************************/
+        //Search for busy orders
+        let isHasOrder = false;
+        let busyOrders = await OrderModel.find({
+          "master.statusId": { $in: [1, 3, 4] },
+          "master.driverId": driverId,
         });
 
-      /********************************************************/
-      //Parse driverId
-      driverId = parseInt(driverId);
+        let busyActiveOrders = busyOrders.filter((order) =>
+          [3, 4].includes(order.master.statusId)
+        );
 
-      /********************************************************/
+        let busyCreatedOrders = busyOrders.filter(
+          (order) => order.master.statusId == 1
+        );
 
-      //Check if token is valid
-      let driverSearch = await DriverModel.findOne({
-        driverId,
-        accessToken: token,
-      });
+        if (busyActiveOrders.length != 0) {
+          isHasOrder = true;
+        }
 
-      if (!driverSearch) {
-        return socket.emit("JoinDriver", {
-          status: false,
-          isAuthorize: false,
-          isOnline: false,
-          message: "You are not authorized",
+        busyOrders = busyOrders.map((order) => order.master.orderId);
+
+        //If isHasOrder true --> force him Online if he was offline
+        if (isHasOrder && driverSearch.isOnline == false) {
+          await DriverModel.updateOne({ driverId }, { isOnline: true,  firebaseToken, deviceType = 2 });
+        } else {
+          await DriverModel.updateOne({ driverId }, {  firebaseToken, deviceType = 2 });
+        }
+
+        /********************************************************/
+
+        //Send back to the driver
+        socket.emit("JoinDriver", {
+          status: true,
+          isAuthorize: true,
+          isOnline: isHasOrder || driverSearch.isOnline,
+          isHasOrder,
+          message: `join success, socket id: ${socket.id}`,
+          busyOrders,
         });
+
+        /********************************************************/
+
+        if (busyCreatedOrders.length != 0) {
+          await checkForOrderRequest({ socket, driverId }); //Send him orders that he have not seen
+        }
+        /***************************************************/
+      } catch (e) {
+        Sentry.captureException(e);
+
+        console.log(`Error in JoinDriver, error: ${e.message}`);
+        socket.emit("JoinDriver", {
+          status: false,
+          message: `Error in JoinDriver, error: ${e.message}`,
+        });
+      } finally {
+        releaseEvent(); //Stop event locker
       }
-
-      /******************************************************/
-
-      //Add driver to the socket
-      drivers.set(driverId, socket.id);
-      //Remove from the disconnect interval
-      disconnectInterval.delete(driverId);
-
-      /********************************************************/
-      //Search for busy orders
-      let isHasOrder = false;
-      let busyOrders = await OrderModel.find({
-        "master.statusId": { $in: [1, 3, 4] },
-        "master.driverId": driverId,
-      });
-
-      let busyActiveOrders = busyOrders.filter((order) =>
-        [3, 4].includes(order.master.statusId)
-      );
-
-      let busyCreatedOrders = busyOrders.filter(
-        (order) => order.master.statusId == 1
-      );
-
-      if (busyActiveOrders.length != 0) {
-        isHasOrder = true;
-      }
-
-      busyOrders = busyOrders.map((order) => order.master.orderId);
-
-      //If isHasOrder true --> force him Online if he was offline
-      if (isHasOrder && driverSearch.isOnline == false) {
-        await DriverModel.updateOne({ driverId }, { isOnline: true });
-      }
-
-      /********************************************************/
-
-      //Send back to the driver
-      socket.emit("JoinDriver", {
-        status: true,
-        isAuthorize: true,
-        isOnline: isHasOrder || driverSearch.isOnline,
-        isHasOrder,
-        message: `join success, socket id: ${socket.id}`,
-        busyOrders,
-      });
-
-      /********************************************************/
-
-      if (busyCreatedOrders.length != 0) {
-        await checkForOrderRequest({ socket, driverId }); //Send him orders that he have not seen
-      }
-      /***************************************************/
-    } catch (e) {
-      Sentry.captureException(e);
-
-      console.log(`Error in JoinDriver, error: ${e.message}`);
-      socket.emit("JoinDriver", {
-        status: false,
-        message: `Error in JoinDriver, error: ${e.message}`,
-      });
-    } finally {
-      releaseEvent(); //Stop event locker
     }
-  });
+  );
 };

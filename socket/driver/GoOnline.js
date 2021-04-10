@@ -20,7 +20,7 @@ let EventLocks = new Map();
 module.exports = (io, socket) => {
   socket.on(
     "GoOnline",
-    async ({ driverId, status, token, firebaseToken, deviceType = 2 }) => {
+    async ({ driverId, status, token }) => {
       /*
        * Start the Event Locker from here
        */
@@ -87,8 +87,6 @@ module.exports = (io, socket) => {
             $set: {
               isOnline,
               isBusy: busyOrders.length > 0 ? true : false,
-              deviceType,
-              firebaseToken,
             },
           }
         );

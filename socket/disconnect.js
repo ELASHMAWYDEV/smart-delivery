@@ -26,7 +26,10 @@ module.exports = (io, socket) => {
 
         //Check if driver is online & Send notifications to him after disconnect
         if (driverSearch && driverSearch.isOnline) {
-          await disconnectDriver({ driverId: driverId[0] });
+          await DriverModel.updateOne(
+            { driverId: driverId[0] },
+            { isOnline: false }
+          );
         }
 
         /************************************************************/
