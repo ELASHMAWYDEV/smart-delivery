@@ -15,6 +15,10 @@ const pointSchema = new mongoose.Schema({
 });
 
 const masterSchema = new mongoose.Schema({
+  createDate: {
+    type: Date,
+    default: Date.now(),
+  },
   orderId: Number,
   branchId: Number,
   driverId: Number,
