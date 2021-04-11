@@ -4,7 +4,7 @@ const {
   updateOrderStatus,
   getEstimatedDistanceDuration,
 } = require("../../helpers");
-const { drivers } = require("../../globals");
+const { ordersInterval, drivers } = require("../../globals");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 
@@ -186,6 +186,15 @@ module.exports = (io, socket) => {
       //Get the order again
       orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
       orderSearch = orderSearch && orderSearch.toObject();
+
+      /***********************************************************/
+      //Clear last timeout of the order if exist
+      let { timeoutFunction } = ordersInterval.get(orderId) || {};
+
+      if (timeoutFunction) {
+        clearTimeout(timeoutFunction);
+      }
+
       /******************************************************/
 
       //Emit to other drivers that this driver accepted the trip

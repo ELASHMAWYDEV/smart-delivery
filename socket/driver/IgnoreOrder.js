@@ -144,6 +144,14 @@ module.exports = (io, socket) => {
 
       /***********************************************************/
 
+      //Clear last timeout of the order if exist
+      let { timeoutFunction } = ordersInterval.get(orderId) || {};
+
+      if (timeoutFunction) {
+        clearTimeout(timeoutFunction);
+      }
+
+      /***********************************************************/
       //Send the order to the next driver
       const result = await orderCycle({ orderId });
       console.log(result.message);

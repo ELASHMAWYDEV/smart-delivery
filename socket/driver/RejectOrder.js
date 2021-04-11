@@ -3,6 +3,7 @@ const { Mutex } = require("async-mutex");
 const orderCycle = require("../../helpers/orderCycle");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
+const { ordersInterval } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -122,7 +123,14 @@ module.exports = (io, socket) => {
       });
 
       /***********************************************************/
+      //Clear last timeout of the order if exist
+      let { timeoutFunction } = ordersInterval.get(orderId) || {};
 
+      if (timeoutFunction) {
+        clearTimeout(timeoutFunction);
+      }
+
+      /***********************************************************/
       //Send the order to the next driver
       const result = await orderCycle({ orderId });
       console.log(result.message);

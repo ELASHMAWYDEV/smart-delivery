@@ -56,7 +56,7 @@ module.exports = async ({ socket, driverId }) => {
             message:
               "Sorry, you couldn't catch the order request !\nHard luck next time",
           });
-        }, 500);
+        }, 800);
 
         /*************************************************************/
 
