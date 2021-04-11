@@ -46,7 +46,7 @@ module.exports = (io, socket) => {
           //Set the driver to be not busy
           await DriverModel.updateOne(
             {
-              driverId,
+              driverId: driverId[0],
             },
             {
               isBusy: busyOrders.length >= 1 ? true : false,
