@@ -4,7 +4,7 @@ const { Mutex } = require("async-mutex");
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
-const orderCycle = require("../../helpers/ordersCycle");
+const orderCycle = require("../../helpers/orderCycle");
 
 //Globals
 let { drivers, disconnectInterval, ordersInterval } = require("../../globals");
