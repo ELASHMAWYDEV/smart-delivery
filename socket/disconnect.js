@@ -1,11 +1,12 @@
 const Sentry = require("@sentry/node");
-const { disconnectDriver } = require("../helpers");
+const orderCycle = require("../helpers/orderCycle");
 
 //Models
 const DriverModel = require("../models/Driver");
+const OrderModel = require("../models/Order");
 
 //Globals
-let { clients, drivers } = require("../globals");
+let { clients, drivers, ordersInterval } = require("../globals");
 
 module.exports = (io, socket) => {
   socket.on("disconnect", async () => {
@@ -33,6 +34,40 @@ module.exports = (io, socket) => {
             { driverId: driverId[0] },
             { isOnline: false }
           );
+        }
+
+        if (driverSearch && driverSearch.isBusy) {
+          //Check if driver has any busy orders
+          const busyOrders = await OrderModel.find({
+            "master.statusId": { $in: [1, 3, 4] },
+            "master.driverId": driverId[0],
+          });
+
+          //Set the driver to be not busy
+          await DriverModel.updateOne(
+            {
+              driverId,
+            },
+            {
+              isBusy: busyOrders.length >= 1 ? true : false,
+            }
+          );
+
+          //Clear the created orders timeout if exist
+          busyOrders.map((order) => {
+            if (order.master.statusId == 1) {
+              let { timeoutFunction } =
+                ordersInterval.get(parseInt(order.master.orderId)) || {};
+
+              if (timeoutFunction) {
+                clearTimeout(timeoutFunction);
+              }
+
+              /***********************************************************/
+              //Send the order to the next driver
+              orderCycle({ orderId: order.master.orderId });
+            }
+          });
         }
 
         /************************************************************/
