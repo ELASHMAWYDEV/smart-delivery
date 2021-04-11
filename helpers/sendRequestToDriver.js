@@ -146,8 +146,7 @@ const sendRequestToDriver = async ({ driverId, orderId }) => {
       const orderCycle = require("./orderCycle");
 
       //Send the order to the next driver
-      const result = await orderCycle({ orderId });
-      // console.log(result.message);
+      orderCycle({ orderId });
 
       /******************************************************/
     }, timerSeconds * 2 * 1000);

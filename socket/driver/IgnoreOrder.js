@@ -153,8 +153,7 @@ module.exports = (io, socket) => {
 
       /***********************************************************/
       //Send the order to the next driver
-      const result = await orderCycle({ orderId });
-      // console.log(result.message);
+      orderCycle({ orderId });
 
       /******************************************************/
     } catch (e) {

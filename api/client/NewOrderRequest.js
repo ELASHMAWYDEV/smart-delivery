@@ -58,12 +58,13 @@ router.post("/", orderValidator, async (req, res) => {
      */
     /******************************************************/
     //Loop through orders
-    // for (let order of ordersAfterSave) {
     Promise.all(
-      ordersAfterSave.map((order) => orderCycle({ orderId: order.master.orderId }))
+      ordersAfterSave.map((order) =>
+        orderCycle({ orderId: order.master.orderId })
+      )
     );
 
-    // }
+    //THE OUTSTANDING SOLUTION :) *********VOILA**********
 
     /******************************************************/
   } catch (e) {
