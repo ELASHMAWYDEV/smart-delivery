@@ -4,12 +4,10 @@ const { Mutex } = require("async-mutex");
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
+const orderCycle = require("../../helpers/ordersCycle");
 
 //Globals
-let { drivers, disconnectInterval } = require("../../globals");
-
-//Helpers
-const { checkForOrderRequest } = require("../../helpers");
+let { drivers, disconnectInterval, ordersInterval } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -65,22 +63,44 @@ module.exports = (io, socket) => {
       /******************************************************/
 
       //Search for busy orders
-      let busyOrders = await OrderModel.countDocuments({
-        "master.statusId": { $in: [3, 4] },
+      let busyOrders = await OrderModel.find({
+        "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
+      });
+
+      let busyCreatedOrders = busyOrders.filter(
+        (order) => order.master.statusId == 1
+      );
+      let busyActiveOrders = busyOrders.filter(
+        (order) => order.master.statusId != 1
+      );
+
+      /***********************************************************/
+      //Clear the created orders timeout if exist
+      busyCreatedOrders.map((order) => {
+        let { timeoutFunction } =
+          ordersInterval.get(parseInt(order.master.orderId)) || {};
+
+        if (timeoutFunction) {
+          clearTimeout(timeoutFunction);
+        }
+
+        /***********************************************************/
+        //Send the order to the next driver
+        orderCycle({ orderId: order.master.orderId });
       });
 
       /***************************************************/
 
       let isOnline = status == 1 ? true : false;
       let isForced = false;
-      if (busyOrders > 0 && status == 1) isOnline = true;
-      if (busyOrders > 0 && status == 2) {
+      if (busyActiveOrders.length > 0 && status == 1) isOnline = true;
+      if (busyActiveOrders.length > 0 && status == 2) {
         isOnline = true;
         isForced = true;
       }
-      if (busyOrders == 0 && status == 1) isOnline = true;
-      if (busyOrders == 0 && status == 2) isOnline = false;
+      if (busyActiveOrders.length == 0 && status == 1) isOnline = true;
+      if (busyActiveOrders.length == 0 && status == 2) isOnline = false;
 
       //Update the driver
       await DriverModel.updateOne(
@@ -88,7 +108,7 @@ module.exports = (io, socket) => {
         {
           $set: {
             isOnline,
-            isBusy: busyOrders > 0 ? true : false,
+            isBusy: busyActiveOrders.length > 0 ? true : false,
           },
         }
       );
