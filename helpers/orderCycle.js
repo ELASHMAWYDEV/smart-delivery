@@ -56,6 +56,9 @@ const orderCycle = async ({
       }
       activeOrderDrivers.delete(orderId);
       ordersInterval.delete(orderId);
+      console.log(
+        `Order ${orderId} has changed from created to another status`
+      );
       return {
         status: false,
         message: `Order ${orderId} has changed from created to another status`,
@@ -113,6 +116,9 @@ const orderCycle = async ({
 
       //Continue if order was sent to the driver
       if (result.status) {
+        console.log(
+          `Order ${orderSearch.master.orderId} was sent to driver ${driverId} on way`
+        );
         return {
           status: true,
           message: `Order ${orderSearch.master.orderId} was sent to driver ${driverId} on way`,
@@ -139,6 +145,9 @@ const orderCycle = async ({
 
       //Continue if order was sent to the driver
       if (result.status) {
+        console.log(
+          `Order ${orderSearch.master.orderId} was sent to driver ${driverId}`
+        );
         return {
           status: true,
           message: `Order ${orderSearch.master.orderId} was sent to driver ${driverId}`,
@@ -182,6 +191,7 @@ const orderCycle = async ({
     ordersInterval.delete(orderId);
 
     /********************************************************/
+    console.log(`Order ${orderSearch.master.orderId}, no drivers found`);
     return {
       status: true,
       message: `Order ${orderSearch.master.orderId}, no drivers found`,
