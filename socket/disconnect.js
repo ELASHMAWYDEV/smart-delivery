@@ -22,7 +22,10 @@ module.exports = (io, socket) => {
       if (!clientId && driverId && driverId.length != 0) {
         drivers.delete(driverId[0]);
 
-        const driverSearch = DriverModel.findOne({ driverId: driverId[0] });
+        const driverSearch = await DriverModel.findOne({
+          driverId: driverId[0],
+        });
+        driverSearch = driverSearch && driverSearch.toObject();
 
         //Check if driver is online & Send notifications to him after disconnect
         if (driverSearch && driverSearch.isOnline) {
