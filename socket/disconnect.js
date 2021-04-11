@@ -22,7 +22,7 @@ module.exports = (io, socket) => {
       if (!clientId && driverId && driverId.length != 0) {
         drivers.delete(driverId[0]);
 
-        const driverSearch = await DriverModel.findOne({
+        let driverSearch = await DriverModel.findOne({
           driverId: driverId[0],
         });
         driverSearch = driverSearch && driverSearch.toObject();
