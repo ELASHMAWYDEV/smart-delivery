@@ -7,7 +7,6 @@ const { io } = require("../index");
 
 //Helpers
 const sendNotification = require("./sendNotification");
-const orderCycle = require("./orderCycle");
 
 const sendRequestToDriver = async ({
   driverId,
@@ -62,6 +61,7 @@ const sendRequestToDriver = async ({
     if (busyDrivers.has(driverId)) {
       console.log(busyDrivers.get(driverId));
       const { branchId, busyOrders } = busyDrivers.get(driverId);
+      const orderCycle = require("./orderCycle");
 
       //If not the same branch --> go & check for another driver
       if (branchId != order.master.branchId) {
