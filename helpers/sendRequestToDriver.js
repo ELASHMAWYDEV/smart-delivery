@@ -72,7 +72,11 @@ const sendRequestToDriver = async ({
       const orderCycle = require("./orderCycle");
 
       //If not the same branch --> go & check for another driver
-      if (branchId != order.master.branchId && busyOrders.length >= 1) {
+      if (
+        branchId &&
+        branchId != order.master.branchId &&
+        busyOrders.length >= 1
+      ) {
         orderCycle({ orderId, driversIds, orderDriversLimit });
         return {
           status: true,
@@ -208,7 +212,7 @@ const sendRequestToDriver = async ({
       };
 
       busyDrivers.set(driverId, {
-        busyOrders: busyOrders.filter((order) => order != orderId),
+        busyOrders: new Set(busyOrders.filter((order) => order != orderId)),
         branchId:
           busyOrders.filter((order) => order != orderId).length == 0
             ? null
