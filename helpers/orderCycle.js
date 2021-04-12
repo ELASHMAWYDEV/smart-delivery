@@ -96,12 +96,13 @@ const orderCycle = async ({
 
       //Remove the order id & check if there any other orders
       busyDrivers.set(+orderSearch.master.driverId, {
-        busyOrders: busyOrdersDB.filter(
-          (id) => id != orderSearch.master.driverId
-        ),
+        busyOrders: busyOrdersDB
+          .filter((order) => order.master.orderId != orderSearch.master.orderId)
+          .map((order) => order.master.orderId),
         branchId:
-          busyOrdersDB.filter((id) => id != orderSearch.master.driverId)
-            .length == 0
+          busyOrdersDB.filter(
+            (order) => order.master.orderId != orderSearch.master.orderId
+          ).length == 0
             ? null
             : branchId,
       });
