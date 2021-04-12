@@ -3,6 +3,7 @@ const { Mutex } = require("async-mutex");
 const { deliverOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
+const { busyDrivers } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -90,10 +91,19 @@ module.exports = (io, socket) => {
 
         /******************************************************/
         //Check if driver has any busy orders
-        const busyOrders = await OrderModel.countDocuments({
+        const busyOrders = await OrderModel.find({
           "master.statusId": { $in: [1, 3, 4] },
           "master.driverId": driverId,
         });
+
+        /******************************************************/
+        //Update in memory first
+        busyDrivers.set(driverId, {
+          busyOrders: busyOrders.map((order) => order.master.orderId),
+          branchId:
+            busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
+        });
+        /******************************************************/
 
         //Set the driver to be not busy
         await DriverModel.updateOne(
@@ -101,7 +111,7 @@ module.exports = (io, socket) => {
             driverId,
           },
           {
-            isBusy: busyOrders > 0 ? true : false,
+            isBusy: busyOrders.length > 0 ? true : false,
           }
         );
 

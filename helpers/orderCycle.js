@@ -3,7 +3,7 @@ const { Mutex } = require("async-mutex");
 const mutex = new Mutex();
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const { ordersInterval, activeOrderDrivers } = require("../globals");
+const { activeOrders, activeOrderDrivers } = require("../globals");
 
 //Helpers
 const checkDriverOnWay = require("./checkDriverOnWay");
@@ -31,9 +31,9 @@ const orderCycle = async ({
 
   try {
     orderId = parseInt(orderId);
-    //Put the order at the ordersInterval map
-    if (!ordersInterval.has(orderId))
-      ordersInterval.set(orderId, {
+    //Put the order at the activeOrders map
+    if (!activeOrders.has(orderId))
+      activeOrders.set(orderId, {
         timeoutFunction: setTimeout(() => null, 0),
       });
 
@@ -48,14 +48,14 @@ const orderCycle = async ({
 
     if (!orderSearch) {
       //Clear all intervals in memory related to this orders
-      let { timeoutFunction } = ordersInterval.get(orderId) || {};
+      let { timeoutFunction } = activeOrders.get(orderId) || {};
 
       //Clear all order intervals
       if (timeoutFunction) {
         clearTimeout(timeoutFunction);
       }
       activeOrderDrivers.delete(orderId);
-      ordersInterval.delete(orderId);
+      activeOrders.delete(orderId);
       console.log(
         `Order ${orderId} has changed from created to another status`
       );
@@ -111,17 +111,17 @@ const orderCycle = async ({
       let { driverId } = driverOnWay;
       let result = await sendRequestToDriver({
         driverId,
-        orderId: orderSearch.master.orderId,
+        order: orderSearch,
+        driversIds,
+        orderDriversLimit,
       });
 
       //Continue if order was sent to the driver
       if (result.status) {
-        console.log(
-          `Order ${orderSearch.master.orderId} was sent to driver ${driverId} on way`
-        );
+        console.log(result.message);
         return {
           status: true,
-          message: `Order ${orderSearch.master.orderId} was sent to driver ${driverId} on way`,
+          message: result.message,
         };
       }
     }
@@ -140,17 +140,17 @@ const orderCycle = async ({
       //Send the request to driver
       const result = await sendRequestToDriver({
         driverId,
-        orderId: orderSearch.master.orderId,
+        order: orderSearch,
+        driversIds,
+        orderDriversLimit,
       });
 
       //Continue if order was sent to the driver
       if (result.status) {
-        console.log(
-          `Order ${orderSearch.master.orderId} was sent to driver ${driverId}`
-        );
+        console.log(result.message);
         return {
           status: true,
-          message: `Order ${orderSearch.master.orderId} was sent to driver ${driverId}`,
+          message: result.message,
         };
       }
     }
@@ -181,14 +181,14 @@ const orderCycle = async ({
 
     /********************************************************/
     //Clear all intervals in memory related to this orders
-    let { timeoutFunction } = ordersInterval.get(orderId) || {};
+    let { timeoutFunction } = activeOrders.get(orderId) || {};
 
     //Clear all order intervals
     if (timeoutFunction) {
       clearTimeout(timeoutFunction);
     }
     activeOrderDrivers.delete(orderId);
-    ordersInterval.delete(orderId);
+    activeOrders.delete(orderId);
 
     /********************************************************/
     console.log(`Order ${orderSearch.master.orderId}, no drivers found`);

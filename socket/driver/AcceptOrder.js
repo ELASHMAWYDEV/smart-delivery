@@ -4,7 +4,7 @@ const {
   updateOrderStatus,
   getEstimatedDistanceDuration,
 } = require("../../helpers");
-const { ordersInterval, drivers } = require("../../globals");
+const { activeOrders, drivers, busyDrivers } = require("../../globals");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 
@@ -49,8 +49,9 @@ module.exports = (io, socket) => {
         });
 
       /********************************************************/
-      //Parse driverId
+      //Parsing
       driverId = parseInt(driverId);
+      orderId = parseInt(orderId);
 
       /********************************************************/
 
@@ -182,6 +183,22 @@ module.exports = (io, socket) => {
           },
         }
       );
+
+      /******************************************************/
+
+      let busyOrders = busyDrivers.get(driverId).busyOrders || [];
+
+      //Update in memory first
+      busyDrivers.set(orderSearch.master.driverId, {
+        busyOrders: [
+          ...new Set([
+            ...busyOrders.map((order) => order.master.orderId),
+            orderId,
+          ]),
+        ],
+        branchId: orderSearch.master.branchId,
+      });
+
       /******************************************************/
       //Get the order again
       orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
@@ -189,7 +206,7 @@ module.exports = (io, socket) => {
 
       /***********************************************************/
       //Clear last timeout of the order if exist
-      let { timeoutFunction } = ordersInterval.get(orderId) || {};
+      let { timeoutFunction } = activeOrders.get(orderId) || {};
 
       if (timeoutFunction) {
         clearTimeout(timeoutFunction);

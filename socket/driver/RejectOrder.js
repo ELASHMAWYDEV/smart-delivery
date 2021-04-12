@@ -3,7 +3,7 @@ const { Mutex } = require("async-mutex");
 const orderCycle = require("../../helpers/orderCycle");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
-const { ordersInterval } = require("../../globals");
+const { activeOrders, busyDrivers } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -46,6 +46,9 @@ module.exports = (io, socket) => {
 
       /********************************************************/
 
+      driverId = parseInt(driverId);
+
+      /********************************************************/
       //Check if token is valid
       let driverSearch = await DriverModel.findOne({
         driverId,
@@ -99,10 +102,18 @@ module.exports = (io, socket) => {
       );
       /******************************************************/
       //Check if driver has any busy orders
-      const busyOrders = await OrderModel.countDocuments({
+      const busyOrders = await OrderModel.find({
         "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
       });
+
+      /******************************************************/
+      //Update in memory first
+      busyDrivers.set(orderSearch.master.driverId, {
+        busyOrders: busyOrders.map((order) => order.master.orderId),
+        branchId: busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
+      });
+      /******************************************************/
 
       //Set the driver to be not busy
       await DriverModel.updateOne(
@@ -110,7 +121,7 @@ module.exports = (io, socket) => {
           driverId,
         },
         {
-          isBusy: busyOrders >= 1 ? true : false,
+          isBusy: busyOrders.length >= 1 ? true : false,
         }
       );
 
@@ -124,7 +135,7 @@ module.exports = (io, socket) => {
 
       /***********************************************************/
       //Clear last timeout of the order if exist
-      let { timeoutFunction } = ordersInterval.get(orderId) || {};
+      let { timeoutFunction } = activeOrders.get(orderId) || {};
 
       if (timeoutFunction) {
         clearTimeout(timeoutFunction);

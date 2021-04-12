@@ -2,18 +2,26 @@ const Sentry = require("@sentry/node");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const { drivers, ordersInterval } = require("../globals");
+const { drivers, activeOrders, busyDrivers } = require("../globals");
 const { io } = require("../index");
 
 //Helpers
 const sendNotification = require("./sendNotification");
+const orderCycle = require("./orderCycle");
 
-const sendRequestToDriver = async ({ driverId, orderId }) => {
+const sendRequestToDriver = async ({
+  driverId,
+  order,
+  driversIds = [],
+  orderDriversLimit = 2,
+}) => {
   try {
     driverId = parseInt(driverId);
 
-    //Get the trip data from ordersInterval map
-    if (!ordersInterval.has(orderId)) {
+    let { orderId } = order.master;
+
+    //Get the trip data from activeOrders map
+    if (!activeOrders.has(orderId)) {
       return io.to(drivers.get(driverId)).emit("NewOrderRequest", {
         status: false,
         message: `Sorry you couldn't catch the order, Error Code: 59`,
@@ -36,7 +44,7 @@ const sendRequestToDriver = async ({ driverId, orderId }) => {
     /**************************************************************/
 
     //Clear last timeout of the order if exist
-    let { timeoutFunction } = ordersInterval.get(orderId) || {};
+    let { timeoutFunction } = activeOrders.get(orderId) || {};
 
     if (timeoutFunction) {
       clearTimeout(timeoutFunction);
@@ -48,6 +56,32 @@ const sendRequestToDriver = async ({ driverId, orderId }) => {
     const settings = await DeliverySettingsModel.findOne({});
     if (settings && settings.timerSeconds) timerSeconds = settings.timerSeconds;
 
+    /**************************************************************/
+
+    //Check if this driver has any busy orders or is not at the same branch ******MEMORY*******
+    if (busyDrivers.has(driverId)) {
+      const { branchId, busyOrders } = busyDrivers.get(driverId);
+
+      //If not the same branch --> go & check for another driver
+      if (branchId != order.master.branchId) {
+        orderCycle({ orderId, driversIds, orderDriversLimit });
+        return {
+          status: true,
+          message: `Order ${orderId} went wrong for driver ${driverId}, in another branch, resending to another driver`,
+        };
+      }
+
+      //If has busy orders more than limit --> go & check for another driver
+      if (busyOrders.length >= orderDriversLimit) {
+        orderCycle({ orderId, driversIds, orderDriversLimit });
+        return {
+          status: true,
+          message: `Order ${orderId} went wrong for driver ${driverId}, orders limit exceeded, resending to another driver`,
+        };
+      }
+    }
+
+    /**************************************************************/
     //Add the driver to the driversFound[] in order
     await OrderModel.updateOne(
       { "master.orderId": orderId },
@@ -146,21 +180,21 @@ const sendRequestToDriver = async ({ driverId, orderId }) => {
       const orderCycle = require("./orderCycle");
 
       //Send the order to the next driver
-      orderCycle({ orderId });
+      orderCycle({ orderId, driversIds, orderDriversLimit });
 
       /******************************************************/
     }, timerSeconds * 2 * 1000);
 
     /******************************************************/
-    //Add the timeout to ordersInterval
-    ordersInterval.set(orderId, {
-      ...(ordersInterval.get(orderId) || {}),
+    //Add the timeout to activeOrders
+    activeOrders.set(orderId, {
+      ...(activeOrders.get(orderId) || {}),
       timeoutFunction,
     });
 
     return {
       status: true,
-      message: "request sent successfully",
+      message: `Order ${orderId} was sent to driver ${driverId}`,
     };
     /******************************************************/
   } catch (e) {

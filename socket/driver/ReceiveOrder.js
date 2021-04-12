@@ -2,6 +2,7 @@ const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
+const { busyDrivers } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -44,6 +45,9 @@ module.exports = (io, socket) => {
 
       /********************************************************/
 
+      driverId = parseInt(driverId);
+
+      /********************************************************/
       //Check if token is valid
       let driverSearch = await DriverModel.findOne({
         driverId,
@@ -72,6 +76,12 @@ module.exports = (io, socket) => {
 
       /******************************************************/
 
+      //Update in memory first
+      busyDrivers.set(driverId, {
+        busyOrders: ordersIds,
+        branchId: branchId,
+      });
+      /******************************************************/
       //Make sure driver is busy
       await DriverModel.updateOne(
         {

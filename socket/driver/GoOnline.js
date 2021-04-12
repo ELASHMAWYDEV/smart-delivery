@@ -7,7 +7,12 @@ const OrderModel = require("../../models/Order");
 const orderCycle = require("../../helpers/orderCycle");
 
 //Globals
-let { drivers, disconnectInterval, ordersInterval } = require("../../globals");
+let {
+  drivers,
+  disconnectInterval,
+  activeOrders,
+  busyDrivers,
+} = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -67,6 +72,14 @@ module.exports = (io, socket) => {
         "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": driverId,
       });
+      /******************************************************/
+      //Update in memory first
+      busyDrivers.set(driverId, {
+        busyOrders: busyOrders.map((order) => order.master.orderId),
+        branchId: busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
+      });
+
+      /******************************************************/
 
       let busyCreatedOrders = busyOrders.filter(
         (order) => order.master.statusId == 1
@@ -79,7 +92,7 @@ module.exports = (io, socket) => {
       //Clear the created orders timeout if exist
       busyCreatedOrders.map((order) => {
         let { timeoutFunction } =
-          ordersInterval.get(parseInt(order.master.orderId)) || {};
+          activeOrders.get(parseInt(order.master.orderId)) || {};
 
         if (timeoutFunction) {
           clearTimeout(timeoutFunction);

@@ -6,7 +6,7 @@ const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 
 //Globals
-let { clients, drivers, ordersInterval } = require("../globals");
+let { clients, drivers, activeOrders } = require("../globals");
 
 module.exports = (io, socket) => {
   socket.on("disconnect", async () => {
@@ -57,7 +57,7 @@ module.exports = (io, socket) => {
           busyOrders.map((order) => {
             if (order.master.statusId == 1) {
               let { timeoutFunction } =
-                ordersInterval.get(parseInt(order.master.orderId)) || {};
+                activeOrders.get(parseInt(order.master.orderId)) || {};
 
               if (timeoutFunction) {
                 clearTimeout(timeoutFunction);

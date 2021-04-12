@@ -4,7 +4,7 @@ const router = express.Router();
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 const { io } = require("../../index");
-const { drivers } = require("../../globals");
+const { drivers, busyDrivers } = require("../../globals");
 const { sendNotification } = require("../../helpers");
 
 router.post("/", async (req, res) => {
@@ -43,11 +43,22 @@ router.post("/", async (req, res) => {
     if (orderSearch.master.driverId) {
       /******************************************************/
       //Check if driver has any busy orders
-      const busyOrders = await OrderModel.countDocuments({
+      const busyOrders = await OrderModel.find({
         "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": orderSearch.master.driverId,
       });
 
+      /******************************************************/
+      //Update in memory first
+      if (busyDrivers.has(orderSearch.master.driverId)) {
+        busyDrivers.set(orderSearch.master.driverId, {
+          busyOrders: busyOrders.map((order) => order.master.orderId),
+          branchId:
+            busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
+        });
+      }
+
+      /******************************************************/
       //Set the driver to be not busy
       await DriverModel.updateOne(
         {
