@@ -62,7 +62,6 @@ module.exports = (io, socket) => {
           message: "You are not authorized",
         });
       }
-
       /******************************************************/
 
       //Update the orders

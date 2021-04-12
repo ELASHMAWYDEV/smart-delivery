@@ -90,6 +90,22 @@ module.exports = (io, socket) => {
         });
 
       /***************************************************/
+      //Check if the driver have received orders
+      const receivedOrders = await OrderModel.find({
+        "master.driverId": driverId,
+        "master.statusId": 4,
+      });
+
+      if (receivedOrders.length != 0) {
+        return socket.emit("AcceptOrder", {
+          status: false,
+          isAuthorize: true,
+          message: "You already have received orders !",
+          orderId,
+        });
+      }
+
+      /***************************************************/
 
       orderSearch = await OrderModel.findOne({
         "master.orderId": orderId,
