@@ -109,7 +109,7 @@ module.exports = (io, socket) => {
 
       /******************************************************/
       //Update in memory first
-      busyDrivers.set(orderSearch.master.driverId, {
+      busyDrivers.set(driverId, {
         busyOrders: busyOrders.map((order) => order.master.orderId),
         branchId: busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
       });
