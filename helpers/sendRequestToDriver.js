@@ -56,7 +56,7 @@ const sendRequestToDriver = async ({
     /**************************************************************/
 
     //Get timerSeconds from settings
-    let timerSeconds;
+    let timerSeconds = 30;
     const settings = await DeliverySettingsModel.findOne({});
     if (settings && settings.timerSeconds) timerSeconds = settings.timerSeconds;
 
