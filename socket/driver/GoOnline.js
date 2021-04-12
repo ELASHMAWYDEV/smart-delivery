@@ -96,11 +96,10 @@ module.exports = (io, socket) => {
 
         if (timeoutFunction) {
           clearTimeout(timeoutFunction);
+          /***********************************************************/
+          //Send the order to the next driver
+          orderCycle({ orderId: order.master.orderId });
         }
-
-        /***********************************************************/
-        //Send the order to the next driver
-        orderCycle({ orderId: order.master.orderId });
       });
 
       /***************************************************/

@@ -2,7 +2,12 @@ const Sentry = require("@sentry/node");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const { drivers, activeOrders, busyDrivers } = require("../globals");
+const {
+  drivers,
+  activeOrders,
+  busyDrivers,
+  activeOrderDrivers,
+} = require("../globals");
 const { io } = require("../index");
 
 //Helpers
@@ -77,6 +82,10 @@ const sendRequestToDriver = async ({
 
       //If has busy orders more than limit --> go & check for another driver
       if (busyOrders.length >= orderDriversLimit) {
+        activeOrderDrivers.set(orderId, [
+          ...activeOrderDrivers.get(orderId),
+          driverId,
+        ]);
         orderCycle({ orderId, driversIds, orderDriversLimit });
         return {
           status: true,
