@@ -111,7 +111,7 @@ const sendRequestToDriver = async ({
 
     /******************************************************/
     const { busyOrders } = busyDrivers.get(driverId) || {
-      busyDrivers: [],
+      busyOrders: [],
     };
 
     //Update in memory first
