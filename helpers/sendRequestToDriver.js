@@ -206,18 +206,20 @@ const sendRequestToDriver = async ({
       /***********************************************************/
 
       //Remove the order from busyDrivers
-      let { busyOrders, branchId } = busyDrivers.get(driverId) || {
-        busyOrders: [],
-        branchId: null,
-      };
+      // let { busyOrders, branchId } = busyDrivers.get(driverId) || {
+      //   busyOrders: [],
+      //   branchId: null,
+      // };
 
-      busyDrivers.set(driverId, {
-        busyOrders: new Set(busyOrders.filter((order) => order != orderId)),
-        branchId:
-          busyOrders.filter((order) => order != orderId).length == 0
-            ? null
-            : branchId,
-      });
+      // busyDrivers.set(driverId, {
+      //   busyOrders: new Set([
+      //     ...busyOrders.filter((order) => order != orderId),
+      //   ]),
+      //   branchId:
+      //     busyOrders.filter((order) => order != orderId).length == 0
+      //       ? null
+      //       : branchId,
+      // });
 
       const orderCycle = require("./orderCycle");
 
