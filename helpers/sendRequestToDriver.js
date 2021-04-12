@@ -63,40 +63,44 @@ const sendRequestToDriver = async ({
     /**************************************************************/
 
     //Check if this driver has any busy orders or is not at the same branch ******MEMORY*******
-    if (busyDrivers.has(driverId)) {
-      console.log(`driver ${driverId}`, busyDrivers.get(driverId));
-      const { branchId, busyOrders } = busyDrivers.get(driverId) || {
-        busyOrders: [],
-        branchId: null,
+
+    console.log(`driver ${driverId}`, busyDrivers.get(driverId));
+    let { branchId, busyOrders } = busyDrivers.get(driverId) || {
+      busyOrders: [],
+      branchId: null,
+    };
+    const orderCycle = require("./orderCycle");
+
+    //If not the same branch --> go & check for another driver
+    if (
+      branchId &&
+      branchId != order.master.branchId &&
+      busyOrders.length >= 1
+    ) {
+      orderCycle({ orderId, driversIds, orderDriversLimit });
+      return {
+        status: true,
+        message: `Order ${orderId} went wrong for driver ${driverId}, in another branch, resending to another driver`,
       };
-      const orderCycle = require("./orderCycle");
-
-      //If not the same branch --> go & check for another driver
-      if (
-        branchId &&
-        branchId != order.master.branchId &&
-        busyOrders.length >= 1
-      ) {
-        orderCycle({ orderId, driversIds, orderDriversLimit });
-        return {
-          status: true,
-          message: `Order ${orderId} went wrong for driver ${driverId}, in another branch, resending to another driver`,
-        };
-      }
-
-      //If has busy orders more than limit --> go & check for another driver
-      if (busyOrders.length >= orderDriversLimit) {
-        activeOrderDrivers.set(orderId, [
-          ...activeOrderDrivers.get(orderId),
-          driverId,
-        ]);
-        orderCycle({ orderId, driversIds, orderDriversLimit });
-        return {
-          status: true,
-          message: `Order ${orderId} went wrong for driver ${driverId}, orders limit exceeded, resending to another driver`,
-        };
-      }
     }
+    /**************************************************************/
+
+    //If has busy orders more than limit --> go & check for another driver
+    if (busyOrders.length >= orderDriversLimit) {
+      orderCycle({ orderId, driversIds, orderDriversLimit });
+      return {
+        status: true,
+        message: `Order ${orderId} went wrong for driver ${driverId}, orders limit exceeded, resending to another driver`,
+      };
+    }
+
+    /******************************************************/
+
+    //Update in memory first
+    busyDrivers.set(driverId, {
+      busyOrders: [...new Set([...busyOrders, order.master.orderId])],
+      branchId: order.master.branchId,
+    });
 
     /**************************************************************/
     //Add the driver to the driversFound[] in order
@@ -121,17 +125,6 @@ const sendRequestToDriver = async ({
         },
       }
     );
-
-    /******************************************************/
-    const { busyOrders } = busyDrivers.get(driverId) || {
-      busyOrders: [],
-    };
-
-    //Update in memory first
-    busyDrivers.set(driverId, {
-      busyOrders: [...new Set([...busyOrders, order.master.orderId])],
-      branchId: order.master.branchId,
-    });
 
     /******************************************************/
     //Get the order after update
@@ -213,10 +206,10 @@ const sendRequestToDriver = async ({
 
       // busyDrivers.set(driverId, {
       //   busyOrders: new Set([
-      //     ...busyOrders.filter((order) => order != orderId),
+      //     ...busyOrders.filter((id) => id != order.master.orderId),
       //   ]),
       //   branchId:
-      //     busyOrders.filter((order) => order != orderId).length == 0
+      //     busyOrders.filter((id) => id != order.master.orderId).length == 0
       //       ? null
       //       : branchId,
       // });

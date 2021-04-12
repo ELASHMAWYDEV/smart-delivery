@@ -3,7 +3,7 @@ const { Mutex } = require("async-mutex");
 const mutex = new Mutex();
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const { activeOrders, activeOrderDrivers } = require("../globals");
+const { activeOrders, activeOrderDrivers, busyDrivers } = require("../globals");
 
 //Helpers
 const checkDriverOnWay = require("./checkDriverOnWay");
@@ -80,18 +80,40 @@ const orderCycle = async ({
         }
       );
 
-      const busyOrders = await OrderModel.countDocuments({
+      const busyOrdersDB = await OrderModel.find({
         "master.statusId": { $in: [1, 3, 4] },
         "master.driverId": orderSearch.master.driverId,
       });
 
+      /************************************/
+      //Update in memory
+      let { busyOrders, branchId } = busyDrivers.get(
+        +orderSearch.master.driverId
+      ) || {
+        busyOrders: [],
+        branchId: null,
+      };
+
+      //Remove the order id & check if there any other orders
+      busyDrivers.set(+orderSearch.master.driverId, {
+        busyOrders: busyOrdersDB.filter(
+          (id) => id != orderSearch.master.driverId
+        ),
+        branchId:
+          busyOrdersDB.filter((id) => id != orderSearch.master.driverId)
+            .length == 0
+            ? null
+            : branchId,
+      });
+
+      /************************************/
       //Set the driver busy or not
       await DriverModel.updateOne(
         {
           driverId: orderSearch.master.driverId,
         },
         {
-          isBusy: busyOrders > 0 ? true : false,
+          isBusy: busyOrdersDB.length > 0 ? true : false,
         }
       );
     }
