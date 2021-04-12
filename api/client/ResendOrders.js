@@ -59,23 +59,22 @@ router.post("/", async (req, res) => {
 
     /******************************************************/
 
-    //Loop through orders
-    for (let order of ordersExist) {
-      //Update Order status
-      await OrderModel.updateOne(
-        { "master.orderId": order.master.orderId },
-        { "master.statusId": 1 }
-      );
+    Promise.all(
+      ordersExist.map(async (order) => {
+        //Update Order status
+        await OrderModel.updateOne(
+          { "master.orderId": order.master.orderId },
+          { "master.statusId": 1 }
+        );
 
-      const result = await orderCycle({
-        orderId: order.master.orderId,
-        driversIds: drivers || [],
-        orderDriversLimit,
-      });
-
-      console.log(result.message);
-      /***********************************************************/
-    }
+        orderCycle({
+          orderId: order.master.orderId,
+          driversIds: drivers || [],
+          orderDriversLimit,
+        });
+      })
+    );
+    /***********************************************************/
   } catch (e) {
     Sentry.captureException(e);
 
