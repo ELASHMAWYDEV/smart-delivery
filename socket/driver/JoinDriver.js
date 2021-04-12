@@ -96,7 +96,7 @@ module.exports = (io, socket) => {
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
         //If isHasOrder true --> force him Online if he was offline
-        if (isHasOrder && driverSearch.isOnline == false) {
+        if (isHasOrder) {
           await DriverModel.updateOne(
             { driverId },
             { isOnline: true, firebaseToken, deviceType }
