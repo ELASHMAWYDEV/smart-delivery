@@ -60,11 +60,14 @@ const sendRequestToDriver = async ({
     //Check if this driver has any busy orders or is not at the same branch ******MEMORY*******
     if (busyDrivers.has(driverId)) {
       console.log(`driver ${driverId}`, busyDrivers.get(driverId));
-      const { branchId, busyOrders } = busyDrivers.get(driverId);
+      const { branchId, busyOrders } = busyDrivers.get(driverId) || {
+        busyOrders: [],
+        branchId: null,
+      };
       const orderCycle = require("./orderCycle");
 
       //If not the same branch --> go & check for another driver
-      if (branchId != order.master.branchId) {
+      if (branchId != order.master.branchId && busyOrders.length >= 1) {
         orderCycle({ orderId, driversIds, orderDriversLimit });
         return {
           status: true,
