@@ -6,7 +6,7 @@ const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 
 //Globals
-let { clients, drivers, activeOrders } = require("../globals");
+let { clients, drivers, activeOrders, busyDrivers } = require("../globals");
 
 module.exports = (io, socket) => {
   socket.on("disconnect", async () => {
@@ -22,53 +22,42 @@ module.exports = (io, socket) => {
       //Delete if driver
       if (!clientId && driverId && driverId.length != 0) {
         drivers.delete(driverId[0]);
+        //Delete in memory first
+        busyDrivers.delete(driverId[0]);
 
         let driverSearch = await DriverModel.findOne({
           driverId: driverId[0],
         });
         driverSearch = driverSearch && driverSearch.toObject();
 
-        //Check if driver is online & Send notifications to him after disconnect
-        if (driverSearch && driverSearch.isOnline) {
-          await DriverModel.updateOne(
-            { driverId: driverId[0] },
-            { isOnline: false }
-          );
-        }
+        //Search for busy orders
+        let busyOrders = await OrderModel.find({
+          "master.statusId": { $in: [1, 3, 4] },
+          "master.driverId": driverId,
+        });
 
-        if (driverSearch && driverSearch.isBusy) {
-          //Check if driver has any busy orders
-          const busyOrders = await OrderModel.find({
-            "master.statusId": { $in: [1, 3, 4] },
-            "master.driverId": driverId[0],
-          });
+        /******************************************************/
 
-          //Set the driver to be not busy
-          await DriverModel.updateOne(
-            {
-              driverId: driverId[0],
-            },
-            {
-              isBusy: busyOrders.length >= 1 ? true : false,
-            }
-          );
+        let busyCreatedOrders = busyOrders.filter(
+          (order) => order.master.statusId == 1
+        );
+        let busyActiveOrders = busyOrders.filter(
+          (order) => order.master.statusId != 1
+        );
 
-          //Clear the created orders timeout if exist
-          busyOrders.map((order) => {
-            if (order.master.statusId == 1) {
-              let { timeoutFunction } =
-                activeOrders.get(parseInt(order.master.orderId)) || {};
+        /***********************************************************/
+        //Clear the created orders timeout if exist
+        busyCreatedOrders.map((order) => {
+          let { timeoutFunction } =
+            activeOrders.get(parseInt(order.master.orderId)) || {};
 
-              if (timeoutFunction) {
-                clearTimeout(timeoutFunction);
-              }
-
-              /***********************************************************/
-              //Send the order to the next driver
-              orderCycle({ orderId: order.master.orderId });
-            }
-          });
-        }
+          if (timeoutFunction) {
+            clearTimeout(timeoutFunction);
+            /***********************************************************/
+            //Send the order to the next driver
+            orderCycle({ orderId: order.master.orderId });
+          }
+        });
 
         /************************************************************/
       }
