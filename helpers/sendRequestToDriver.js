@@ -106,6 +106,17 @@ const sendRequestToDriver = async ({
     );
 
     /******************************************************/
+    const { busyOrders } = busyDrivers.get(driverId) || {
+      busyDrivers: [],
+    };
+
+    //Update in memory first
+    busyDrivers.set(driverId, {
+      busyOrders: [...new Set([...busyOrders, order.master.orderId])],
+      branchId: order.master.branchId,
+    });
+
+    /******************************************************/
     //Get the order after update
     let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
     orderSearch = orderSearch && orderSearch.toObject();

@@ -50,13 +50,10 @@ router.post("/", async (req, res) => {
 
       /******************************************************/
       //Update in memory first
-      if (busyDrivers.has(orderSearch.master.driverId)) {
-        busyDrivers.set(orderSearch.master.driverId, {
-          busyOrders: busyOrders.map((order) => order.master.orderId),
-          branchId:
-            busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
-        });
-      }
+      busyDrivers.set(orderSearch.master.driverId, {
+        busyOrders: busyOrders.map((order) => order.master.orderId),
+        branchId: busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
+      });
 
       /******************************************************/
       //Set the driver to be not busy
