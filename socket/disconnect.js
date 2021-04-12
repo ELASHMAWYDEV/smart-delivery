@@ -33,16 +33,13 @@ module.exports = (io, socket) => {
         //Search for busy orders
         let busyOrders = await OrderModel.find({
           "master.statusId": { $in: [1, 3, 4] },
-          "master.driverId": driverId,
+          "master.driverId": driverId[0],
         });
 
         /******************************************************/
 
         let busyCreatedOrders = busyOrders.filter(
           (order) => order.master.statusId == 1
-        );
-        let busyActiveOrders = busyOrders.filter(
-          (order) => order.master.statusId != 1
         );
 
         /***********************************************************/
