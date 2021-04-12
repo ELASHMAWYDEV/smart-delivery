@@ -97,7 +97,7 @@ module.exports = (io, socket) => {
 
         //If isHasOrder true --> force him Online if he was offline
 
-        let { busyOrders: busyOrdersMemory } = busyOrders.get(+driverId) || {
+        let { busyOrders: busyOrdersMemory } = busyDrivers.get(+driverId) || {
           busyOrders: [],
         };
 
