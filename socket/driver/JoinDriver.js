@@ -6,7 +6,7 @@ const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
 
 //Globals
-let { drivers, disconnectInterval } = require("../../globals");
+let { drivers, disconnectInterval, busyDrivers } = require("../../globals");
 
 //Helpers
 const { checkForOrderRequest } = require("../../helpers");
@@ -96,7 +96,12 @@ module.exports = (io, socket) => {
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
         //If isHasOrder true --> force him Online if he was offline
-        if (isHasOrder) {
+
+        let { busyOrders: busyOrdersMemory } = busyOrders.get(+driverId) || {
+          busyOrders: [],
+        };
+
+        if (isHasOrder || busyOrdersMemory.length != 0) {
           await DriverModel.updateOne(
             { driverId },
             { isOnline: true, firebaseToken, deviceType }
@@ -114,7 +119,8 @@ module.exports = (io, socket) => {
         socket.emit("JoinDriver", {
           status: true,
           isAuthorize: true,
-          isOnline: isHasOrder || driverSearch.isOnline,
+          isOnline:
+            driverSearch.isOnline || isHasOrder || busyOrdersMemory.length != 0,
           isHasOrder,
           message: `join success, socket id: ${socket.id}`,
           busyOrders,
