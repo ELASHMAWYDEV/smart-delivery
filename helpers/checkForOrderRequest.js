@@ -3,8 +3,16 @@ const Sentry = require("@sentry/node");
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 
+const lockDriversOnFunction = new Map();
+
 module.exports = async ({ socket, driverId }) => {
   try {
+    if (lockDriversOnFunction.has(driverId)) {
+      return;
+    }
+
+    lockDriversOnFunction.set(driverId, true);
+
     /*************************************************************/
 
     //Get timerSeconds
@@ -80,7 +88,7 @@ module.exports = async ({ socket, driverId }) => {
         /*************************************************************/
       } else {
         console.log(
-          `Sent the new order request ${master.orderId} to driver ${driverId} on GoOnline`
+          `Sent the new order request ${master.orderId} to driver ${driverId} on Join`
         );
 
         setTimeout(() => {
@@ -124,5 +132,7 @@ module.exports = async ({ socket, driverId }) => {
         message: `Error in checkForOrderRequest() : ${e.message}`,
       });
     }, 1000);
+  } finally {
+    lockDriversOnFunction.delete(driverId);
   }
 };
