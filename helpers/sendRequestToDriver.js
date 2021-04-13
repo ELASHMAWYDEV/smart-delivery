@@ -160,6 +160,7 @@ const sendRequestToDriver = async ({
       status: true,
       message: "You have a new order request",
       timerSeconds,
+      expiryTime: new Date().getTime() + timerSeconds * 1000,
       order: {
         orderId: master.orderId,
         branchId: master.branchId,

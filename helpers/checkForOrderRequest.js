@@ -97,6 +97,8 @@ module.exports = async ({ socket, driverId }) => {
             status: true,
             message: "You have a new order request",
             timerSeconds: timerSeconds - timePassed,
+            expiryTime:
+              new Date().getTime() + (timerSeconds - timePassed) * 1000,
             order: {
               orderId: master.orderId,
               branchId: master.branchId,
