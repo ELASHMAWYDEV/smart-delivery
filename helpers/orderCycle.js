@@ -27,7 +27,7 @@ const orderCycle = async ({
    *
    * */
 
-  // const release = await mutex.acquire(); //Block code execution for sequentially placing orders
+  const release = await mutex.acquire(); //Block code execution for sequentially placing orders
 
   try {
     orderId = parseInt(orderId);
@@ -229,7 +229,7 @@ const orderCycle = async ({
       message: `Error in orderCycle(), ${e.message}`,
     };
   } finally {
-    // release();
+    release();
   }
 };
 
