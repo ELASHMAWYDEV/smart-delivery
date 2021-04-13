@@ -117,28 +117,27 @@ module.exports = (io, socket) => {
 
       /***********************************************************/
       //Remove all created orders if the driver wants to go offline
-      if (!isOnline) {
-        const { branchId, busyOrders: busyOrdersMemory } = busyDrivers.get(
-          driverId
-        ) || {
-          busyOrders: [],
-          branchId: null,
-        };
+      const { branchId, busyOrders: busyOrdersMemory } = busyDrivers.get(
+        driverId
+      ) || {
+        busyOrders: [],
+        branchId: null,
+      };
 
-        //Remove them from memory
-        busyDrivers.set(driverId, {
-          busyOrders: busyOrdersMemory.filter(
-            (id) => !busyCreatedOrders.includes(id)
-          ),
-          branchId:
-            busyOrdersMemory.filter((id) => !busyCreatedOrders.includes(id))
-              .length == 0
-              ? null
-              : branchId,
-        });
-      }
+      //Remove them from memory
+      busyDrivers.set(driverId, {
+        busyOrders: busyOrdersMemory.filter(
+          (id) => !busyCreatedOrders.includes(id)
+        ),
+        branchId:
+          busyOrdersMemory.filter((id) => !busyCreatedOrders.includes(id))
+            .length == 0
+            ? null
+            : branchId,
+      });
       /***********************************************************/
 
+      console.log(`driver ${driverId} GoOnline`, busyDrivers.get(driverId));
       //Update the driver
       await DriverModel.updateOne(
         { driverId },
