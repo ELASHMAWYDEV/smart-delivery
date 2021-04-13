@@ -89,6 +89,7 @@ module.exports = (io, socket) => {
       );
 
       /***********************************************************/
+
       //Clear the created orders timeout if exist
       busyCreatedOrders.map((order) => {
         let { timeoutFunction } =
@@ -113,6 +114,30 @@ module.exports = (io, socket) => {
       }
       if (busyActiveOrders.length == 0 && status == 1) isOnline = true;
       if (busyActiveOrders.length == 0 && status == 2) isOnline = false;
+
+      /***********************************************************/
+      //Remove all created orders if the driver wants to go offline
+      if (!isOnline) {
+        const { branchId, busyOrders: busyOrdersMemory } = busyDrivers.get(
+          driverId
+        ) || {
+          busyOrders: [],
+          branchId: null,
+        };
+
+        //Remove them from memory
+        busyDrivers.set(driverId, {
+          busyOrders: busyOrdersMemory.filter(
+            (id) => !busyCreatedOrders.includes(id)
+          ),
+          branchId:
+            busyOrdersMemory.filter((id) => !busyCreatedOrders.includes(id))
+              .length == 0
+              ? null
+              : branchId,
+        });
+      }
+      /***********************************************************/
 
       //Update the driver
       await DriverModel.updateOne(
