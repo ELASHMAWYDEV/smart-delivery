@@ -110,7 +110,10 @@ module.exports = (io, socket) => {
             order.master.orderId
           );
           //Send the order to the next driver
-          orderCycle({ orderId: order.master.orderId });
+          orderCycle({
+            orderId: order.master.orderId,
+            driverIdSentFrom: driverId,
+          });
         }
       });
 

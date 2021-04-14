@@ -153,7 +153,7 @@ module.exports = (io, socket) => {
       ]);
       console.log("Started cycle from RejectOrder, order", orderId);
       //Send the order to the next driver
-      orderCycle({ orderId });
+      orderCycle({ orderId, driverIdSentFrom: driverId });
       /***************************************************/
     } catch (e) {
       Sentry.captureException(e);
