@@ -98,6 +98,25 @@ module.exports = (io, socket) => {
 
         if (timeoutFunction) {
           clearTimeout(timeoutFunction);
+
+          const { busyOrders: busyOrdersMemory } = busyDrivers.get(
+            driverId
+          ) || {
+            busyOrders: [],
+          };
+          /******************************************************/
+          //Update in memory
+          busyDrivers.set(driverId, {
+            busyOrders: busyOrdersMemory.filter(
+              (id) => id != order.master.orderId
+            ),
+            branchId:
+              busyOrdersMemory.filter((id) => id != order.master.orderId)
+                .length > 0
+                ? busyActiveOrders[0].master.branchId ||
+                  busyOrders[0].master.branchId
+                : null,
+          });
           /***********************************************************/
           console.log(
             "Started cycle from GoOnline, order",
