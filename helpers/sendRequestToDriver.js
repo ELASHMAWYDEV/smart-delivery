@@ -205,22 +205,59 @@ const sendRequestToDriver = async ({
     timeoutFunction = setTimeout(async () => {
       /***********************************************************/
 
-      //Remove the order from busyDrivers
-      // let { busyOrders, branchId } = busyDrivers.get(driverId) || {
-      //   busyOrders: [],
-      //   branchId: null,
-      // };
+      await OrderModel.updateOne(
+        {
+          "master.orderId": order.master.orderId,
+        },
+        {
+          $set: {
+            "master.driverId": null,
+          },
+        }
+      );
 
-      // busyDrivers.set(driverId, {
-      //   busyOrders: new Set([
-      //     ...busyOrders.filter((id) => id != order.master.orderId),
-      //   ]),
-      //   branchId:
-      //     busyOrders.filter((id) => id != order.master.orderId).length == 0
-      //       ? null
-      //       : branchId,
-      // });
+      const busyOrdersDB = await OrderModel.find({
+        "master.statusId": { $in: [1, 3, 4] },
+        "master.driverId": driverId,
+      });
 
+      /************************************/
+      //Update in memory
+      let { busyOrders, branchId } = busyDrivers.get(+driverId) || {
+        busyOrders: [],
+        branchId: null,
+      };
+
+      //Remove the order id & check if there any other orders
+      busyDrivers.set(+driverId, {
+        busyOrders: busyOrdersDB
+          .filter((orderDB) => orderDB.master.orderId != order.master.orderId)
+          .map((order) => order.master.orderId),
+        branchId:
+          busyOrdersDB.filter(
+            (orderDB) => orderDB.master.orderId != order.master.orderId
+          ).length == 0
+            ? null
+            : branchId,
+      });
+
+      /************************************/
+      //Set the driver busy or not
+      await DriverModel.updateOne(
+        {
+          driverId: driverId,
+        },
+        {
+          isBusy: busyOrdersDB.length > 0 ? true : false,
+        }
+      );
+
+      /************************************/
+      /************************************/
+      /************************************/
+      /************************************/
+      /************************************/
+      /************************************/
       const orderCycle = require("./orderCycle");
 
       console.log(

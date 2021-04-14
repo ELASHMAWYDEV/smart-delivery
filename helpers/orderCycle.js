@@ -98,60 +98,6 @@ const orderCycle = async ({
         message: `Order ${orderId} has changed from created to another status`,
       };
     }
-    /************************************/
-
-    //Check if last driver has any busy orders
-    if (orderSearch.master.driverId) {
-      //Remove the driver from the order
-      await OrderModel.updateOne(
-        {
-          "master.orderId": orderId,
-        },
-        {
-          $set: {
-            "master.driverId": null,
-          },
-        }
-      );
-
-      const busyOrdersDB = await OrderModel.find({
-        "master.statusId": { $in: [1, 3, 4] },
-        "master.driverId": orderSearch.master.driverId,
-      });
-
-      /************************************/
-      //Update in memory
-      let { busyOrders, branchId } = busyDrivers.get(
-        +orderSearch.master.driverId
-      ) || {
-        busyOrders: [],
-        branchId: null,
-      };
-
-      //Remove the order id & check if there any other orders
-      busyDrivers.set(+orderSearch.master.driverId, {
-        busyOrders: busyOrdersDB
-          .filter((order) => order.master.orderId != orderSearch.master.orderId)
-          .map((order) => order.master.orderId),
-        branchId:
-          busyOrdersDB.filter(
-            (order) => order.master.orderId != orderSearch.master.orderId
-          ).length == 0
-            ? null
-            : branchId,
-      });
-
-      /************************************/
-      //Set the driver busy or not
-      await DriverModel.updateOne(
-        {
-          driverId: orderSearch.master.driverId,
-        },
-        {
-          isBusy: busyOrdersDB.length > 0 ? true : false,
-        }
-      );
-    }
 
     /************************************/
 
