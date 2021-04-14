@@ -39,8 +39,6 @@ const orderCycle = async ({
         message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}`,
       };
     }
-    console.log("cycle map", lockOrdersOnFunction);
-
     lockOrdersOnFunction.set(orderId, true);
 
     /************************************/

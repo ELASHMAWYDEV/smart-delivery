@@ -98,9 +98,6 @@ module.exports = (io, socket) => {
         if (timeoutFunction) {
           clearTimeout(timeoutFunction);
           /***********************************************************/
-          console.log(
-            `Started cycle from GoOnline, order ${order.master.orderId}`
-          );
           //Send the order to the next driver
           orderCycle({ orderId: order.master.orderId });
         }
@@ -139,8 +136,6 @@ module.exports = (io, socket) => {
             : branchId,
       });
       /***********************************************************/
-
-      console.log(`driver ${driverId} GoOnline`, busyDrivers.get(driverId));
       //Update the driver
       await DriverModel.updateOne(
         { driverId },

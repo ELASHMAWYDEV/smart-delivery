@@ -60,9 +60,6 @@ router.post("/", orderValidator, async (req, res) => {
     //Loop through orders
     Promise.all(
       ordersAfterSave.map((order) => {
-        console.log(
-          `Started cycle from NewOrderRequest, order ${order.master.orderId}`
-        );
         orderCycle({ orderId: order.master.orderId });
       })
     );
