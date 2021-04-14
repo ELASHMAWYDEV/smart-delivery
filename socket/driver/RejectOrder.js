@@ -148,6 +148,7 @@ module.exports = (io, socket) => {
       /**********************************************************/
       //Check memory
       if (!orderCycleOrders.has(orderId)) {
+        console.log("Started cycle from RejectOrder, order", orderId)
         //Send the order to the next driver
         orderCycle({ orderId });
       }
