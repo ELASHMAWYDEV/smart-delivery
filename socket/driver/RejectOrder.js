@@ -141,7 +141,7 @@ module.exports = (io, socket) => {
         clearTimeout(timeoutFunction);
       }
 
-      /***********************************************************/
+      /**********************************************************/
       //Send the order to the next driver
       orderCycle({ orderId });
 
