@@ -33,13 +33,13 @@ const orderCycle = async ({
   orderId = parseInt(orderId);
 
   try {
-    console.log("cycle map", lockOrdersOnFunction);
     if (lockOrdersOnFunction.has(orderId)) {
       return {
         status: true,
         message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}`,
       };
     }
+    console.log("cycle map", lockOrdersOnFunction);
 
     lockOrdersOnFunction.set(orderId, true);
 
