@@ -43,6 +43,7 @@ module.exports = (io, socket) => {
       driverId = parseInt(driverId);
       /********************************************************/
 
+      busyDrivers.delete(driverId);
       //Check if token is valid
       let driverSearch = await DriverModel.findOne({
         driverId,
