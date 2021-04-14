@@ -33,6 +33,7 @@ const orderCycle = async ({
   orderId = parseInt(orderId);
 
   try {
+    console.log("cycle map", lockOrdersOnFunction);
     if (lockOrdersOnFunction.has(orderId)) {
       return {
         status: true,
