@@ -111,10 +111,8 @@ module.exports = (io, socket) => {
               (id) => id != order.master.orderId
             ),
             branchId:
-              busyOrdersMemory.filter((id) => id != order.master.orderId)
-                .length > 0
-                ? busyActiveOrders[0].master.branchId ||
-                  busyOrders[0].master.branchId
+              busyActiveOrders.length > 0
+                ? busyActiveOrders[0].master.branchId
                 : null,
           });
           /***********************************************************/
