@@ -76,10 +76,14 @@ module.exports = (io, socket) => {
       /******************************************************/
 
       //Update in memory first
+      const { busyOrders } = busyDrivers.get(driverId) || { busyOrders: [] };
+
+      //Update in memory first
       busyDrivers.set(driverId, {
-        busyOrders: ordersIds,
+        busyOrders: [...new Set([...busyOrders, ...ordersIds])],
         branchId: branchId,
       });
+
       /******************************************************/
       //Make sure driver is busy
       await DriverModel.updateOne(

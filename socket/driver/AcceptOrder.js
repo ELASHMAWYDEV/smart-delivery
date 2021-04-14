@@ -202,16 +202,11 @@ module.exports = (io, socket) => {
 
       /******************************************************/
 
-      let busyOrders = busyDrivers.get(driverId).busyOrders || [];
+      const { busyOrders } = busyDrivers.get(driverId) || { busyOrders: [] };
 
       //Update in memory first
       busyDrivers.set(driverId, {
-        busyOrders: [
-          ...new Set([
-            ...busyOrders.map((order) => orderSearch.master.orderId),
-            orderId,
-          ]),
-        ],
+        busyOrders: [...new Set([...busyOrders, orderId])],
         branchId: orderSearch.master.branchId,
       });
 
