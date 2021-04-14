@@ -25,6 +25,12 @@ module.exports = (io, socket) => {
         //Delete in memory first
         busyDrivers.delete(driverId[0]);
 
+        //Set to offline
+        await DriverModel.updateOne(
+          { driverId: driverId[0] },
+          { isOnline: false }
+        );
+
         // let driverSearch = await DriverModel.findOne({
         //   driverId: driverId[0],
         // });
