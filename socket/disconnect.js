@@ -25,40 +25,40 @@ module.exports = (io, socket) => {
         //Delete in memory first
         busyDrivers.delete(driverId[0]);
 
-        let driverSearch = await DriverModel.findOne({
-          driverId: driverId[0],
-        });
-        driverSearch = driverSearch && driverSearch.toObject();
+        // let driverSearch = await DriverModel.findOne({
+        //   driverId: driverId[0],
+        // });
+        // driverSearch = driverSearch && driverSearch.toObject();
 
         //Search for busy orders
-        let busyOrders = await OrderModel.find({
-          "master.statusId": { $in: [1, 3, 4] },
-          "master.driverId": driverId[0],
-        });
+        // let busyOrders = await OrderModel.find({
+        //   "master.statusId": { $in: [1, 3, 4] },
+        //   "master.driverId": driverId[0],
+        // });
 
         /******************************************************/
 
-        let busyCreatedOrders = busyOrders.filter(
-          (order) => order.master.statusId == 1
-        );
+        // let busyCreatedOrders = busyOrders.filter(
+        //   (order) => order.master.statusId == 1
+        // );
 
         /***********************************************************/
-        //Clear the created orders timeout if exist
-        busyCreatedOrders.map((order) => {
-          let { timeoutFunction } =
-            activeOrders.get(parseInt(order.master.orderId)) || {};
+        // //Clear the created orders timeout if exist
+        // busyCreatedOrders.map((order) => {
+        //   let { timeoutFunction } =
+        //     activeOrders.get(parseInt(order.master.orderId)) || {};
 
-          if (timeoutFunction) {
-            clearTimeout(timeoutFunction);
+        //   if (timeoutFunction) {
+        //     clearTimeout(timeoutFunction);
 
-            console.log(
-              `Started cycle from disconnect, order ${order.master.orderId}`
-            );
-            /***********************************************************/
-            //Send the order to the next driver
-            orderCycle({ orderId: order.master.orderId });
-          }
-        });
+        //     console.log(
+        //       `Started cycle from disconnect, order ${order.master.orderId}`
+        //     );
+        //     /***********************************************************/
+        //     //Send the order to the next driver
+        //     orderCycle({ orderId: order.master.orderId });
+        //   }
+        // });
 
         /************************************************************/
       }

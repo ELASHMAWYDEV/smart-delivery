@@ -81,6 +81,16 @@ module.exports = (io, socket) => {
           "master.driverId": driverId,
         });
 
+        /******************************************************/
+        //Update in memory first
+        busyDrivers.set(driverId, {
+          busyOrders: busyOrders.map((order) => order.master.orderId),
+          branchId:
+            busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
+        });
+
+        /******************************************************/
+
         let busyActiveOrders = busyOrders.filter((order) =>
           [3, 4].includes(order.master.statusId)
         );
