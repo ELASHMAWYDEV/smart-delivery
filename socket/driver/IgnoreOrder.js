@@ -166,10 +166,6 @@ module.exports = (io, socket) => {
       }
 
       /***********************************************************/
-      //Add to memory
-      orderCycleDrivers.set(orderId, [
-        ...new Set([...(orderCycleDrivers.get(orderId) || []), driverId]),
-      ]);
       console.log("Started cycle from IgnoreOrder, order", orderId);
       //Send the order to the next driver
       orderCycle({ orderId, driverIdSentFrom: driverId });

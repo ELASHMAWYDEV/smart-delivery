@@ -54,6 +54,16 @@ const orderCycle = async ({
       }
     }
 
+    //Add driver to memory
+    if (driverIdSentFrom) {
+      orderCycleDrivers.set(orderId, [
+        ...new Set([
+          ...(orderCycleDrivers.get(orderId) || []),
+          driverIdSentFrom,
+        ]),
+      ]);
+    }
+
     /************************************/
     //Put the order at the activeOrders map
     if (!activeOrders.has(orderId))

@@ -99,14 +99,6 @@ module.exports = (io, socket) => {
         if (timeoutFunction) {
           clearTimeout(timeoutFunction);
           /***********************************************************/
-          //Add to memory
-          orderCycleDrivers.set(parseInt(order.master.orderId), [
-            ...new Set([
-              ...(orderCycleDrivers.get(parseInt(order.master.orderId)) || []),
-              driverId,
-            ]),
-          ]);
-
           console.log(
             "Started cycle from GoOnline, order",
             order.master.orderId
