@@ -101,7 +101,7 @@ module.exports = (io, socket) => {
           /***********************************************************/
           //Add to memory
           orderCycleDrivers.set(parseInt(order.master.orderId), [
-            ...orderCycleDrivers.get(orderId),
+            ...(orderCycleDrivers.get(orderId) || []),
             driverId,
           ]);
 

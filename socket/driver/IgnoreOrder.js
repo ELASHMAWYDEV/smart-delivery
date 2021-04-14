@@ -168,7 +168,7 @@ module.exports = (io, socket) => {
       /***********************************************************/
       //Add to memory
       orderCycleDrivers.set(orderId, [
-        ...orderCycleDrivers.get(orderId),
+        ...(orderCycleDrivers.get(orderId) || []),
         driverId,
       ]);
       console.log("Started cycle from IgnoreOrder, order", orderId);
