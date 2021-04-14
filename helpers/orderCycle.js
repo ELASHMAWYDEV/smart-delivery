@@ -3,7 +3,7 @@ const { Mutex } = require("async-mutex");
 const mutex = new Mutex();
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const { activeOrders, activeOrderDrivers, busyDrivers } = require("../globals");
+const { activeOrders, activeOrderDrivers, busyDrivers, orderCycleOrders } = require("../globals");
 
 //Helpers
 const checkDriverOnWay = require("./checkDriverOnWay");
@@ -11,7 +11,6 @@ const sendRequestToDriver = require("./sendRequestToDriver");
 const findNearestDriver = require("./findNearestDriver");
 const updateOrderStatus = require("./updateOrderStatus");
 
-const lockOrdersOnFunction = new Map();
 
 const orderCycle = async ({
   orderId,
@@ -33,13 +32,13 @@ const orderCycle = async ({
   orderId = parseInt(orderId);
 
   try {
-    if (lockOrdersOnFunction.has(orderId)) {
+    if (orderCycleOrders.has(orderId)) {
       return {
         status: true,
         message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}`,
       };
     }
-    lockOrdersOnFunction.set(orderId, true);
+    orderCycleOrders.set(orderId, true);
 
     /************************************/
     //Put the order at the activeOrders map
@@ -240,7 +239,7 @@ const orderCycle = async ({
       message: `Error in orderCycle(), ${e.message}`,
     };
   } finally {
-    lockOrdersOnFunction.delete(orderId);
+    orderCycleOrders.delete(orderId);
     release();
   }
 };

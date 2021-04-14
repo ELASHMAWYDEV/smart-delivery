@@ -3,7 +3,12 @@ const { Mutex } = require("async-mutex");
 const orderCycle = require("../../helpers/orderCycle");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
-const { activeOrders, drivers, busyDrivers } = require("../../globals");
+const {
+  activeOrders,
+  drivers,
+  busyDrivers,
+  orderCycleOrders,
+} = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -161,8 +166,11 @@ module.exports = (io, socket) => {
       }
 
       /***********************************************************/
-      //Send the order to the next driver
-      orderCycle({ orderId });
+      //Check memory
+      if (!orderCycleOrders.has(orderId)) {
+        //Send the order to the next driver
+        orderCycle({ orderId });
+      }
 
       /******************************************************/
     } catch (e) {

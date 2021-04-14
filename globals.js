@@ -21,6 +21,7 @@ module.exports.clients = new Map(); //Restaurants socket ids'
 module.exports.customers = new Map(); //Customers socket ids' - for tracking
 module.exports.drivers = new Map(); //Drivers socket ids'
 module.exports.activeOrders = new Map(); //Hold active orders currently being processed
+module.exports.orderCycleOrders = new Map(); //Hold any driver from starting the cycle again if it has already started
 module.exports.activeOrderDrivers = new Map();
 module.exports.disconnectInterval = new Map();
 module.exports.busyDrivers = new Map(); //Hold all drivers that are currently busy with thier branch id & orders ids[]
