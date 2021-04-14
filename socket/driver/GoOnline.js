@@ -80,8 +80,7 @@ module.exports = (io, socket) => {
         busyOrders: busyOrders.map((order) => order.master.orderId),
         branchId: busyOrders.length > 0 ? busyOrders[0].master.branchId : null,
       });
-
-      /******************************************************/
+      /***********************************************************/
 
       let busyCreatedOrders = busyOrders.filter(
         (order) => order.master.statusId == 1
@@ -90,44 +89,44 @@ module.exports = (io, socket) => {
         (order) => order.master.statusId != 1
       );
 
-      /***********************************************************/
+      /******************************************************/
 
       //Clear the created orders timeout if exist
-      busyCreatedOrders.map((order) => {
-        let { timeoutFunction } =
-          activeOrders.get(parseInt(order.master.orderId)) || {};
+      // busyCreatedOrders.map((order) => {
+      //   let { timeoutFunction } =
+      //     activeOrders.get(parseInt(order.master.orderId)) || {};
 
-        if (timeoutFunction) {
-          clearTimeout(timeoutFunction);
+      //   if (timeoutFunction) {
+      //     clearTimeout(timeoutFunction);
 
-          const { busyOrders: busyOrdersMemory } = busyDrivers.get(
-            driverId
-          ) || {
-            busyOrders: [],
-          };
-          /******************************************************/
-          //Update in memory
-          busyDrivers.set(driverId, {
-            busyOrders: busyOrdersMemory.filter(
-              (id) => id != order.master.orderId
-            ),
-            branchId:
-              busyActiveOrders.length > 0
-                ? busyActiveOrders[0].master.branchId
-                : null,
-          });
-          /***********************************************************/
-          console.log(
-            "Started cycle from GoOnline, order",
-            order.master.orderId
-          );
-          //Send the order to the next driver
-          orderCycle({
-            orderId: order.master.orderId,
-            driverIdSentFrom: driverId,
-          });
-        }
-      });
+      //     const { busyOrders: busyOrdersMemory } = busyDrivers.get(
+      //       driverId
+      //     ) || {
+      //       busyOrders: [],
+      //     };
+      //     /******************************************************/
+      //     //Update in memory
+      //     busyDrivers.set(driverId, {
+      //       busyOrders: busyOrdersMemory.filter(
+      //         (id) => id != order.master.orderId
+      //       ),
+      //       branchId:
+      //         busyActiveOrders.length > 0
+      //           ? busyActiveOrders[0].master.branchId
+      //           : null,
+      //     });
+      //     /***********************************************************/
+      //     console.log(
+      //       "Started cycle from GoOnline, order",
+      //       order.master.orderId
+      //     );
+      //     //Send the order to the next driver
+      //     orderCycle({
+      //       orderId: order.master.orderId,
+      //       driverIdSentFrom: driverId,
+      //     });
+      //   }
+      // });
 
       /***************************************************/
 

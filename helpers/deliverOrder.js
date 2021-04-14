@@ -30,7 +30,7 @@ module.exports = async ({ orderId, lng, lat, token }) => {
     let { data: apiData } = data;
 
     //Update the orders on DB
-    await OrderModel.updateMany(
+    await OrderModel.updateOne(
       {
         "master.orderId": orderId,
       },

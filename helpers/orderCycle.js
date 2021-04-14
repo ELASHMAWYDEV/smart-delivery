@@ -39,19 +39,17 @@ const orderCycle = async ({
   try {
     /************************************/
     //Check if driver didn't send the cycle before
-    if (orderCycleDrivers.has(orderId)) {
-      if (
-        driverIdSentFrom &&
-        orderCycleDrivers.get(orderId).includes(driverIdSentFrom)
-      ) {
-        console.log(
-          `Tried to trigger cycle twice, but lock prevented it for order ${orderId}, driver ${driverIdSentFrom}`
-        );
-        return {
-          status: true,
-          message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}, driver ${driverIdSentFrom}`,
-        };
-      }
+    if (
+      driverIdSentFrom &&
+      orderCycleDrivers.get(orderId).includes(driverIdSentFrom)
+    ) {
+      console.log(
+        `Tried to trigger cycle twice, but lock prevented it for order ${orderId}, driver ${driverIdSentFrom}`
+      );
+      return {
+        status: true,
+        message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}, driver ${driverIdSentFrom}`,
+      };
     }
 
     //Add driver to memory
