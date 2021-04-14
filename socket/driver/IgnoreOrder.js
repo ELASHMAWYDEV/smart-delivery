@@ -7,7 +7,7 @@ const {
   activeOrders,
   drivers,
   busyDrivers,
-  orderCycleOrders,
+  orderCycleDrivers,
 } = require("../../globals");
 
 /*
@@ -166,12 +166,14 @@ module.exports = (io, socket) => {
       }
 
       /***********************************************************/
-      //Check memory
-      if (!orderCycleOrders.has(orderId)) {
-        console.log("Started cycle from IgnoreOrder, order", orderId);
-        //Send the order to the next driver
-        orderCycle({ orderId });
-      }
+      //Add to memory
+      orderCycleDrivers.set(orderId, [
+        ...orderCycleDrivers.get(orderId),
+        driverId,
+      ]);
+      console.log("Started cycle from IgnoreOrder, order", orderId);
+      //Send the order to the next driver
+      orderCycle({ orderId });
 
       /******************************************************/
     } catch (e) {

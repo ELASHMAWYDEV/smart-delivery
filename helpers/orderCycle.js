@@ -3,7 +3,12 @@ const { Mutex } = require("async-mutex");
 const mutex = new Mutex();
 const OrderModel = require("../models/Order");
 const DriverModel = require("../models/Driver");
-const { activeOrders, activeOrderDrivers, busyDrivers, orderCycleOrders } = require("../globals");
+const {
+  activeOrders,
+  activeOrderDrivers,
+  busyDrivers,
+  orderCycleDrivers,
+} = require("../globals");
 
 //Helpers
 const checkDriverOnWay = require("./checkDriverOnWay");
@@ -11,8 +16,8 @@ const sendRequestToDriver = require("./sendRequestToDriver");
 const findNearestDriver = require("./findNearestDriver");
 const updateOrderStatus = require("./updateOrderStatus");
 
-
 const orderCycle = async ({
+  driverIdSentFrom = null,
   orderId,
   driversIds = [],
   orderDriversLimit = 2,
@@ -32,13 +37,18 @@ const orderCycle = async ({
   orderId = parseInt(orderId);
 
   try {
-    if (orderCycleOrders.has(orderId)) {
+    /************************************/
+    //Check if driver didn't send the cycle before
+    if (orderCycleDrivers.has(orderId)) {
+      if (orderCycleDrivers.get(orderId).includes(driverIdSentFrom))
+        console.log(
+          `Tried to trigger cycle twice, but lock prevented it for order ${orderId}, driver ${driverIdSentFrom}`
+        );
       return {
         status: true,
-        message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}`,
+        message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}, driver ${driverIdSentFrom}`,
       };
     }
-    orderCycleOrders.set(orderId, true);
 
     /************************************/
     //Put the order at the activeOrders map
@@ -239,7 +249,7 @@ const orderCycle = async ({
       message: `Error in orderCycle(), ${e.message}`,
     };
   } finally {
-    orderCycleOrders.delete(orderId);
+    orderCycleDrivers.delete(orderId);
     release();
   }
 };

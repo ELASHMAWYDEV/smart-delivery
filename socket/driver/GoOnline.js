@@ -12,7 +12,7 @@ let {
   disconnectInterval,
   activeOrders,
   busyDrivers,
-  orderCycleOrders,
+  orderCycleDrivers,
 } = require("../../globals");
 
 /*
@@ -99,16 +99,18 @@ module.exports = (io, socket) => {
         if (timeoutFunction) {
           clearTimeout(timeoutFunction);
           /***********************************************************/
+          //Add to memory
+          orderCycleDrivers.set(parseInt(order.master.orderId), [
+            ...orderCycleDrivers.get(orderId),
+            driverId,
+          ]);
 
-          //Check memory
-          if (!orderCycleOrders.has(parseInt(order.master.orderId))) {
-            console.log(
-              "Started cycle from GoOnline, order",
-              order.master.orderId
-            );
-            //Send the order to the next driver
-            orderCycle({ orderId: order.master.orderId });
-          }
+          console.log(
+            "Started cycle from GoOnline, order",
+            order.master.orderId
+          );
+          //Send the order to the next driver
+          orderCycle({ orderId: order.master.orderId });
         }
       });
 

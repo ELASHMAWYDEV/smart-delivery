@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { validationResult } = require("express-validator");
 const orderValidator = require("../../validators/order");
+const { orderCycleDrivers } = require("../../globals");
 
 //Helpers
 const { createOrder } = require("../../helpers");
@@ -60,6 +61,7 @@ router.post("/", orderValidator, async (req, res) => {
     //Loop through orders
     Promise.all(
       ordersAfterSave.map((order) => {
+        orderCycleDrivers.set(order.master.orderId, [])
         orderCycle({ orderId: order.master.orderId });
       })
     );
