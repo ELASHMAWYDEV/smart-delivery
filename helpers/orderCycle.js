@@ -11,6 +11,8 @@ const sendRequestToDriver = require("./sendRequestToDriver");
 const findNearestDriver = require("./findNearestDriver");
 const updateOrderStatus = require("./updateOrderStatus");
 
+const lockOrdersOnFunction = new Map();
+
 const orderCycle = async ({
   orderId,
   driversIds = [],
@@ -28,9 +30,19 @@ const orderCycle = async ({
    * */
 
   const release = await mutex.acquire(); //Block code execution for sequentially placing orders
+  orderId = parseInt(orderId);
 
   try {
-    orderId = parseInt(orderId);
+    if (lockOrdersOnFunction.has(orderId)) {
+      return {
+        status: true,
+        message: `Tried to trigger cycle twice, but lock prevented it for order ${orderId}`,
+      };
+    }
+
+    lockOrdersOnFunction.set(orderId, true);
+
+    /************************************/
     //Put the order at the activeOrders map
     if (!activeOrders.has(orderId))
       activeOrders.set(orderId, {
@@ -229,6 +241,7 @@ const orderCycle = async ({
       message: `Error in orderCycle(), ${e.message}`,
     };
   } finally {
+    lockOrdersOnFunction.delete(orderId);
     release();
   }
 };
