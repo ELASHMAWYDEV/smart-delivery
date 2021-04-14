@@ -65,7 +65,7 @@ module.exports = (io, socket) => {
 
       return socket.emit("HaveSeenOrder", {
         status: true,
-        message: "Order have marked as seen",
+        message: "Order have been marked as seen",
       });
     } catch (e) {
       Sentry.captureException(e);

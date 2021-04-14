@@ -2,6 +2,7 @@ const Sentry = require("@sentry/node");
 //Models
 const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
+const { busyDrivers } = require("../globals");
 
 const lockDriversOnFunction = new Map();
 
@@ -25,7 +26,7 @@ module.exports = async ({ socket, driverId }) => {
     /*************************************************************/
     //Search for this driver on a order with & requestStatus = 4 & isSeenOrder = false
     let ordersSearch = await OrderModel.find({
-      // "master.driverId": driverId,
+      "master.driverId": driverId,
       "master.statusId": 1,
       driversFound: {
         $elemMatch: {

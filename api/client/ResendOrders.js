@@ -67,6 +67,9 @@ router.post("/", async (req, res) => {
           { "master.statusId": 1 }
         );
 
+        console.log(
+          `Started cycle from ResendOrders, order ${order.master.orderId}`
+        );
         orderCycle({
           orderId: order.master.orderId,
           driversIds: drivers || [],

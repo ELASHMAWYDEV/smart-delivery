@@ -161,6 +161,9 @@ module.exports = (io, socket) => {
       }
 
       /***********************************************************/
+      console.log(
+        `Started cycle from IgnoreOrder, order ${orderId}`
+      );
       //Send the order to the next driver
       orderCycle({ orderId });
 

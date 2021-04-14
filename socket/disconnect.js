@@ -50,6 +50,10 @@ module.exports = (io, socket) => {
 
           if (timeoutFunction) {
             clearTimeout(timeoutFunction);
+
+            console.log(
+              `Started cycle from disconnect, order ${order.master.orderId}`
+            );
             /***********************************************************/
             //Send the order to the next driver
             orderCycle({ orderId: order.master.orderId });

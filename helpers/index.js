@@ -9,5 +9,4 @@ module.exports = {
   disconnectDriver: require("./disconnectDriver"),
   sendNotification: require("./sendNotification"),
   checkForOrderRequest: require("./checkForOrderRequest"),
-  //orderCycle: require("./orderCycle"),
 };

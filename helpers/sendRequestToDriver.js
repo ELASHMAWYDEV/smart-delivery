@@ -77,6 +77,9 @@ const sendRequestToDriver = async ({
       branchId != order.master.branchId &&
       busyOrders.length >= 1
     ) {
+      console.log(
+        `Started cycle from sendRequestToDriver, not same branch,order ${orderId}`
+      );
       orderCycle({ orderId, driversIds, orderDriversLimit });
       return {
         status: true,
@@ -87,6 +90,9 @@ const sendRequestToDriver = async ({
 
     //If has busy orders more than limit --> go & check for another driver
     if (busyOrders.length >= orderDriversLimit) {
+      console.log(
+        `Started cycle from sendRequestToDriver, orders limit exceed, order ${orderId}`
+      );
       orderCycle({ orderId, driversIds, orderDriversLimit });
       return {
         status: true,
@@ -217,6 +223,9 @@ const sendRequestToDriver = async ({
 
       const orderCycle = require("./orderCycle");
 
+      console.log(
+        `Started cycle from sendRequestToDriver after timeout, order ${orderId}`
+      );
       //Send the order to the next driver
       orderCycle({ orderId, driversIds, orderDriversLimit });
 
