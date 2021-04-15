@@ -103,6 +103,10 @@ module.exports = (io, socket) => {
           isHasOrder = true;
         }
 
+        if (busyCreatedOrders.length != 0) {
+          isHasOrder = false;
+        }
+
         busyOrders = busyOrders.map((order) => order.master.orderId);
 
         //If isHasOrder true --> force him Online if he was offline
