@@ -56,7 +56,7 @@ module.exports = async ({ branchId, token }) => {
     });
 
     //Update the orderIds
-    ordersIds = ordersSearch.map((order) => order.master.order);
+    ordersIds = ordersSearch.map((order) => order.master.orderId);
 
     return {
       status: true,
