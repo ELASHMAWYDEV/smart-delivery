@@ -88,6 +88,7 @@ router.post("/", async (req, res) => {
           branchLogo: orderSearch.master.branchLogo || "",
           branchAddress: orderSearch.master.branchAddress || "",
           receiverAddress: orderSearch.master.receiverAddress || "",
+          orderId: orderSearch.master.orderId.toString() || "",
         },
       });
 
