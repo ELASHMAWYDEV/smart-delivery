@@ -16,11 +16,17 @@ module.exports = async ({
 
     let driversIds = activeOrderDrivers.get(orderId);
 
+    //Get all driversIds from DB if choosedDrivers is empty
+    if (choosedDrivers.length == 0) {
+      const driversSearch = await DriverModel.find({});
+      choosedDrivers = driversSearch.map((driver) => driver.driverId);
+    }
+
     let driversSearch = await DriverModel.find({
       isOnline: true,
       isBusy: true,
       isDeleted: false,
-      $or: [
+      $and: [
         { driverId: { $nin: driversIds } },
         { driverId: { $in: choosedDrivers } },
       ],

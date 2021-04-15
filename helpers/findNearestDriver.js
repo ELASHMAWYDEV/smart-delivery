@@ -4,10 +4,7 @@ const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const { activeOrderDrivers } = require("../globals");
 
-module.exports = async ({
-  orderId,
-  driversIds: choosedDrivers = []
-}) => {
+module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
   try {
     //Get global intervals
     let maxDistance = 10; //Km
@@ -20,11 +17,17 @@ module.exports = async ({
 
     let driversIds = activeOrderDrivers.get(orderId);
 
+    //Get all driversIds from DB if choosedDrivers is empty
+    if (choosedDrivers.length == 0) {
+      const driversSearch = await DriverModel.find({});
+      choosedDrivers = driversSearch.map((driver) => driver.driverId);
+    }
+
     let driverSearch = await DriverModel.findOne({
       isOnline: true,
       isDeleted: false,
       isBusy: false,
-      $or: [
+      $and: [
         { driverId: { $nin: driversIds } },
         { driverId: { $in: choosedDrivers } },
       ],
