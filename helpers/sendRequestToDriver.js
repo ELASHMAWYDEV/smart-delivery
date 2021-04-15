@@ -264,7 +264,11 @@ const sendRequestToDriver = async ({
         `Started cycle from sendRequestToDriver after timeout, order ${orderId}`
       );
       //Send the order to the next driver
-      orderCycle({ orderId, driversIds, orderDriversLimit });
+      orderCycle({
+        orderId,
+        driversIds,
+        orderDriversLimit,
+      });
 
       /******************************************************/
     }, timerSeconds * 2 * 1000);

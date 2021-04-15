@@ -4,7 +4,10 @@ const OrderModel = require("../models/Order");
 const DeliverySettingsModel = require("../models/DeliverySettings");
 const { activeOrderDrivers } = require("../globals");
 
-module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
+module.exports = async ({
+  orderId,
+  driversIds: choosedDrivers = []
+}) => {
   try {
     //Get global intervals
     let maxDistance = 10; //Km

@@ -69,6 +69,8 @@ const orderCycle = async ({
     if (!activeOrders.has(orderId))
       activeOrders.set(orderId, {
         timeoutFunction: setTimeout(() => null, 0),
+        driversIds,
+        orderDriversLimit,
       });
 
     //Init the activeOrderDrivers array if not initialized

@@ -147,8 +147,20 @@ module.exports = (io, socket) => {
 
       /**********************************************************/
       console.log("Started cycle from RejectOrder, order", orderId);
+
+      //Get driversIds & orderDirversLimit
+      let { driversIds, orderDriversLimit } = activeOrders.get(orderId) || {
+        driversIds: [],
+        orderDriversLimit: 2,
+      };
+
       //Send the order to the next driver
-      orderCycle({ orderId, driverIdSentFrom: driverId });
+      orderCycle({
+        orderId,
+        driverIdSentFrom: driverId,
+        driversIds,
+        orderDriversLimit,
+      });
       /***************************************************/
     } catch (e) {
       Sentry.captureException(e);
