@@ -33,6 +33,7 @@ module.exports = async ({ orderId, lng, lat, token }) => {
     await OrderModel.updateOne(
       {
         "master.orderId": orderId,
+        "master.statusId": { $nin: [2, 6] },
       },
       {
         "master.statusId": 5, //Delivered
