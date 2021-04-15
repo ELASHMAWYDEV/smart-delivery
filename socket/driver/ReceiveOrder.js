@@ -105,6 +105,8 @@ module.exports = (io, socket) => {
         )} have been received successfully`,
       });
 
+      console.log(`driver ${driverId}`, busyDrivers.get(driverId));
+
       /***************************************************/
     } catch (e) {
       Sentry.captureException(e);

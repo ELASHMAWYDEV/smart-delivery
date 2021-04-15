@@ -250,11 +250,13 @@ module.exports = (io, socket) => {
       );
 
       /***************************************************/
-      return socket.emit("AcceptOrder", {
+      socket.emit("AcceptOrder", {
         status: true,
         message: `Order #${orderId} accepted successfully`,
         orderId,
       });
+
+      console.log(`driver ${driverId}`, busyDrivers.get(driverId));
 
       /******************************************************/
     } catch (e) {

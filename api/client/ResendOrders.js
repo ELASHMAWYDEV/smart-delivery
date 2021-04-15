@@ -73,7 +73,7 @@ router.post("/", async (req, res) => {
         orderCycle({
           orderId: order.master.orderId,
           driversIds: drivers || [],
-          orderDriversLimit,
+          orderDriversLimit: orderDriversLimit || 2,
         });
       })
     );

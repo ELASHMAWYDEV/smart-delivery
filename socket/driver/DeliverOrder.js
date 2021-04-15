@@ -123,6 +123,8 @@ module.exports = (io, socket) => {
           message: `Order #${orderId} has been delivered successfully`,
         });
 
+        console.log(`driver ${driverId}`, busyDrivers.get(driverId));
+
         /***************************************************/
       } finally {
         releaseEvent(); //Stop event locker
