@@ -51,7 +51,7 @@ module.exports = async ({ branchId, token }) => {
 
     //Get the orders that really were canceled
     const ordersSearch = await OrderModel.find({
-      "master.orderId": { $in: [ordersIds] },
+      "master.orderId": { $in: ordersIds },
       "master.statusId": 4,
     });
 
