@@ -169,19 +169,7 @@ module.exports = (io, socket) => {
         Sentry.captureMessage(
           `Error in API, AcceptOrder event, order: ${orderId}, error: ${updateResult.message}`
         );
-        //Update the order status on DB
-        await OrderModel.updateOne(
-          {
-            "master.orderId": orderId,
-          },
-          {
-            $set: {
-              "master.statusId": 1,
-              "master.branchDistance": 0,
-              "master.driverId": null,
-            },
-          }
-        );
+
         return socket.emit("AcceptOrder", updateResult);
       }
 
