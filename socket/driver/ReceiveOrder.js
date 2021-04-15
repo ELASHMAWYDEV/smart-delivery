@@ -2,6 +2,7 @@ const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
 const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
+const OrderModel = require("../../models/Order");
 const { busyDrivers } = require("../../globals");
 
 /*
@@ -62,6 +63,7 @@ module.exports = (io, socket) => {
           message: "You are not authorized",
         });
       }
+
       /******************************************************/
 
       //Update the orders

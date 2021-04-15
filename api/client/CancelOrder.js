@@ -62,7 +62,7 @@ router.post("/", async (req, res) => {
           driverId: orderSearch.master.driverId,
         },
         {
-          isBusy: busyOrders > 0 ? true : false,
+          isBusy: busyOrders.length > 0 ? true : false,
         }
       );
 

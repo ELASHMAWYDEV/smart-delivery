@@ -42,11 +42,21 @@ module.exports = async ({ branchId, token }) => {
     await OrderModel.updateMany(
       {
         "master.orderId": { $in: ordersIds },
+        "master.statusId": { $nin: [2, 6] }, //To prevent cancel conflict
       },
       {
         "master.statusId": 4, //Received
       }
     );
+
+    //Get the orders that really were canceled
+    const ordersSearch = await OrderModel.find({
+      "master.orderId": { $in: [ordersIds] },
+      "master.statusId": 4,
+    });
+
+    //Update the orderIds
+    ordersIds = ordersSearch.map((order) => order.master.order);
 
     return {
       status: true,
