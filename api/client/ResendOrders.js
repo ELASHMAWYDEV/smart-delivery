@@ -60,9 +60,9 @@ router.post("/", async (req, res) => {
     /******************************************************/
 
     console.log(
-      `Resend, Orders: [${ordersExist.map(
-        (order) => order.master.orderId
-      )}], drivers: [${drivers.map((driver) => driver)}]`
+      `Resend, Orders: [${
+        ordersExist && ordersExist.map((order) => order.master.orderId)
+      }], drivers: [${drivers && drivers.map((driver) => driver)}]`
     );
     Promise.all(
       ordersExist.map(async (order) => {
