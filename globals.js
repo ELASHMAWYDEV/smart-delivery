@@ -18,6 +18,7 @@ module.exports.DB_URI =
 
 //Global variables
 module.exports.clients = new Map(); //Restaurants socket ids'
+module.exports.admins = new Map(); //Restaurants socket ids'
 module.exports.customers = new Map(); //Customers socket ids' - for tracking
 module.exports.drivers = new Map(); //Drivers socket ids'
 module.exports.activeOrders = new Map(); //Hold active orders currently being processed

@@ -9,4 +9,7 @@ module.exports = {
   disconnectDriver: require("./disconnectDriver"),
   sendNotification: require("./sendNotification"),
   checkForOrderRequest: require("./checkForOrderRequest"),
+  countDrivers: require("./operation/countDrivers"),
+  countDriversInRange: require("./operation/countDriversInRange"),
+  manipulateDriver: require("./operation/manipulateDriver"),
 };
