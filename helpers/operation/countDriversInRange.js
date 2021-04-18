@@ -1,3 +1,5 @@
+const Sentry = require("@sentry/node");
+
 //Models
 const DriverModel = require("../../models/Driver");
 
@@ -72,6 +74,8 @@ module.exports = async ({ lat, lng, maxDistance }) => {
       },
     };
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in countDriversInRange, error: ${e.message}`);
 
     return {

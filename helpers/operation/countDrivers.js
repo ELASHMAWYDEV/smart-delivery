@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 //Models
 const DriverModel = require("../../models/Driver");
 
@@ -35,6 +36,8 @@ module.exports = async () => {
       },
     };
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in countDrivers, error: ${e.message}`);
 
     return {

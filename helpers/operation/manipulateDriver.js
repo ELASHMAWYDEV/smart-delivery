@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const OrderModel = require("../../models/Order");
 const { busyDrivers } = require("../../globals");
 
@@ -44,6 +45,8 @@ module.exports = async (driver) => {
       driver,
     };
   } catch (e) {
+    Sentry.captureException(e);
+
     console.log(`Error in manipulateDriver, error: ${e.message}`);
 
     return {

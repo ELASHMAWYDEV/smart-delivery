@@ -1,3 +1,5 @@
+const Sentry = require("@sentry/node");
+
 //Models
 const DriverModel = require("../../models/Driver");
 
@@ -133,6 +135,7 @@ module.exports = (io, socket) => {
           countsInRange,
         });
       } catch (e) {
+        Sentry.captureException(e);
         console.log(`Error in OperationGetDrivers, error: ${e.message}`);
 
         socket.emit("OperationGetDrivers", {
