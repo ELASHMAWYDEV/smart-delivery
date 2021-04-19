@@ -33,10 +33,7 @@ module.exports = (io, socket) => {
 				});
 
 				//Set to offline || online
-				await DriverModel.updateOne(
-					{ driverId: driverId[0] },
-					{ isOnline: busyOrders.length > 0 ? true : false }
-				);
+				await DriverModel.updateOne({ driverId: driverId[0] }, { isOnline: busyOrders > 0 ? true : false });
 
 				/************************************************************/
 			}
