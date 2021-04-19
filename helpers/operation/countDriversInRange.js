@@ -8,6 +8,7 @@ module.exports = async ({ lat, lng, maxDistance }) => {
 		//Get all availabel drivers (online, not busy)
 		let available = await DriverModel.find({
 			isOnline: true,
+			isBusy: false,
 			isDeleted: false,
 			location: {
 				$nearSphere: {
