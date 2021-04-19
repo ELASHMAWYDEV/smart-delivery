@@ -11,7 +11,6 @@ module.exports = async (driver) => {
 
 		//Add the order to the driver object
 		driver = { ...driver, orders: busyOrders };
-		console.log(driver);
 
 		/* 
       1 ==> available
