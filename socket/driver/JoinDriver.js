@@ -109,9 +109,15 @@ module.exports = (io, socket) => {
 			};
 
 			if (isHasOrder || busyOrdersMemory.length != 0) {
-				await DriverModel.updateOne({ driverId }, { isOnline: true, firebaseToken, deviceType });
+				await DriverModel.updateOne(
+					{ driverId },
+					{ isOnline: true, firebaseToken: firebaseToken || driverSearch.firebaseToken, deviceType }
+				);
 			} else {
-				await DriverModel.updateOne({ driverId }, { firebaseToken, deviceType });
+				await DriverModel.updateOne(
+					{ driverId },
+					{ firebaseToken: firebaseToken || driverSearch.firebaseToken, deviceType }
+				);
 			}
 
 			/********************************************************/

@@ -7,20 +7,11 @@ module.exports = async (driver) => {
 		let { driverId, isBusy, isOnline } = driver || {};
 
 		//Get the ordersIds from memory
-		let { busyOrders: ordersIds } = busyDrivers.get(parseInt(driverId)) || {
-			busyOrders: [],
-		};
+		let busyOrders = await OrderModel.find({ 'master.driverId': driverId, 'master.statusId': { $in: [3, 4] } });
 
-		//check if the driver is busy on a trip & get the trip data
-		if (isBusy == true && ordersIds.length > 0) {
-			//Get the order
-			let ordersSearch = await OrderModel.find({
-				'master.orderId': { $in: ordersIds },
-			});
-
-			//Add the order to the driver object
-			driver = { ...driver, orders: ordersSearch };
-		}
+		//Add the order to the driver object
+		driver = { ...driver, orders: busyOrders };
+		console.log(driver);
 
 		/* 
       1 ==> available
@@ -29,7 +20,7 @@ module.exports = async (driver) => {
     */
 
 		//Put the status of the driver
-		let status = isOnline && !isBusy ? 1 : isBusy && ordersIds.length > 0 ? 2 : !isOnline ? 3 : 1;
+		let status = isOnline && !isBusy ? 1 : isBusy && busyOrders.length > 0 ? 2 : !isOnline ? 3 : 1;
 
 		driver = { status, ...driver };
 

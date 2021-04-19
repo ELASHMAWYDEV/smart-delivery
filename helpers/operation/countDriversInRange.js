@@ -3,10 +3,11 @@ const Sentry = require('@sentry/node');
 //Models
 const DriverModel = require('../../models/Driver');
 
-module.exports = async ({ lat, lng, maxDistance }) => {
+module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 	try {
 		//Get all availabel drivers (online, not busy)
 		let available = await DriverModel.find({
+			driverId: { $in: driversIds },
 			isOnline: true,
 			isBusy: false,
 			isDeleted: false,
@@ -23,6 +24,7 @@ module.exports = async ({ lat, lng, maxDistance }) => {
 
 		//Get all offline drivers
 		let offline = await DriverModel.find({
+			driverId: { $in: driversIds },
 			isOnline: false,
 			isDeleted: false,
 			location: {
@@ -38,6 +40,7 @@ module.exports = async ({ lat, lng, maxDistance }) => {
 
 		//Get all busy drivers
 		let busy = await DriverModel.find({
+			driverId: { $in: driversIds },
 			isBusy: true,
 			isDeleted: false,
 			location: {
@@ -53,6 +56,7 @@ module.exports = async ({ lat, lng, maxDistance }) => {
 
 		//Get the count of all drivers
 		let total = await DriverModel.find({
+			driverId: { $in: driversIds },
 			isDeleted: false,
 			location: {
 				$nearSphere: {
