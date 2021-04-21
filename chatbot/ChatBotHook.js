@@ -18,12 +18,12 @@ router.post('/', async (req, res) => {
 			//Get the message data
 			let { body, fromMe, author, chatId, type, senderName } = message;
 
-			await axios.post(CHAT_API_TYPING, {
-				chatId: chatId,
-				on: true,
-				duration: 5,
-				phone: author.split('@')[0],
-			});
+			// await axios.post(CHAT_API_TYPING, {
+			// 	chatId: chatId,
+			// 	on: true,
+			// 	duration: 5,
+			// 	phone: author.split('@')[0],
+			// });
 
 			/****************------Validation START-----*************************/
 			//From a group --> don't respond
