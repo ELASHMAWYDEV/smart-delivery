@@ -37,10 +37,11 @@ router.post('/', async (req, res) => {
 
 			//Location handling
 			if (type == 'location') {
-				return await axios.post(CHAT_API_SEND_MESSAGE, {
+				await axios.post(CHAT_API_SEND_MESSAGE, {
 					chatId: chatId,
 					body: `شكرا لمشاركة موقعك معنا ، سوف نقوم بتسجيله لدينا\nموقعك هو ${body.split(';')}`,
 				});
+				return res.json({ status: true, message: 'Done !' });
 			}
 
 			let { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(
@@ -49,19 +50,21 @@ router.post('/', async (req, res) => {
 			);
 
 			if (bestMatch.rating > 0.6) {
-				return await axios.post(CHAT_API_SEND_MESSAGE, {
+				await axios.post(CHAT_API_SEND_MESSAGE, {
 					chatId: chatId,
 					body: QUESTIONS[bestMatchIndex].R,
 				});
+				return res.json({ status: true, message: 'Done !' });
 			}
 
-			return await axios.post(CHAT_API_SEND_MESSAGE, {
+			await axios.post(CHAT_API_SEND_MESSAGE, {
 				chatId: chatId,
 				body: `هذه تجربة للشات بوت ، نعتذر اذا وصلتك هذه الرسالة بالخطأ ، لأننا في مرحلة التطوير الأن\nيمكنك ارسال أحد هذه الجمل لكي نرد عليك\n1- مرحبا\n2- كيف حالك\n3- أو يمكنك مشاركة الموقع`,
 			});
+			return res.json({ status: true, message: 'Done !' });
 		}
 
-		res.json({ status: true, message: 'Done !' });
+		return res.json({ status: true, message: 'Done !' });
 	} catch (e) {
 		Sentry.captureException(e);
 		console.log(`Error in ChatBotHook: ${e.message}`, e);
