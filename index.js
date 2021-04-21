@@ -37,6 +37,9 @@ try {
   //API routes
   app.use("/api", require("./api"));
 
+  //Chat Bot WebHook
+  app.use("/chatbot", require("./chatbot/ChatBotHook"));
+
   // /*-------For Test Only--------*/
   app.get("/test/cycle/:user", (req, res) => {
     res.sendFile(
