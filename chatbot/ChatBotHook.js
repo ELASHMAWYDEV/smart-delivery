@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
 		if (!messages || messages.length == 0)
 			return res.json({ status: false, message: 'Messages array in body is empty' });
 
-    console.log(req.body);
+		console.log(req.body);
 		for (let message of messages) {
 			//Get the message data
 			let { body, fromMe, author, chatId, type, senderName } = message;
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 				return res.json({ status: false, message: 'Sorry, this message was sent from a group' });
 
 			//From me --> but not to me (for testing)
-			if (author.split('@')[0] != CHAT_MOBILE_PHONE && fromMe == true)
+			if (fromMe == true)
 				return res.json({ status: false, message: 'Sorry, you sent this message by your self' });
 
 			/*************************************************/
