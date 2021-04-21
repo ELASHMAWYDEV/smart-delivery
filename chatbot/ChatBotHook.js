@@ -13,6 +13,7 @@ router.post('/', async (req, res) => {
 		if (!messages || messages.length == 0)
 			return res.json({ status: false, message: 'Messages array in body is empty' });
 
+    console.log(req.body);
 		for (let message of messages) {
 			//Get the message data
 			let { body, fromMe, author, chatId, type, senderName } = message;
