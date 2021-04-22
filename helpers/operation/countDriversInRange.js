@@ -17,7 +17,7 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 						type: 'Point',
 						coordinates: [lng, lat],
 					},
-					$maxDistance: lat == 0 ? Infinity : maxDistance,
+					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 				},
 			},
 		});
@@ -33,7 +33,7 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 						type: 'Point',
 						coordinates: [lng, lat],
 					},
-					$maxDistance: lat == 0 ? Infinity : maxDistance,
+					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 				},
 			},
 		});
@@ -49,7 +49,7 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 						type: 'Point',
 						coordinates: [lng, lat],
 					},
-					$maxDistance: lat == 0 ? Infinity : maxDistance,
+					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 				},
 			},
 		});
@@ -64,7 +64,7 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 						type: 'Point',
 						coordinates: [lng, lat],
 					},
-					$maxDistance: lat == 0 ? Infinity : maxDistance,
+					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 				},
 			},
 		});
