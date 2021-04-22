@@ -142,7 +142,7 @@ module.exports = (io, socket) => {
 			Sentry.captureException(e);
 
 			console.log(`Error in JoinDriver, error: ${e.message}`);
-			socket.emit('JoinDriver', {
+			return socket.emit('JoinDriver', {
 				status: false,
 				message: `Error in JoinDriver, error: ${e.message}`,
 			});
