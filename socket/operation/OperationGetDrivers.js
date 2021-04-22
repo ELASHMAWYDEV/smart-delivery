@@ -54,7 +54,7 @@ module.exports = (io, socket) => {
 					}
 				}
 			} else {
-        //Get all driversIds
+				//Get all driversIds
 				const driversSearch = await DriverModel.find({});
 				driversIds = driversSearch.map((driver) => driver.driverId);
 			}
@@ -68,7 +68,7 @@ module.exports = (io, socket) => {
 							type: 'Point',
 							coordinates: [lng, lat],
 						},
-						$maxDistance: lat == 0 ? Infinity : maxDistance,
+						$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 					},
 				},
 			});
@@ -93,7 +93,7 @@ module.exports = (io, socket) => {
 			/*****************************************************/
 
 			//Get the count
-			let countsResult = await countDrivers({driversIds});
+			let countsResult = await countDrivers({ driversIds });
 			if (!countsResult.status) {
 				return socket.emit('OperationGetDrivers', {
 					status: false,
@@ -106,8 +106,8 @@ module.exports = (io, socket) => {
 			/*****************************************************/
 
 			//Get the count in range of admin
-      let countsInRangeResult = await countDriversInRange({
-        driversIds,
+			let countsInRangeResult = await countDriversInRange({
+				driversIds,
 				lat,
 				lng,
 				maxDistance,
