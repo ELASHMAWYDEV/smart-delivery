@@ -146,6 +146,7 @@ module.exports = (io, socket) => {
 				isAuthorize: true,
 				isOnline,
 				message: `The driver is set to ${isOnline ? 'online' : 'offline'}`,
+				busyOrders: busyOrders.map((order) => order.master.orderId),
 			});
 
 			/***************************************************/

@@ -2,7 +2,7 @@ const Sentry = require('@sentry/node');
 const DeliverySettingsModel = require('../models/DeliverySettings');
 const OrderModel = require('../models/Order');
 const DriverModel = require('../models/Driver');
-const { drivers, activeOrders, busyDrivers, activeOrderDrivers } = require('../globals');
+const { drivers, activeOrders, busyDrivers, driverHasTakenAction } = require('../globals');
 const { io } = require('../index');
 
 //Helpers
@@ -126,6 +126,15 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 			}
 		);
 
+		/******************************************************/
+
+		driverHasTakenAction.set(orderId, [
+			...(driverHasTakenAction.get(orderId) || []),
+			{
+				driverId: driverSearch.driverId,
+				tookAction: false,
+			},
+		]);
 		/******************************************************/
 		let { master } = orderSearch;
 

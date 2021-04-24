@@ -3,7 +3,7 @@ const { Mutex } = require('async-mutex');
 const orderCycle = require('../../helpers/orderCycle');
 const OrderModel = require('../../models/Order');
 const DriverModel = require('../../models/Driver');
-const { activeOrders, busyDrivers, drivers } = require('../../globals');
+const { activeOrders, busyDrivers, drivers, driverHasTakenAction } = require('../../globals');
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -45,6 +45,29 @@ module.exports = (io, socket) => {
 			/********************************************************/
 
 			driverId = parseInt(driverId);
+			orderId = parseInt(orderId);
+
+			//Check if driver has taken any action before
+			if (driverHasTakenAction.has(orderId)) {
+				let drivers = driverHasTakenAction.get(orderId);
+
+				if (drivers.find((driver) => driver.driverId == driverId && driver.tookAction)) {
+					return socket.emit('AcceptOrder', {
+						status: false,
+						isAuthorize: false,
+						isOnline: false,
+						message: 'You have already taken action for this order',
+					});
+				}
+			}
+
+			driverHasTakenAction.set(orderId, [
+				...(driverHasTakenAction.get(orderId) || []),
+				{
+					driverId,
+					tookAction: true,
+				},
+			]);
 
 			/********************************************************/
 			//Check if token is valid
@@ -66,7 +89,7 @@ module.exports = (io, socket) => {
 
 			//Check if the order is in the activeOrders or not
 			if (!activeOrders.has(orderId)) {
-				return socket.emit('IgnoreOrder', {
+				return socket.emit('RejectOrder', {
 					status: false,
 					isAuthorize: true,
 					message: 'The order is not available any more',
@@ -81,20 +104,13 @@ module.exports = (io, socket) => {
 			//Check if order exist on DB
 			let orderSearch = await OrderModel.findOne({
 				'master.orderId': orderId,
-				$or: [
-					{ 'master.driverId': { $ne: driverId } },
-					{
-						'master.statusId': { $ne: 1 },
+				'master.statusId': 1,
+				driversFound: {
+					$elemMatch: {
+						driverId,
+						requestStatus: { $ne: 4 },
 					},
-					{
-						driversFound: {
-							$elemMatch: {
-								driverId,
-								requestStatus: { $ne: 1 },
-							},
-						},
-					},
-				],
+				},
 			});
 
 			if (orderSearch)

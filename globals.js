@@ -26,6 +26,7 @@ module.exports.orderCycleDrivers = new Map(); //Hold any driver from starting th
 module.exports.activeOrderDrivers = new Map();
 module.exports.disconnectInterval = new Map();
 module.exports.busyDrivers = new Map(); //Hold all drivers that are currently busy with thier branch id & orders ids[]
+module.exports.driverHasTakenAction = new Map(); //Hold the driver bool to check if he took action on that order or not
 
 //API's
 module.exports.GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_KEY || '';

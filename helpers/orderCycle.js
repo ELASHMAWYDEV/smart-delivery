@@ -8,6 +8,7 @@ const {
   activeOrderDrivers,
   busyDrivers,
   orderCycleDrivers,
+  driverHasTakenAction
 } = require("../globals");
 
 //Helpers
@@ -92,6 +93,7 @@ const orderCycle = async ({
       }
       activeOrderDrivers.delete(orderId);
       activeOrders.delete(orderId);
+      driverHasTakenAction.delete(orderId);
       console.log(
         `Order ${orderId} has changed from created to another status`
       );
