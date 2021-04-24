@@ -3,7 +3,7 @@ const { Mutex } = require('async-mutex');
 const orderCycle = require('../../helpers/orderCycle');
 const OrderModel = require('../../models/Order');
 const DriverModel = require('../../models/Driver');
-const { activeOrders, drivers, busyDrivers, orderCycleDrivers } = require('../../globals');
+const { activeOrders, drivers, busyDrivers } = require('../../globals');
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -80,14 +80,20 @@ module.exports = (io, socket) => {
 			//Check if order exist on DB
 			let orderSearch = await OrderModel.findOne({
 				'master.orderId': orderId,
-				'master.driverId': { $ne: driverId },
-				'master.statusId': { $ne: 1 },
-				driversFound: {
-					$elemMatch: {
-						driverId,
-						requestStatus: 1,
+				$or: [
+					{ 'master.driverId': { $ne: driverId } },
+					{
+						'master.statusId': { $ne: 1 },
 					},
-				},
+					{
+						driversFound: {
+							$elemMatch: {
+								driverId,
+								requestStatus: { $ne: 1 },
+							},
+						},
+					},
+				],
 			});
 
 			if (orderSearch)

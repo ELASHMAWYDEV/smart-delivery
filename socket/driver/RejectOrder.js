@@ -3,7 +3,7 @@ const { Mutex } = require('async-mutex');
 const orderCycle = require('../../helpers/orderCycle');
 const OrderModel = require('../../models/Order');
 const DriverModel = require('../../models/Driver');
-const { activeOrders, busyDrivers, orderCycleDrivers } = require('../../globals');
+const { activeOrders, busyDrivers, drivers } = require('../../globals');
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -64,17 +64,37 @@ module.exports = (io, socket) => {
 
 			/******************************************************/
 
+			//Check if the order is in the activeOrders or not
+			if (!activeOrders.has(orderId)) {
+				return socket.emit('IgnoreOrder', {
+					status: false,
+					isAuthorize: true,
+					message: 'The order is not available any more',
+					orderId,
+				});
+			}
+
+			//Add driver to socket
+			drivers.set(parseInt(driverId), socket.id);
+
+			/******************************************************/
 			//Check if order exist on DB
 			let orderSearch = await OrderModel.findOne({
 				'master.orderId': orderId,
-				'master.driverId': { $ne: driverId },
-				'master.statusId': { $ne: 1 },
-				driversFound: {
-					$elemMatch: {
-						driverId,
-						requestStatus: 1,
+				$or: [
+					{ 'master.driverId': { $ne: driverId } },
+					{
+						'master.statusId': { $ne: 1 },
 					},
-				},
+					{
+						driversFound: {
+							$elemMatch: {
+								driverId,
+								requestStatus: { $ne: 1 },
+							},
+						},
+					},
+				],
 			});
 
 			if (orderSearch)
