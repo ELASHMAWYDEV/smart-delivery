@@ -17,18 +17,9 @@ router.post('/', async (req, res) => {
 		if (!messages || messages.length == 0)
 			return res.json({ status: false, message: 'Messages array in body is empty' });
 
-		// console.log(req.body);
 		for (let message of messages) {
 			//Get the message data
 			let { body, fromMe, author, chatId, type, senderName } = message;
-
-			//Send typing...
-			await axios.post(CHAT_API_TYPING, {
-				chatId: chatId,
-				on: true,
-				duration: 5,
-				phone: author.split('@')[0],
-			});
 
 			/**************------Validation START-----********/
 			//From a group --> don't respond
@@ -41,33 +32,93 @@ router.post('/', async (req, res) => {
 
 			/*************************************************/
 
-			//Location handling
-			if (type == 'location') {
-				await axios.post(CHAT_API_SEND_MESSAGE, {
-					chatId: chatId,
-					body: `شكرا لمشاركة موقعك معنا ، سوف نقوم بتسجيله لدينا\nموقعك هو ${body.split(';')}`,
-				});
-				return res.json({ status: true, message: 'Done !' });
-			}
-
-			let { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(
-				body,
-				QUESTIONS.map((q) => q.Q)
-			);
-
-			if (bestMatch.rating > 0.6) {
-				await axios.post(CHAT_API_SEND_MESSAGE, {
-					chatId: chatId,
-					body: QUESTIONS[bestMatchIndex].R,
-				});
-				return res.json({ status: true, message: 'Done !' });
-			}
-
-			await axios.post(CHAT_API_SEND_MESSAGE, {
+			//Send typing...
+			await axios.post(CHAT_API_TYPING, {
 				chatId: chatId,
-				body: '*مرحبا*',
+				on: true,
+				duration: 5,
+				phone: author.split('@')[0],
 			});
-			return res.json({ status: true, message: 'Done !' });
+
+			/*************************************************/
+
+			//If user is not registered --> add to DB
+			if (!(await ChatUser.findOne({ phoneNumber: author.split('@')[0] }))) {
+				await ChatUser.create({ phoneNumber: author.split('@')[0] });
+			}
+
+			//Get the user from DB
+			let userSearch = await ChatUser.findOne({ phoneNumber: author.split('@')[0] });
+
+			/*************************************************/
+
+			switch (type) {
+				case 'location':
+					//Location handling
+					await axios.post(CHAT_API_SEND_MESSAGE, {
+						chatId: chatId,
+						body: QUESTIONS.find((q) => q.key == 'LOCATION_SUCCESS').RAR,
+					});
+
+					break;
+				case 'chat':
+					//Get the question key --> if exist
+					let questionObj = null;
+
+					for (let QUESTION of QUESTIONS) {
+						let { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(
+							body,
+							userSearch.language == 'ar' ? QUESTION.QAR : QUESTION.QEN
+						);
+
+						if (bestMatch.rating > 0.6) {
+							questionObj = QUESTIONS[QUESTIONS.indexOf(QUESTION)];
+							break;
+						}
+					}
+
+					console.log(questionObj);
+					/***************************/
+					//If BOT can't understand
+					if (!questionObj) {
+						await axios.post(CHAT_API_SEND_MESSAGE, {
+							chatId: chatId,
+							body:
+								userSearch.language == 'ar'
+									? QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').RAR
+									: QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').REN,
+						});
+						break;
+					}
+					/***************************/
+					//Send BOT answer to user
+					await axios.post(CHAT_API_SEND_MESSAGE, {
+						chatId: chatId,
+						body: userSearch.language == 'ar' ? questionObj.RAR : questionObj.REN,
+					});
+
+					if (questionObj.nextKey) {
+						await axios.post(CHAT_API_SEND_MESSAGE, {
+							chatId: chatId,
+							body:
+								userSearch.language == 'ar'
+									? QUESTIONS.find((q) => q.key == questionObj.nextKey).RAR
+									: QUESTIONS.find((q) => q.key == questionObj.nextKey).REN,
+						});
+					}
+
+					break;
+				default:
+					//If type is not chat || location
+					await axios.post(CHAT_API_SEND_MESSAGE, {
+						chatId: chatId,
+						body:
+							userSearch.language == 'ar'
+								? QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').RAR
+								: QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').REN,
+					});
+					break;
+			}
 		}
 
 		return res.json({ status: true, message: 'Done !' });
@@ -107,47 +158,33 @@ router.post('/', async (req, res) => {
 const QUESTIONS = [
 	{
 		key: 'HELLO_MESSAGE',
-		QAR: ['مرحبا', 'هلا', 'كيف حالك', 'مرحب', 'مرحبا بك'],
-		QEN: ['Hi', 'Hello', 'How are you', 'Hala', 'How are things'],
-		RAR: ({ name }) => `مرحبا بك ${name}`,
-		REN: ({ name }) => `Welcome ${name}`,
+		QAR: ['مرحبا', 'هلا', 'مرحب', 'مرحبا بك'],
+		QEN: ['Hi', 'Hello', 'Hala', 'How are things'],
+		RAR: `مرحبا بك`,
+		REN: `Welcome`,
+		nextKey: 'INFO_MESSAGE',
+	},
+	{
+		key: 'SALAM_MESSAGE',
+		QAR: ['السلام عليكم', 'سلام','السلام عليكم ورحمة الله وبركاته'],
+		QEN: ['Salam'],
+		RAR: `وعليكم السلام ورحمة الله وبركاته`,
+		REN: `Salam :)`,
+		nextKey: 'INFO_MESSAGE',
 	},
 	{
 		key: 'INFO_MESSAGE',
-		QAR: ['اريد المساعدة', 'مساعدة', 'ساعدني', 'ساعدني من فضلك', 'هل يوجد أحد', 'الوو'],
-		QEN: ['Help', 'I need help', 'Help me please', 'any one here'],
+		QAR: ['اريد المساعدة', 'مساعدة', 'ساعدني', 'ساعدني من فضلك', 'هل يوجد أحد', 'الوو', '0'],
+		QEN: ['Help', 'I need help', 'Help me please', 'any one here', '0'],
 		RAR: `يساعدك لوجي وان بوت في استلام وتتبع طلبك أو شحنتك ومعرفة الوقت المتوقع لوصول الشحنة اليك من لحظة خروجها من عند التاجر\n\n- لكي تتمكن من تتبع شحنتك اضغط *1* أو اكتب *تتبع*\n\n- اذا اردت مشاركة موقعك معنا لضمان سرعة وجودة التوصيل اضغط *2* او اكتب *موقعي*\n\n- اذا أردت معرفة أرقام التواصل مع الدعم الفني الصوتي اضغط *3* او اكتب *دعم*\n\n\nلخدمات أخري يرجي زيارة\nhttps://logione.net\n\nTo change language to english at any time, please press *English* or *انجليزي*`,
 		REN: `Logione BOT helps you with receiving and tracking your order or shipment and know the estimated time for your order to arrive to you from the moment it leaves the merchant\n\n- To be able to track your order, please press *1* or type *Track*\n\n- if you want to share your location with us, to ensure the speed & quality of delivery press *2* or type *Share location*\n\n- If you want to know our customer service phone numbers, press *3* or type *Customer service*\n\n\nFor more services, please visit\nhttps://logione.net\nلكي تتمكن من تغيير اللغة الي العربية، من فضلك اكتب *عربي* أو *Arabic*`,
-	},
-
-	{
-		key: 'LOCATION_SUCCESS',
-		QAR: [],
-		QEN: [],
-		RAR: 'شكرا لك علي مشاركة موقعك معنا ، لقد قمنا بتسجيله في طلبك وسيسهل هذا عملية وصول السائق اليك',
-		REN:
-			'Thank you for sharing your location with us, we have added this location to your order to make it easier for our driver to reach for you',
 	},
 	{
 		key: 'TRACK_INFO',
 		QAR: ['تتبع', '1'],
 		QEN: ['Track', '1'],
-		RAR: ({
-			hasOrder = true,
-			orderStatus = 'قيد التوصيل',
-			trackingUrl = 'http://smart-delivery-customer.herokuapp.com/10',
-		}) =>
-			hasOrder
-				? `لديك طلب بالفعل\nحالة الطلب: *${orderStatus}*\n\nلتتبع الشحنة أولا بأول ، يمكنك الضغط علي هذا الرابط\n${trackingUrl}`
-				: `يبدو أنه ليس لديك أي طلبات أو شحنات في الوقت الحالي`,
-		REN: ({
-			hasOrder = true,
-			orderStatus = 'On the way',
-			trackingUrl = 'http://smart-delivery-customer.herokuapp.com/10',
-		}) =>
-			hasOrder
-				? `You have order already\nOrder status: *${orderStatus}*\n\nYou can click on this link to track your order in real time\n${trackingUrl}`
-				: `Sorry, it looks that you have no orders at the moment..`,
+		RAR: `لديك طلب بالفعل\nحالة الطلب: *قيد التوصيل*\n\nلتتبع الشحنة أولا بأول ، يمكنك الضغط علي هذا الرابط\nhttp://smart-delivery-customer.herokuapp.com/10`,
+		REN: `You have order already\nOrder status: *On the way*\n\nYou can click on this link to track your order in real time\nhttp://smart-delivery-customer.herokuapp.com/10`,
 	},
 	{
 		key: 'LOCATION_INFO',
@@ -156,5 +193,43 @@ const QUESTIONS = [
 		RAR: 'لمشاركة موقعك ، من فضلك اضغط علي زر مشاركة الموقع',
 		REN: 'To share your location, please press the location button',
 	},
+	{
+		key: 'CUSTOMER_SERVICE',
+		QAR: ['دعم', '3'],
+		QEN: ['Customer serivce', '3'],
+		RAR:
+			'أرقام الدعم الفني:\n+201064544529\n\nمواعيد العمل:\nمن ال 8 صباح وحتي ال 5 مساء بتوقيت السعودية\nسنكون سعداء بتواصلك معنا',
+		REN: 'Customer service numbers:\n+201064544529\n\nWorking hours:\nFrom 8:00 AM to 5:00 PM KSA',
+	},
+	{
+		key: 'LOCATION_SUCCESS',
+		QAR: [''],
+		QEN: [''],
+		RAR: 'شكرا لك علي مشاركة موقعك معنا ، لقد قمنا بتسجيله في طلبك وسيسهل هذا عملية وصول السائق اليك',
+		REN:
+			'Thank you for sharing your location with us, we have added this location to your order to make it easier for our driver to reach for you',
+	},
+	{
+		key: 'DONT_UNDERSTANT',
+		QAR: [''],
+		QEN: [''],
+		RAR: 'عذرا لم أفهم قصدك ، يمكنك المعاودة مرة أخري\nلإظهار القائمة مرة أخري اضغط *0* أو اكتب *مساعدة*',
+		REN: "Sorry, I couldn't understant you. please try again",
+	},
+	{
+		key: 'LANG_TO_AR',
+		QAR: ['ُعربي', 'Arabic'],
+		QEN: ['ُعربي', 'Arabic'],
+		RAR: 'تم تغيير اللغة الي العربية بنجاح ، سوف أقوم بالتوالص معك باللغة العربية من الأن فصاعدا',
+		REN: 'تم تغيير اللغة الي العربية بنجاح ، سوف أقوم بالتوالص معك باللغة العربية من الأن فصاعدا',
+	},
+	{
+		key: 'LANG_TO_EN',
+		QAR: ['انجليزي', 'English'],
+		QEN: ['انجليزي', 'English'],
+		RAR: 'Langauge changed to English successfully, I will communicate with in English from now on',
+		REN: 'Langauge changed to English successfully, I will communicate with in English from now on',
+	},
 ];
+
 module.exports = router;
