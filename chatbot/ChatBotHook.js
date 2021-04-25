@@ -4,11 +4,15 @@ const router = express.Router();
 const axios = require('axios');
 const stringSimilarity = require('string-similarity');
 const { CHAT_API_SEND_MESSAGE, CHAT_API_TYPING, CHAT_MOBILE_PHONE } = require('../globals');
-const QUESTIONS = require('./Questions.json');
+//Models
+const ChatUser = require('../models/ChatUser');
+
+const userQuestion = new Map();
 
 router.post('/', async (req, res) => {
 	try {
 		const { messages } = req.body;
+		console.log(messages);
 
 		if (!messages || messages.length == 0)
 			return res.json({ status: false, message: 'Messages array in body is empty' });
@@ -18,20 +22,21 @@ router.post('/', async (req, res) => {
 			//Get the message data
 			let { body, fromMe, author, chatId, type, senderName } = message;
 
-			// await axios.post(CHAT_API_TYPING, {
-			// 	chatId: chatId,
-			// 	on: true,
-			// 	duration: 5,
-			// 	phone: author.split('@')[0],
-			// });
+			//Send typing...
+			await axios.post(CHAT_API_TYPING, {
+				chatId: chatId,
+				on: true,
+				duration: 5,
+				phone: author.split('@')[0],
+			});
 
-			/****************------Validation START-----*************************/
+			/**************------Validation START-----********/
 			//From a group --> don't respond
 			if (chatId.includes('-'))
 				return res.json({ status: false, message: 'Sorry, this message was sent from a group' });
 
 			//From me --> but not to me (for testing)
-			if (fromMe == true)
+			if (fromMe == true && author.includes(CHAT_MOBILE_PHONE))
 				return res.json({ status: false, message: 'Sorry, you sent this message by your self' });
 
 			/*************************************************/
@@ -60,7 +65,7 @@ router.post('/', async (req, res) => {
 
 			await axios.post(CHAT_API_SEND_MESSAGE, {
 				chatId: chatId,
-				body: `هذه تجربة للشات بوت ، نعتذر اذا وصلتك هذه الرسالة بالخطأ ، لأننا في مرحلة التطوير الأن\nيمكنك ارسال أحد هذه الجمل لكي نرد عليك\n1- مرحبا\n2- كيف حالك\n3- أو يمكنك مشاركة الموقع`,
+				body: '*مرحبا*',
 			});
 			return res.json({ status: true, message: 'Done !' });
 		}
@@ -97,7 +102,22 @@ router.post('/', async (req, res) => {
       chatName: '+20 106 454 4529'
     }
   ]
-
-
 */
+
+const QUESTIONS = [
+	{
+		key: 'HELLO_MESSAGE',
+		QAR: ['مرحبا', 'هلا', 'كيف حالك', 'مرحب', 'مرحبا بك'],
+		QEN: ['Hi', 'Hello', 'How are you', 'Hala', 'How are things'],
+		RAR: (name) => `مرحبا بك ${name}`,
+		REN: (name) => `Welcome ${name}`,
+	},
+	{
+		key: 'INFO_MESSAGE',
+		QAR: ['اريد المساعدة', 'مساعدة', 'ساعدني', 'ساعدني من فضلك', 'هل يوجد أحد', 'الوو'],
+		QEN: ['Help', 'I need help', 'Help me please', 'any one here'],
+		RAR: `يساعدك لوجي وان بوت في استلام وتتبع طلبك أو شحنتك ومعرفة الوقت المتوقع لوصول الشحنة اليك من لحظة خروجها من عند التاجر\n\n- لكي تتمكن من تتبع شحنتك اضغط *1* أو اكتب *تتبع*\n\n- اذا اردت مشاركة موقعك معنا لضمان سرعة وجودة التوصيل اضغط *2* او اكتب *موقعي*\n\n- اذا أردت معرفة أرقام التواصل مع الدعم الفني الصوتي اضغط *3* او اكتب *دعم*\n\n\nلخدمات أخري يرجي زيارة\nhttps://logione.net\n\nTo change language to english at any time, please press *English* or *انجليزي*`,
+		REN: `Logione BOT helps you with receiving and tracking your order or shipment and know the estimated time for your order to arrive to you from the moment it leaves the merchant\n\n- To be able to track your order, please press *1* or type *Track*\n\n- if you want to share your location with us, to ensure the speed & quality of delivery press *2* or type *Share location*\n\n`,
+	},
+];
 module.exports = router;

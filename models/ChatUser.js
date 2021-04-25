@@ -6,5 +6,5 @@ const chatUsersSchema = new mongoose.Schema({
 	orderId: Number,
 });
 
-const ChatQuestions = mongoose.model('ChatUsersSchema', chatUsersSchema, 'ChatUsersSchema');
-module.exports = ChatQuestions;
+const ChatUser = mongoose.model('ChatUsersSchema', chatUsersSchema, 'ChatUsersSchema');
+module.exports = ChatUser;
