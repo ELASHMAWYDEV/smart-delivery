@@ -153,6 +153,8 @@ const QUESTIONS = [
 		key: 'LOCATION_INFO',
 		QAR: ['موقعي', '2'],
 		QEN: ['Share location', '2'],
+		RAR: 'لمشاركة موقعك ، من فضلك اضغط علي زر مشاركة الموقع',
+		REN: 'To share your location, please press the location button',
 	},
 ];
 module.exports = router;

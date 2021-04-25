@@ -71,7 +71,10 @@ router.post('/', async (req, res) => {
 				//Update Order status
 				orderCycleDrivers.set(order.master.orderId, []);
 				driverHasTakenAction.set(order.master.orderId, []);
-				await OrderModel.updateOne({ 'master.orderId': order.master.orderId }, { 'master.statusId': 1 });
+				await OrderModel.updateOne(
+					{ 'master.orderId': order.master.orderId },
+					{ 'master.statusId': 1, driversFound: [] }
+				);
 
 				console.log(`Started cycle from ResendOrders, order ${order.master.orderId}`);
 				orderCycle({
