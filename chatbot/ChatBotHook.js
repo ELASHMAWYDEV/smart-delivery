@@ -184,6 +184,16 @@ router.post('/', async (req, res) => {
 										: QUESTIONS.find((q) => q.key == questionObj.nextKey).REN,
 							});
 						}
+
+						//Perform actions depending on KEYS
+						switch (questionObj.key) {
+							case 'LANG_TO_EN':
+								await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
+								break;
+							case 'LANG_TO_AR':
+								await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
+								break;
+						}
 					}
 
 					break;
@@ -260,7 +270,7 @@ const QUESTIONS = [
 	},
 	{
 		key: 'TRACK_INFO',
-		QAR: ['تتبع', '1'],
+		QAR: ['تتبع', '1', '١'],
 		QEN: ['Track', '1', '١'],
 		RAR: `لديك طلب بالفعل\nحالة الطلب: *قيد التوصيل*\n\nلتتبع الشحنة أولا بأول ، يمكنك الضغط علي هذا الرابط\nhttp://smart-delivery-customer.herokuapp.com/10`,
 		REN: `You have order already\nOrder status: *On the way*\n\nYou can click on this link to track your order in real time\nhttp://smart-delivery-customer.herokuapp.com/10`,
@@ -268,14 +278,14 @@ const QUESTIONS = [
 	{
 		key: 'LOCATION_INFO',
 		QAR: ['موقعي', '2', '٢'],
-		QEN: ['Share location', '2'],
+		QEN: ['Share location', '2', '٢'],
 		RAR: 'لمشاركة موقعك ، من فضلك اضغط علي زر مشاركة الموقع',
 		REN: 'To share your location, please press the location button',
 	},
 	{
 		key: 'CUSTOMER_SERVICE',
 		QAR: ['دعم', '3', '٣'],
-		QEN: ['Customer serivce', '3'],
+		QEN: ['Customer serivce', '3', '٣'],
 		RAR:
 			'أرقام الدعم الفني:\n+201064544529\n\nمواعيد العمل:\nمن ال 8 صباح وحتي ال 5 مساء بتوقيت السعودية\nسنكون سعداء بتواصلك معنا',
 		REN: 'Customer service numbers:\n+201064544529\n\nWorking hours:\nFrom 8:00 AM to 5:00 PM KSA',
