@@ -47,7 +47,7 @@ try {
 	});
 
 	(async () => {
-		const tunnel = await localtunnel({ port: +PORT, subdomain: 'smart-delivery-10' });
+		const tunnel = await localtunnel({ port: +PORT, subdomain: 'smart-delivery', });
 
 		console.log('Tunnel Url:', tunnel.url);
 

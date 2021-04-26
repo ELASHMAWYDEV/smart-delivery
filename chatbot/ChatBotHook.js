@@ -44,7 +44,7 @@ router.post('/', async (req, res) => {
 
 			//If user is not registered --> add to DB
 			if (!(await ChatUser.findOne({ phoneNumber: author.split('@')[0] }))) {
-				await ChatUser.create({ phoneNumber: author.split('@')[0] });
+				await ChatUser.create({ phoneNumber: author.split('@')[0], name: senderName });
 			}
 
 			//Get the user from DB
@@ -57,54 +57,130 @@ router.post('/', async (req, res) => {
 					//Location handling
 					await axios.post(CHAT_API_SEND_MESSAGE, {
 						chatId: chatId,
-						body: QUESTIONS.find((q) => q.key == 'LOCATION_SUCCESS').RAR,
+						body:
+							userSearch.language == 'ar'
+								? QUESTIONS.find((q) => q.key == 'LOCATION_SUCCESS').RAR
+								: QUESTIONS.find((q) => q.key == 'LOCATION_SUCCESS').REN,
 					});
+
+					//Save the location of the user on the userQuestion map
+					userQuestion.set(author.split('@')[0], [
+						...(userQuestion.get(author.split('@')[0]) || []),
+						{ key: 'LOCATION_INFO', answer: body, done: true },
+					]);
+
+					//Ask the csutomer for his building number
+					await axios.post(CHAT_API_SEND_MESSAGE, {
+						chatId: chatId,
+						body:
+							userSearch.language == 'ar'
+								? QUESTIONS.find((q) => q.key == 'ASK_FOR_BUILDING').RAR
+								: QUESTIONS.find((q) => q.key == 'ASK_FOR_BUILDING').REN,
+					});
+
+					//Register the user as awaiting for answer
+					userQuestion.set(author.split('@')[0], [
+						...(userQuestion.get(author.split('@')[0]) || []),
+						{ key: 'ASK_FOR_BUILDING', answer: '', done: false },
+					]);
 
 					break;
 				case 'chat':
-					//Get the question key --> if exist
-					let questionObj = null;
+					//Check if user is answering any question first
+					if (userQuestion.get(author.split('@')[0])) {
+						let question = userQuestion.get(author.split('@')[0]).find((q) => q.done == false);
 
-					for (let QUESTION of QUESTIONS) {
-						let { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(
-							body,
-							userSearch.language == 'ar' ? QUESTION.QAR : QUESTION.QEN
-						);
+						if (question) {
+							//Set the answer as the current body
 
-						if (bestMatch.rating > 0.6) {
-							questionObj = QUESTIONS[QUESTIONS.indexOf(QUESTION)];
+							//Remove the question first
+							userQuestion.set(author.split('@')[0], [
+								...userQuestion.get(author.split('@')[0]).filter((q) => q.key != question.key),
+								{ key: question.key, answer: body, done: true },
+							]);
+
+							switch (question.key) {
+								case 'ASK_FOR_BUILDING':
+									await axios.post(CHAT_API_SEND_MESSAGE, {
+										chatId: chatId,
+										body:
+											userSearch.language == 'ar'
+												? QUESTIONS.find((q) => q.key == 'ASK_FOR_APPARTMENT').RAR
+												: QUESTIONS.find((q) => q.key == 'ASK_FOR_APPARTMENT').REN,
+									});
+
+									//Register the user as awaiting for answer
+									userQuestion.set(author.split('@')[0], [
+										...(userQuestion.get(author.split('@')[0]) || []),
+										{ key: 'ASK_FOR_APPARTMENT', answer: '', done: false },
+									]);
+									break;
+
+								case 'ASK_FOR_APPARTMENT':
+									await axios.post(CHAT_API_SEND_MESSAGE, {
+										chatId: chatId,
+										body:
+											userSearch.language == 'ar'
+												? QUESTIONS.find((q) => q.key == 'THANKS_FOR_INFORMATION').RAR
+												: QUESTIONS.find((q) => q.key == 'THANKS_FOR_INFORMATION').REN,
+									});
+									break;
+
+								default:
+									await axios.post(CHAT_API_SEND_MESSAGE, {
+										chatId: chatId,
+										body:
+											userSearch.language == 'ar'
+												? QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').RAR
+												: QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').REN,
+									});
+									break;
+							}
+						}
+					} else {
+						//Get the question key --> if exist
+						let questionObj = null;
+
+						for (let QUESTION of QUESTIONS) {
+							let { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(
+								body,
+								userSearch.language == 'ar' ? QUESTION.QAR : QUESTION.QEN
+							);
+
+							if (bestMatch.rating > 0.6) {
+								questionObj = QUESTIONS[QUESTIONS.indexOf(QUESTION)];
+								break;
+							}
+						}
+
+						/***************************/
+						//If BOT can't understand
+						if (!questionObj) {
+							await axios.post(CHAT_API_SEND_MESSAGE, {
+								chatId: chatId,
+								body:
+									userSearch.language == 'ar'
+										? QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').RAR
+										: QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').REN,
+							});
 							break;
 						}
-					}
-
-					console.log(questionObj);
-					/***************************/
-					//If BOT can't understand
-					if (!questionObj) {
+						/***************************/
+						//Send BOT answer to user
 						await axios.post(CHAT_API_SEND_MESSAGE, {
 							chatId: chatId,
-							body:
-								userSearch.language == 'ar'
-									? QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').RAR
-									: QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').REN,
+							body: userSearch.language == 'ar' ? questionObj.RAR : questionObj.REN,
 						});
-						break;
-					}
-					/***************************/
-					//Send BOT answer to user
-					await axios.post(CHAT_API_SEND_MESSAGE, {
-						chatId: chatId,
-						body: userSearch.language == 'ar' ? questionObj.RAR : questionObj.REN,
-					});
 
-					if (questionObj.nextKey) {
-						await axios.post(CHAT_API_SEND_MESSAGE, {
-							chatId: chatId,
-							body:
-								userSearch.language == 'ar'
-									? QUESTIONS.find((q) => q.key == questionObj.nextKey).RAR
-									: QUESTIONS.find((q) => q.key == questionObj.nextKey).REN,
-						});
+						if (questionObj.nextKey) {
+							await axios.post(CHAT_API_SEND_MESSAGE, {
+								chatId: chatId,
+								body:
+									userSearch.language == 'ar'
+										? QUESTIONS.find((q) => q.key == questionObj.nextKey).RAR
+										: QUESTIONS.find((q) => q.key == questionObj.nextKey).REN,
+							});
+						}
 					}
 
 					break;
@@ -166,7 +242,7 @@ const QUESTIONS = [
 	},
 	{
 		key: 'SALAM_MESSAGE',
-		QAR: ['السلام عليكم', 'سلام','السلام عليكم ورحمة الله وبركاته'],
+		QAR: ['السلام عليكم', 'سلام', 'السلام عليكم ورحمة الله وبركاته'],
 		QEN: ['Salam'],
 		RAR: `وعليكم السلام ورحمة الله وبركاته`,
 		REN: `Salam :)`,
@@ -229,6 +305,27 @@ const QUESTIONS = [
 		QEN: ['انجليزي', 'English'],
 		RAR: 'Langauge changed to English successfully, I will communicate with in English from now on',
 		REN: 'Langauge changed to English successfully, I will communicate with in English from now on',
+	},
+	{
+		key: 'ASK_FOR_BUILDING',
+		QAR: [''],
+		QEN: [''],
+		RAR: 'عظيم جدا !\nنحن علي وشك الانتهاء ، أريد منك فقط اخباري برقم أو اسم البناية التي توجد فيها',
+		REN: 'Great ! we are almost there\nPlease enter the building name/number',
+	},
+	{
+		key: 'ASK_FOR_APPARTMENT',
+		QAR: [''],
+		QEN: [''],
+		RAR: 'من فضلك أدخل رقم الشقة /المكتب',
+		REN: 'Please enter your appartment/office number',
+	},
+	{
+		key: 'THANKS_FOR_INFORMATION',
+		QAR: [''],
+		QEN: [''],
+		RAR: 'شكرا لمشاركة هذه المعلومات القيمة معنا\nسوف تساعدنا هذه البيانات في الوصول اليك بشكل أسرع',
+		REN: 'Thank you for sharing this information with us\nit will help us reach out to you faster',
 	},
 ];
 
