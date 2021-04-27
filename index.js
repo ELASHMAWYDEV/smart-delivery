@@ -47,13 +47,17 @@ try {
 	});
 
 	(async () => {
-		const tunnel = await localtunnel({ port: +PORT, subdomain: 'smart-delivery', });
+		try {
+			const tunnel = await localtunnel({ port: +PORT, subdomain: 'smart-delivery-10' });
 
-		console.log('Tunnel Url:', tunnel.url);
+			console.log('Tunnel Url:', tunnel.url);
 
-		tunnel.on('close', () => {
-			console.log('Tunnel is closed');
-		});
+			tunnel.on('close', () => {
+				console.log('Tunnel is closed');
+			});
+		} catch (e) {
+			console.log(e);
+		}
 	})();
 
 	/*------------------------------------------*/
