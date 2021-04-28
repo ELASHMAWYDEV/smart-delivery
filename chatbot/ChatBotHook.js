@@ -12,7 +12,7 @@ const userQuestion = new Map();
 router.post('/', async (req, res) => {
 	try {
 		const { messages } = req.body;
-		console.log(messages);
+		// console.log(messages);
 
 		let data;
 		let response;
@@ -58,6 +58,7 @@ router.post('/', async (req, res) => {
 
 			switch (type) {
 				case 'location':
+					console.log('Location:', body);
 					//Location handling
 					await sendMessage({ chatId, language, key: 'LOCATION_SUCCESS' });
 
@@ -206,9 +207,11 @@ router.post('/', async (req, res) => {
 						switch (questionObj.key) {
 							case 'LANG_TO_EN':
 								await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
+								await sendMessage({ chatId, language, key: 'LANG_TO_EN' });
 								break;
 							case 'LANG_TO_AR':
 								await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
+								await sendMessage({ chatId, language, key: 'LANG_TO_AR' });
 								break;
 							case 'CUSTOMER_SERVICE':
 								//Get the phone numbers from API
@@ -230,13 +233,12 @@ router.post('/', async (req, res) => {
 									break;
 								}
 
-								await sendMessage({ chatId, language, key: 'CUSTOMER_SERVICE', params: data.data });
+								await sendMessage({ chatId, language, message: data.data.message });
 
 								break;
 							case 'SALAM_MESSAGE':
 							case 'HELLO_MESSAGE':
 								await sendMessage({ chatId, language, key: questionObj.key });
-
 								//Check if there is an order or not
 								response = await axios.post(
 									`${API_URI}/Trip/GetReceiverOrder?mobileNo=${userSearch.phoneNumber}&type=1`,
@@ -258,6 +260,27 @@ router.post('/', async (req, res) => {
 										key: 'INFO_MESSAGE',
 										params: { isHasOrder: false },
 									});
+
+									//Get the phone numbers from API
+									response = await axios.post(
+										`${API_URI}/Trip/LogiCommunicate`,
+										{},
+										{
+											headers: {
+												Authorization: `Bearer ${API_SECRET_KEY}`,
+												'Accept-Language': userSearch.language,
+											},
+										}
+									);
+									data = await response.data;
+
+									//Error handling
+									if (!data.status) {
+										await sendMessage({ chatId, language, key: 'PROBLEM_OCCURRED' });
+										break;
+									}
+
+									await sendMessage({ chatId, language, key: 'CUSTOMER_SERVICE', params: data.data });
 
 									break;
 								}
@@ -305,6 +328,38 @@ router.post('/', async (req, res) => {
 									language,
 									key: 'TRACK_INFO',
 									params: data.data,
+								});
+
+								break;
+							case 'INVOICE_INFO':
+								response = await axios.post(
+									`${API_URI}/Trip/GetReceiverOrder?mobileNo=${userSearch.phoneNumber}&type=3`,
+									{},
+									{
+										headers: {
+											Authorization: `Bearer ${API_SECRET_KEY}`,
+											'Accept-Language': userSearch.language,
+										},
+									}
+								);
+								data = await response.data;
+
+								//Error handling
+								if (!data.status) {
+									await sendMessage({
+										chatId,
+										language,
+										key: 'INVOICE_INFO',
+									});
+
+									break;
+								}
+
+								await sendMessage({
+									chatId,
+									language,
+									key: 'INVOICE_URL',
+									params: { url: data.data.url },
 								});
 
 								break;
@@ -381,16 +436,16 @@ const sendMessage = async ({ chatId, language, key = '', params = {}, message = 
 						? QUESTIONS.find((q) => q.key == key).RAR(params)
 						: QUESTIONS.find((q) => q.key == key).REN(params),
 			});
-		}
-		if (message) {
+		} else if (message) {
 			await axios.post(CHAT_API_SEND_MESSAGE, {
 				chatId: chatId,
 				body: message,
 			});
+		} else {
+			console.log('Error on sendMessage, neither message nor key were submitted');
 		}
-		console.log('Error on sendMessage, neither message nor key were submitted');
 	} catch (e) {
-		console.log(e);
+		console.log(`key: ${key},message: ${message}`, e);
 	}
 };
 
@@ -420,8 +475,8 @@ const QUESTIONS = [
 		key: 'SALAM_MESSAGE',
 		QAR: ['السلام عليكم', 'سلام', 'السلام عليكم ورحمة الله وبركاته'],
 		QEN: ['Salam'],
-		RAR: `وعليكم السلام ورحمة الله وبركاته`,
-		REN: `Salam :)`,
+		RAR: () => `وعليكم السلام ورحمة الله وبركاته`,
+		REN: () => `Salam :)`,
 	},
 	{
 		key: 'INFO_MESSAGE',
@@ -460,6 +515,13 @@ const QUESTIONS = [
 			`أرقام الدعم الفني:\n${hotNumber}\n${mobileNumber}\n${phoneNumber}\n${officeNumber}\n\nمواعيد العمل:\nمن ال 8 صباح وحتي ال 5 مساء بتوقيت السعودية\nسنكون سعداء بتواصلك معنا\nلمزيد من المعلومات يرجي زيارة موقعنا\n${webSite}`,
 		REN: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite }) =>
 			`Customer service numbers:\n${hotNumber}\n${mobileNumber}\n${phoneNumber}\n${officeNumber}\n\nWorking hours:\nFrom 8:00 AM to 5:00 PM KSA\nFor more info, please visit our website\n${webSite}`,
+	},
+	{
+		key: 'INVOICE_INFO',
+		QAR: ['4', 'دفع', 'فاتورة', '٤'],
+		QEN: ['4', 'pay', 'payment', 'invoice', '٤'],
+		RAR: () => 'يبدو أنك قد قمت بدفع مبلغ الطلب من قبل\nشكرا لإهتمامك.',
+		REN: () => 'It looks that you have already paid this order\nThank you for your concern',
 	},
 	{
 		key: 'LOCATION_SUCCESS',
@@ -517,6 +579,13 @@ const QUESTIONS = [
 		QEN: [''],
 		RAR: () => 'عذرا ، لقد حدثت مشكلة ما\nيرجي إعادة المحاولة مرة أخري',
 		REN: () => 'Sorry, a problem has occurred\nplease try again',
+	},
+	{
+		key: 'INVOICE_URL',
+		QAR: [''],
+		QEN: [''],
+		RAR: ({ url }) => `يمكنك الدفع مباشرة عن طريق هذا الرابط\n${url}`,
+		REN: ({ url }) => `You can pay online using this invoice link\n${url}`,
 	},
 ];
 
