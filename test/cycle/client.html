@@ -154,8 +154,10 @@
 
 
       const sendRequest = async (token) => {
-        let response = await axios.post("/api/client/NewOrderRequest",
-          Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) })), {
+        let response = await axios.post("https://b2b.logione.net/api/Trip/MultiOrders", {
+          orders:
+            Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) }))
+        }, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -181,7 +183,7 @@
 
     /****************************************************/
     cancelOrderBtn.onclick = async () => {
-      let response = await axios.post(`https://b2bapi.taketosa.com/api/Trip/CancelOrder?orderId=${orderId}`,
+      let response = await axios.post(`https://b2b.logione.net/api/Trip/CancelOrder?orderId=${orderId}`,
         {}, {
         headers: {
           Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiRHJpdjkxMjYzNDE3MDIiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9zaWQiOiIxNyIsImp0aSI6ImUxNmU3MjljLWJiMzQtNDNjNC1hODQ0LWQ1MTNkZjYxM2M1NSIsImV4cCI6MTYxNjkzMjg0NSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo0NDM5NCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDQzOTQifQ.Hyk1DDVdrlTKtNWQZh62VKTBmlc7aGTP4vO4n7jFXIo"
