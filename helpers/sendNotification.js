@@ -56,7 +56,9 @@ module.exports = async ({ firebaseToken, title, body, type, deviceType, data = {
 
 		let result = await admin.messaging().sendToDevice(firebaseToken, payload, options);
 
-		console.log(`Firebase sent,`, result);
+		if (result.results[0].error) {
+			console.log(`Firebase error,`, result.results[0].error);
+		}
 	} catch (e) {
 		Sentry.captureException(e);
 
