@@ -280,7 +280,7 @@ router.post('/', async (req, res) => {
 										break;
 									}
 
-									await sendMessage({ chatId, language, key: 'CUSTOMER_SERVICE', params: data.data });
+									await sendMessage({ chatId, language, message: data.data.message });
 
 									break;
 								}
