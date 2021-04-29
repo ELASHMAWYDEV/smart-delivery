@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
 				type: '5',
 				deviceType: +driverSearch.deviceType, // + To Number
 				data: {
-					message: `Order #${orderSearch.master.orderId} was canceled by board`,
+					message: `The customer has updated his location for order #${orderSearch.master.orderId}`,
 					branchNameAr: orderSearch.master.branchNameAr || '',
 					branchNameEn: orderSearch.master.branchNameEn || '',
 					branchLogo: orderSearch.master.branchLogo || '',
