@@ -36,6 +36,15 @@ router.post('/', async (req, res) => {
 				body: `Please go and check for order #${orderSearch.master.orderId} again.\nThe customer has updated his location`,
 				type: '5',
 				deviceType: +driverSearch.deviceType, // + To Number
+				data: {
+					message: `Order #${orderSearch.master.orderId} was canceled by board`,
+					branchNameAr: orderSearch.master.branchNameAr || '',
+					branchNameEn: orderSearch.master.branchNameEn || '',
+					branchLogo: orderSearch.master.branchLogo || '',
+					branchAddress: orderSearch.master.branchAddress || '',
+					receiverAddress: orderSearch.master.receiverAddress || '',
+					orderId: orderSearch.master.orderId.toString() || '',
+				},
 			});
 
 			/******************************************************/
