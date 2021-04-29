@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
 
 			/******************************************************/
 			//Send the cancel to the driver via socket
-			io.to(drivers.get(parseInt(orderSearch.master.driverId))).emit('UpdateLocation', {
+			io.to(drivers.get(parseInt(orderSearch.master.driverId))).emit('UpdateCustomerLocation', {
 				status: true,
 				isAuthorize: true,
 				message: `The customer has updated his location for order #${orderSearch.master.orderId}`,
