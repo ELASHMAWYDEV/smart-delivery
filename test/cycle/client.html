@@ -154,8 +154,10 @@
 
 
       const sendRequest = async (token) => {
-        let response = await axios.post("https://b2b.logione.net/api/Trip/MultiOrders",
-          Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) })), {
+        let response = await axios.post("https://b2b.logione.net/api/Trip/MultiOrders", {
+          orders:
+            Array.from({ length: numberOfOrders }).map(t => ({ ...orderObject, refrenceNumber: Math.random().toString(36).slice(2) }))
+        }, {
           headers: {
             Authorization: `Bearer ${token}`
           }
