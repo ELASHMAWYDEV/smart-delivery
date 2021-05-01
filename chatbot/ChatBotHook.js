@@ -3,6 +3,8 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const stringSimilarity = require('string-similarity');
+const LanguageDetect = require('languagedetect');
+const lngDetector = new LanguageDetect();
 const { CHAT_API_SEND_MESSAGE, CHAT_API_TYPING, CHAT_MOBILE_PHONE, API_URI, API_SECRET_KEY } = require('../globals');
 //Models
 const ChatUser = require('../models/ChatUser');
@@ -50,6 +52,26 @@ router.post('/', async (req, res) => {
 				await ChatUser.create({ phoneNumber: author.split('@')[0], name: senderName });
 			}
 
+			/*************************************************/
+			//Detect language first
+			let langList = lngDetector.detect(body);
+			if (
+				(langList.length != 0 &&
+					langList.filter(
+						(item) =>
+							item.includes('arabic') ||
+							item.includes('farsi') ||
+							item.includes('pashto') ||
+							item.includes('urdu')
+					).length != 0) ||
+				body == 'خروج' //Custom
+			) {
+				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
+			} else if (langList.length != 0 && langList.filter((item) => item.includes('english')).length != 0) {
+				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
+			}
+
+			/*************************************************/
 			//Get the user from DB
 			let userSearch = await ChatUser.findOne({ phoneNumber: author.split('@')[0] });
 			const { language } = userSearch;
@@ -58,7 +80,6 @@ router.post('/', async (req, res) => {
 
 			switch (type) {
 				case 'location':
-					console.log('Location:', body);
 					//Location handling
 					await sendMessage({ chatId, language, key: 'LOCATION_SUCCESS' });
 
@@ -77,8 +98,12 @@ router.post('/', async (req, res) => {
 
 					//Send data to api
 					response = await axios.post(
-						`${API_URI}/Trip/UpdateReceiverLocation?mobileNo=${userSearch.phoneNumber}&location=${body}&type=1`,
-						{},
+						`${API_URI}/Trip/UpdateReceiverLocation`,
+						{
+							mobileNo: userSearch.phoneNumber,
+							location: body,
+							type: 1,
+						},
 						{
 							headers: {
 								Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -90,7 +115,7 @@ router.post('/', async (req, res) => {
 
 					//Error handling
 					if (!data.status) {
-						await sendMessage({ chatId, language, key: 'PROBLEM_OCCURRED' });
+						await sendMessage({ chatId, language, message: data.message });
 						break;
 					}
 
@@ -121,8 +146,8 @@ router.post('/', async (req, res) => {
 								case 'ASK_FOR_BUILDING':
 									//Send data to api
 									response = await axios.post(
-										`${API_URI}/Trip/UpdateReceiverLocation?mobileNo=${userSearch.phoneNumber}&location=${body}&type=2`,
-										{},
+										`${API_URI}/Trip/UpdateReceiverLocation`,
+										{ mobileNo: userSearch.phoneNumber, location: body, type: 2 },
 										{
 											headers: {
 												Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -150,8 +175,8 @@ router.post('/', async (req, res) => {
 								case 'ASK_FOR_APPARTMENT':
 									//Send data to api
 									response = await axios.post(
-										`${API_URI}/Trip/UpdateReceiverLocation?mobileNo=${userSearch.phoneNumber}&location=${body}&type=3`,
-										{},
+										`${API_URI}/Trip/UpdateReceiverLocation`,
+										{ mobileNo: userSearch.phoneNumber, location: body, type: 3 },
 										{
 											headers: {
 												Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -180,6 +205,8 @@ router.post('/', async (req, res) => {
 							}
 						}
 					} else {
+						//Check if user is searching for order by id
+
 						//Get the question key --> if exist
 						let questionObj = null;
 
@@ -198,6 +225,39 @@ router.post('/', async (req, res) => {
 						/***************************/
 						//If BOT can't understand
 						if (!questionObj) {
+							if (new RegExp('^[0-9]+$').test(body)) {
+								//Check if the user has sent order id
+								response = await axios.post(
+									`${API_URI}/Trip/GetTrackingOrder`,
+									{ orderId: body },
+									{
+										headers: {
+											Authorization: `Bearer ${API_SECRET_KEY}`,
+											'Accept-Language': userSearch.language,
+										},
+									}
+								);
+								data = await response.data;
+								//Error handling
+								if (!data.status) {
+									await sendMessage({
+										chatId,
+										language,
+										message: data.message,
+									});
+
+									break;
+								}
+
+								await sendMessage({
+									chatId,
+									language,
+									key: 'TRACK_INFO',
+									params: data.data,
+								});
+								break;
+							}
+
 							await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
 
 							break;
@@ -241,8 +301,8 @@ router.post('/', async (req, res) => {
 								await sendMessage({ chatId, language, key: questionObj.key });
 								//Check if there is an order or not
 								response = await axios.post(
-									`${API_URI}/Trip/GetReceiverOrder?mobileNo=${userSearch.phoneNumber}&type=1`,
-									{},
+									`${API_URI}/Trip/GetReceiverOrder`,
+									{ mobileNo: userSearch.phoneNumber, type: 1 },
 									{
 										headers: {
 											Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -252,35 +312,14 @@ router.post('/', async (req, res) => {
 								);
 								data = await response.data;
 
+								console.log(data);
 								//Error handling
 								if (!data.status) {
 									await sendMessage({
 										chatId,
 										language,
 										key: 'INFO_MESSAGE',
-										params: { isHasOrder: false },
 									});
-
-									//Get the phone numbers from API
-									response = await axios.post(
-										`${API_URI}/Trip/LogiCommunicate`,
-										{},
-										{
-											headers: {
-												Authorization: `Bearer ${API_SECRET_KEY}`,
-												'Accept-Language': userSearch.language,
-											},
-										}
-									);
-									data = await response.data;
-
-									//Error handling
-									if (!data.status) {
-										await sendMessage({ chatId, language, key: 'PROBLEM_OCCURRED' });
-										break;
-									}
-
-									await sendMessage({ chatId, language, message: data.data.message });
 
 									break;
 								}
@@ -288,7 +327,7 @@ router.post('/', async (req, res) => {
 								await sendMessage({
 									chatId,
 									language,
-									message: data.data.message,
+									key: 'INFO_MESSAGE',
 								});
 								// const { data: orderData } = data.data;
 								// await sendMessage({
@@ -301,8 +340,8 @@ router.post('/', async (req, res) => {
 								break;
 							case 'TRACK_INFO':
 								response = await axios.post(
-									`${API_URI}/Trip/GetReceiverOrder?mobileNo=${userSearch.phoneNumber}&type=2`,
-									{},
+									`${API_URI}/Trip/GetReceiverOrder`,
+									{ mobileNo: userSearch.phoneNumber, type: 2 },
 									{
 										headers: {
 											Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -311,7 +350,6 @@ router.post('/', async (req, res) => {
 									}
 								);
 								data = await response.data;
-
 								//Error handling
 								if (!data.status) {
 									await sendMessage({
@@ -333,8 +371,8 @@ router.post('/', async (req, res) => {
 								break;
 							case 'INVOICE_INFO':
 								response = await axios.post(
-									`${API_URI}/Trip/GetReceiverOrder?mobileNo=${userSearch.phoneNumber}&type=3`,
-									{},
+									`${API_URI}/Trip/GetReceiverOrder`,
+									{ mobileNo: userSearch.phoneNumber, type: 3 },
 									{
 										headers: {
 											Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -379,20 +417,59 @@ router.post('/', async (req, res) => {
 
 					break;
 				default:
+					if (new RegExp('^[0-9]+$').test(body)) {
+						//Check if the user has sent order id
+						response = await axios.post(
+							`${API_URI}/Trip/GetTrackingOrder`,
+							{ orderId: body },
+							{
+								headers: {
+									Authorization: `Bearer ${API_SECRET_KEY}`,
+									'Accept-Language': userSearch.language,
+								},
+							}
+						);
+						data = await response.data;
+						//Error handling
+						if (!data.status) {
+							await sendMessage({
+								chatId,
+								language,
+								message: data.message,
+							});
+
+							break;
+						}
+
+						await sendMessage({
+							chatId,
+							language,
+							key: 'TRACK_INFO',
+							params: data.data,
+						});
+						break;
+					}
 					//If type is not chat || location
-					await axios.post(CHAT_API_SEND_MESSAGE, {
-						chatId: chatId,
-						body:
-							userSearch.language == 'ar'
-								? QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').RAR()
-								: QUESTIONS.find((q) => q.key == 'DONT_UNDERSTANT').REN(),
-					});
+					await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
+
 					break;
 			}
 		}
 
 		return res.json({ status: true, message: 'Done !' });
 	} catch (e) {
+		//Remove all questions for this user
+		if (req.body.messages[0]) {
+			userQuestion.delete(req.body.messages[0].author.split('@')[0]);
+			let userSearch = await ChatUser.findOne({ phoneNumber: req.body.messages[0].author.split('@')[0] });
+
+			await sendMessage({
+				chatId: req.body.messages[0].chatId,
+				language: userSearch.language,
+				key: 'INFO_MESSAGE',
+			});
+		}
+
 		Sentry.captureException(e);
 		console.log(`Error in ChatBotHook: ${e.message}`, e);
 		if (!res.headersSent) {
@@ -466,62 +543,89 @@ const QUESTIONS = [
 			'هل يوجد أحد',
 			'الوو',
 			'0',
+			'خروج',
 		],
-		QEN: ['Hi', 'Hello', 'Hala', 'How are things', 'Help', 'I need help', 'Help me please', 'any one here', '0'],
-		RAR: () => `مرحبا بك`,
-		REN: () => `Welcome`,
+		QEN: [
+			'Hi',
+			'Hello',
+			'Hala',
+			'How are things',
+			'Help',
+			'I need help',
+			'Help me please',
+			'any one here',
+			'0',
+			'exit',
+		],
+		RAR: () => `مرحبا بك\nأنا لوجي وان بوت 🤖`,
+		REN: () => `Welcome\nI'm LogiOne Bot 🤖`,
 	},
 	{
 		key: 'SALAM_MESSAGE',
-		QAR: ['السلام عليكم', 'سلام', 'السلام عليكم ورحمة الله وبركاته'],
+		QAR: ['السلام عليكم', 'سلام', 'السلام عليكم ورحمة الله وبركاته', 'سلام عليكم'],
 		QEN: ['Salam'],
-		RAR: () => `وعليكم السلام ورحمة الله وبركاته`,
-		REN: () => `Salam :)`,
+		RAR: () => `وعليكم السلام ورحمة الله وبركاته\nأنا لوجي وان بوت 🤖`,
+		REN: () => `Salam :)\nI'm LogiOne Bot 🤖`,
 	},
 	{
 		key: 'INFO_MESSAGE',
 		QAR: [''],
 		QEN: [''],
-		RAR: ({ isHasOrder = false }) =>
-			!isHasOrder
-				? 'يبدوانه ليس لديك أي طلبات قيد التوصيل حاليا \nوأنا يمكنني مساعدتك فقط اذا كان لديك طلبات قيد التوصيل حاليا'
-				: `يساعدك لوجي وان بوت في استلام وتتبع طلبك أو شحنتك ومعرفة الوقت المتوقع لوصول الشحنة اليك من لحظة خروجها من عند التاجر\n\n- لكي تتمكن من تتبع شحنتك اضغط *1* أو اكتب *تتبع*\n\n- اذا اردت مشاركة موقعك معنا لضمان سرعة وجودة التوصيل اضغط *2* او اكتب *موقعي*\n\n- اذا أردت معرفة أرقام التواصل مع الدعم الفني الصوتي اضغط *3* او اكتب *دعم*\n\n\nلخدمات أخري يرجي زيارة\nhttps://logione.net\n\nTo change language to english at any time, please press *English* or *انجليزي*`,
-		REN: ({ isHasOrder = false }) =>
-			!isHasOrder
-				? "It looks that you don't have any orders at the moment\nI can only help you if you have orders currently on delivery"
-				: `Logione BOT helps you with receiving and tracking your order or shipment and know the estimated time for your order to arrive to you from the moment it leaves the merchant\n\n- To be able to track your order, please press *1* or type *Track*\n\n- if you want to share your location with us, to ensure the speed & quality of delivery press *2* or type *Share location*\n\n- If you want to know our customer service phone numbers, press *3* or type *Customer service*\n\n\nFor more services, please visit\nhttps://logione.net\nلكي تتمكن من تغيير اللغة الي العربية، من فضلك اكتب *عربي* أو *Arabic*`,
+		RAR: () =>
+			'يساعدك لوجي وان بوت في استلام وتتبع شحناتك ودفع فاتورتك والتواصل معنا\n\nلتتبع الشحنة حسب الرقم، اكتب *1*\n\nلمشاركة موقع التسليم، اكتب *2*\n\nللتواصل معنا، اكتب *3*\n\nلدفع فاتورتك، اكتب *4*\n\n💡 اذا علقت او واجهتك اي مشكلة، اكتب *خروج*\nلخدمات أخرى، يرجى زيارة https://www.logione.net\nTo switch the language to English at any time, just type *English*',
+		REN: () =>
+			'LogiOne Pot helps you receive and track your shipments, pay your bill, and communicate with us\n\nTo track your shipment, press *1*\n\nTo share your location, press *2*\n\nTo contact us, press *3*\nTo pay your bill, press *4*\n\n💡 If you are stuck، just write *exit*\n\nFor other services, please visit https://www.logione.net\n\n لتغيير اللغة الي العربية في أي وقت، فقط قم بكتابة *عربي*',
 	},
 	{
 		key: 'TRACK_INFO',
 		QAR: ['تتبع', '1', '١'],
-		QEN: ['Track', '1', '١'],
-		RAR: ({ name, mobile, status, client, url }) =>
-			`حالة الطلب: *${status}*\nالمطعم: *${client}*\nالكابتن: *${name}*\nهاتف الكابتن: *${mobile}*\nيمكنك تتبع الشحنة أولا بأول من خلال هذا الرابط\n${url}`,
-		REN: ({ name, mobile, status, client, url }) =>
-			`Order status: *${status}*\nFrom: *${client}*\nCaptain: *${name}*\nMobile: *${mobile}*\nYou can click on this link to track your order in real time\n${url}`,
+		QEN: ['Track', '1'],
+		RAR: ({ name, mobile, status, client, url, paidStatus, invoiceUrl, isAccept }) =>
+			`*حالة التوصيل*: ${status}\n*المكان*: ${client}\n${
+				isAccept
+					? `*الكابتن*: ${name}\n*رقم الاتصال*: ${mobile}\n*حالة الدفع*: ${paidStatus}\n\n*تتبع حركة الكابتن* من الرابط\n${url}\n\n${
+							invoiceUrl ? '*دفع الفاتورة* من الرابط\n' + invoiceUrl + '\n\n' : ''
+					  } يمكنك تتبع طلبات أخري *بكتابة الرقم*`
+					: '\nيمكنك تتبع طلبات أخري *بكتابة الرقم*'
+			}`,
+		REN: ({ name, mobile, status, client, url, paidStatus, invoiceUrl, isAccept }) =>
+			`*Delivery Status*: ${status}\n*Store*: ${client}\n${
+				isAccept
+					? `*Captain*: ${name}\n*Phone Number*: ${mobile}\n*Payment Status*: ${paidStatus}\n\n*To track the captain*, use this link\n${url}\n\n${
+							invoiceUrl ? '*To pay the bill*, use this link\n' + invoiceUrl + '\n\n' : ''
+					  }You can track any other order *by typing it's number*`
+					: "\nYou can track any other order *by typing it's number*"
+			}`,
 	},
 	{
 		key: 'LOCATION_INFO',
 		QAR: ['موقعي', '2', '٢'],
 		QEN: ['Share location', '2', '٢'],
-		RAR: () => 'لمشاركة موقعك ، من فضلك اضغط علي زر مشاركة الموقع',
-		REN: () => 'To share your location, please press the location button',
+		RAR: () => 'يرجي استخدام خيار *مشاركة الموقع* في الواتساب لكي نتمكن من الوصول اليك سريعا',
+		REN: () => 'Please use the *Send Location* option in Whats App to let us find you faster',
 	},
 	{
 		key: 'CUSTOMER_SERVICE',
 		QAR: ['دعم', '3', '٣'],
-		QEN: ['Customer serivce', '3', '٣'],
-		RAR: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite }) =>
-			`أرقام الدعم الفني:\n${hotNumber}\n${mobileNumber}\n${phoneNumber}\n${officeNumber}\n\nمواعيد العمل:\nمن ال 8 صباح وحتي ال 5 مساء بتوقيت السعودية\nسنكون سعداء بتواصلك معنا\nلمزيد من المعلومات يرجي زيارة موقعنا\n${webSite}`,
-		REN: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite }) =>
-			`Customer service numbers:\n${hotNumber}\n${mobileNumber}\n${phoneNumber}\n${officeNumber}\n\nWorking hours:\nFrom 8:00 AM to 5:00 PM KSA\nFor more info, please visit our website\n${webSite}`,
+		QEN: ['Customer serivce', '3'],
+		RAR: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite, addressUrl }) =>
+			`يسعدنا خدمتك بالتواصل معنا\n*رقم الاتصال*: ${hotNumber}\n*الموقع الالكتروني*: ${webSite}\n*العنوان*: ${addressUrl}`,
+		REN: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite, addressUrl }) =>
+			`We are happy to hear from you\n*Contact Number*: ${hotNumber}\n*Website*: ${webSite}\n*Address*: ${addressUrl} `,
 	},
 	{
 		key: 'INVOICE_INFO',
 		QAR: ['4', 'دفع', 'فاتورة', '٤'],
-		QEN: ['4', 'pay', 'payment', 'invoice', '٤'],
+		QEN: ['4', 'pay', 'payment', 'invoice'],
 		RAR: () => 'يبدو أنك قد قمت بدفع مبلغ الطلب من قبل\nشكرا لإهتمامك.',
 		REN: () => 'It looks that you have already paid this order\nThank you for your concern',
+	},
+	{
+		key: 'TRACK_BY_ID',
+		QAR: [''],
+		QEN: [''],
+		RAR: () => 'رقم الشحنة غير صحيح، يرجي التأكد من رقم الشحنة والمحاولة مرة أخري',
+		REN: () => 'The order number is incorrect, please make sure you entered the right order number and try again',
 	},
 	{
 		key: 'LOCATION_SUCCESS',
@@ -535,43 +639,43 @@ const QUESTIONS = [
 		key: 'DONT_UNDERSTANT',
 		QAR: [''],
 		QEN: [''],
-		RAR: () => 'عذرا لم أفهم قصدك ، يمكنك المعاودة مرة أخري\nلإظهار القائمة مرة أخري اضغط *0* أو اكتب *مساعدة*',
-		REN: () => "Sorry, I couldn't understant you. please try again",
+		RAR: () => 'عذرا لم أفهم قصدك ، يمكنك المعاودة مرة أخري\nلإظهار القائمة مرة أخري اضغط *0* أو اكتب *خروج*',
+		REN: () => "Sorry, I couldn't understant you. please try again\nto see the menu again press *0* or *exit*",
 	},
 	{
 		key: 'LANG_TO_AR',
 		QAR: ['ُعربي', 'Arabic', 'العربية', 'العربيه', 'عربى'],
 		QEN: ['ُعربي', 'Arabic'],
-		RAR: () => 'تم تغيير اللغة الي العربية بنجاح ، سوف أقوم بالتوالص معك باللغة العربية من الأن فصاعدا',
-		REN: () => 'تم تغيير اللغة الي العربية بنجاح ، سوف أقوم بالتوالص معك باللغة العربية من الأن فصاعدا',
+		RAR: () => 'تم تغيير اللغة الي العربية بنجاح',
+		REN: () => 'تم تغيير اللغة الي العربية بنجاح',
 	},
 	{
 		key: 'LANG_TO_EN',
 		QAR: ['انجليزي', 'English', 'انجليزى', 'انجلش'],
 		QEN: ['انجليزي', 'English'],
-		RAR: () => 'Langauge changed to English successfully, I will communicate with in English from now on',
-		REN: () => 'Langauge changed to English successfully, I will communicate with in English from now on',
+		RAR: () => 'Langauge changed to English successfully',
+		REN: () => 'Langauge changed to English successfully',
 	},
 	{
 		key: 'ASK_FOR_BUILDING',
 		QAR: [''],
 		QEN: [''],
-		RAR: () => 'عظيم جدا !\nنحن علي وشك الانتهاء ، أريد منك فقط اخباري برقم أو اسم البناية التي توجد فيها',
-		REN: () => 'Great ! we are almost there\nPlease enter the building name/number',
+		RAR: () => 'رائع ، نحن علي وشك الانتهاء *من فضلك أدخل اسم / رقم المبني الخاص بك* ',
+		REN: () => 'Great ! we are almost there\n*Please enter your building Name/ number*',
 	},
 	{
 		key: 'ASK_FOR_APPARTMENT',
 		QAR: [''],
 		QEN: [''],
-		RAR: () => 'من فضلك أدخل رقم الشقة /المكتب',
-		REN: () => 'Please enter your appartment/office number',
+		RAR: () => '*من فضلك أدخل رقم شقتك /مكتبك*',
+		REN: () => '*Please enter your Appartment/ Office number*',
 	},
 	{
 		key: 'THANKS_FOR_INFORMATION',
 		QAR: [''],
 		QEN: [''],
 		RAR: () => 'شكرا لمشاركة هذه المعلومات القيمة معنا\nسوف تساعدنا هذه البيانات في الوصول اليك بشكل أسرع',
-		REN: () => 'Thank you for sharing this information with us\nit will help us reach out to you faster',
+		REN: () => 'Thank you for sharing this values information with us\nit will help us get to you faster',
 	},
 	{
 		key: 'PROBLEM_OCCURRED',
