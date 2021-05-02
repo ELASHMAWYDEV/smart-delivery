@@ -159,7 +159,7 @@ router.post('/', async (req, res) => {
 
 									//Error handling
 									if (!data.status) {
-										await sendMessage({ chatId, language, key: 'PROBLEM_OCCURRED' });
+										await sendMessage({ chatId, language, message: data.message });
 										break;
 									}
 
@@ -188,7 +188,7 @@ router.post('/', async (req, res) => {
 
 									//Error handling
 									if (!data.status) {
-										await sendMessage({ chatId, language, key: 'PROBLEM_OCCURRED' });
+										await sendMessage({ chatId, language, message: data.message });
 										break;
 									}
 
@@ -289,7 +289,7 @@ router.post('/', async (req, res) => {
 
 								//Error handling
 								if (!data.status) {
-									await sendMessage({ chatId, language, key: 'PROBLEM_OCCURRED' });
+									await sendMessage({ chatId, language, message: data.message });
 									break;
 								}
 
@@ -317,7 +317,7 @@ router.post('/', async (req, res) => {
 									await sendMessage({
 										chatId,
 										language,
-										key: 'INFO_MESSAGE',
+										message: data.message,
 									});
 
 									break;
