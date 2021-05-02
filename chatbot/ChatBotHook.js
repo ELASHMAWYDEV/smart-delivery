@@ -67,7 +67,10 @@ router.post('/', async (req, res) => {
 				body == 'خروج' //Custom
 			) {
 				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
-			} else if (langList.length != 0 && langList.filter((item) => item.includes('english')).length != 0) {
+			} else if (
+				langList.length != 0 &&
+				langList.filter((item) => item.includes('english') || body.toLowerCase() == 'hi').length != 0
+			) {
 				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
 			}
 
@@ -199,6 +202,7 @@ router.post('/', async (req, res) => {
 
 								default:
 									await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
+									await sendMessage({ chatId, language, key: 'INFO_MESSAGE' });
 
 									userQuestion.delete(author.split('@')[0]);
 									break;
@@ -259,6 +263,7 @@ router.post('/', async (req, res) => {
 							}
 
 							await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
+							await sendMessage({ chatId, language, key: 'INFO_MESSAGE' });
 
 							break;
 						}
@@ -450,6 +455,7 @@ router.post('/', async (req, res) => {
 					}
 					//If type is not chat || location
 					await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
+					await sendMessage({ chatId, language, key: 'INFO_MESSAGE' });
 
 					break;
 			}
@@ -639,8 +645,8 @@ const QUESTIONS = [
 		key: 'DONT_UNDERSTANT',
 		QAR: [''],
 		QEN: [''],
-		RAR: () => 'عذرا لم أفهم قصدك ، يمكنك المعاودة مرة أخري\nلإظهار القائمة مرة أخري اضغط *0* أو اكتب *خروج*',
-		REN: () => "Sorry, I couldn't understant you. please try again\nto see the menu again press *0* or *exit*",
+		RAR: () => 'اعتذر منك، لازلت أتعلم لأجيبك علي جميع أسئلتك. 🤔',
+		REN: () => "Sorry, I'm still learning to answer all your questions. 🤔",
 	},
 	{
 		key: 'LANG_TO_AR',
