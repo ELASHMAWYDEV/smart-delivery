@@ -386,7 +386,7 @@ router.post('/', async (req, res) => {
 									await sendMessage({
 										chatId,
 										language,
-										key: 'INVOICE_INFO',
+										message: data.message,
 									});
 
 									break;
@@ -546,6 +546,7 @@ const QUESTIONS = [
 		],
 		QEN: [
 			'Hi',
+			'hi',
 			'Hello',
 			'Hala',
 			'How are things',
