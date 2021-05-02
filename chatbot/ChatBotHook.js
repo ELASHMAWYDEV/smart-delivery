@@ -312,7 +312,6 @@ router.post('/', async (req, res) => {
 								);
 								data = await response.data;
 
-								console.log(data);
 								//Error handling
 								if (!data.status) {
 									await sendMessage({
@@ -572,9 +571,9 @@ const QUESTIONS = [
 		QAR: [''],
 		QEN: [''],
 		RAR: () =>
-			'يساعدك لوجي وان بوت في استلام وتتبع شحناتك ودفع فاتورتك والتواصل معنا\n\nلتتبع الشحنة حسب الرقم، اكتب *1*\n\nلمشاركة موقع التسليم، اكتب *2*\n\nللتواصل معنا، اكتب *3*\n\nلدفع فاتورتك، اكتب *4*\n\n💡 اذا علقت او واجهتك اي مشكلة، اكتب *خروج*\nلخدمات أخرى، يرجى زيارة https://www.logione.net\nTo switch the language to English at any time, just type *English*',
+			'يساعدك لوجي وان بوت في استلام وتتبع طلباتك ودفع فاتورتك والتواصل معنا\n\nلتتبع الطلب ، اكتب *1*\nلمشاركة موقع التسليم، اكتب *2*\nللتواصل معنا، اكتب *3*\nلدفع فاتورتك، اكتب *4*\n\n💡 اذا علقت او واجهتك اي مشكلة، اكتب *خروج*\n\nلخدمات أخرى، يرجى زيارة https://www.logione.net\n\nTo switch the language to English at any time, just type *English*\n\n*Logi One*',
 		REN: () =>
-			'LogiOne Pot helps you receive and track your shipments, pay your bill, and communicate with us\n\nTo track your shipment, press *1*\n\nTo share your location, press *2*\n\nTo contact us, press *3*\nTo pay your bill, press *4*\n\n💡 If you are stuck، just write *exit*\n\nFor other services, please visit https://www.logione.net\n\n لتغيير اللغة الي العربية في أي وقت، فقط قم بكتابة *عربي*',
+			'LogiOne Pot helps you receive and track your shipments, pay your bill, and communicate with us\n\nTo track your shipment, press *1*\nTo share your location, press *2*\nTo contact us, press *3*\nTo pay your bill, press *4*\n\n💡 If you are stuck، just write *exit*\n\nFor other services, please visit https://www.logione.net\n\n لتغيير اللغة الي العربية في أي وقت، فقط قم بكتابة *عربي*\n\n*لوجي وان*',
 	},
 	{
 		key: 'TRACK_INFO',
@@ -606,8 +605,8 @@ const QUESTIONS = [
 	},
 	{
 		key: 'CUSTOMER_SERVICE',
-		QAR: ['دعم', '3', '٣'],
-		QEN: ['Customer serivce', '3'],
+		QAR: ['دعم', '3', '٣', 'رقم الدعم', 'رقم الجوال', 'شكاوى'],
+		QEN: ['Customer serivce', '3', 'Support Number', 'Mobile Number', 'Problem'],
 		RAR: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite, addressUrl }) =>
 			`يسعدنا خدمتك بالتواصل معنا\n*رقم الاتصال*: ${hotNumber}\n*الموقع الالكتروني*: ${webSite}\n*العنوان*: ${addressUrl}`,
 		REN: ({ hotNumber, mobileNumber, phoneNumber, officeNumber, webSite, addressUrl }) =>
@@ -624,7 +623,7 @@ const QUESTIONS = [
 		key: 'TRACK_BY_ID',
 		QAR: [''],
 		QEN: [''],
-		RAR: () => 'رقم الشحنة غير صحيح، يرجي التأكد من رقم الشحنة والمحاولة مرة أخري',
+		RAR: () => 'رقم الطلب غير صحيح، يرجي التأكد من رقم الطلب والمحاولة مرة أخري',
 		REN: () => 'The order number is incorrect, please make sure you entered the right order number and try again',
 	},
 	{
@@ -690,6 +689,240 @@ const QUESTIONS = [
 		QEN: [''],
 		RAR: ({ url }) => `يمكنك الدفع مباشرة عن طريق هذا الرابط\n${url}`,
 		REN: ({ url }) => `You can pay online using this invoice link\n${url}`,
+	},
+	{
+		key: 'RANDOM_MESSAGE_1',
+		QAR: ['ان شاء الله'],
+		QEN: ['Inshallah'],
+		REN: () => 'Inshallah :)',
+		RAR: () => 'ان شاء الله :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_2',
+		QAR: ['انا بخير'],
+		QEN: ["I' Fine"],
+		REN: () => 'I Hope That :)',
+		RAR: () => 'اتمنى ذلك دائما :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_3',
+		QAR: ['الحمدلله'],
+		QEN: ['Alright'],
+		REN: () => 'I Hope I Hepled You  :)',
+		RAR: () => 'اتمنى ان اكون ساعدتك :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_4',
+		QAR: ['نعم'],
+		QEN: ['Yes'],
+		REN: () => '👍',
+		RAR: () => '👍',
+	},
+	{
+		key: 'RANDOM_MESSAGE_5',
+		QAR: ['لا'],
+		QEN: ['No'],
+		REN: () => '👍',
+		RAR: () => '👍',
+	},
+	{
+		key: 'RANDOM_MESSAGE_6',
+		QAR: ['اخيرا'],
+		QEN: ['Finally'],
+		REN: () => '👏',
+		RAR: () => '👏',
+	},
+	{
+		key: 'RANDOM_MESSAGE_7',
+		QAR: ['👍'],
+		QEN: ['👍'],
+		REN: () => '👍',
+		RAR: () => '👍',
+	},
+	{
+		key: 'RANDOM_MESSAGE_8',
+		QAR: ['👌'],
+		QEN: ['👌'],
+		REN: () => '👌',
+		RAR: () => '👌',
+	},
+	{
+		key: 'RANDOM_MESSAGE_9',
+		QAR: ['😍'],
+		QEN: ['😍'],
+		REN: () => '😍',
+		RAR: () => '😍',
+	},
+	{
+		key: 'RANDOM_MESSAGE_10',
+		QAR: ['؟'],
+		QEN: ['؟'],
+		REN: () => 'Feel Free To Ask Me ❤',
+		RAR: () => 'تفضل , اى خدمه حابب تستفسر عنها؟',
+	},
+	{
+		key: 'RANDOM_MESSAGE_11',
+		QAR: ['❤'],
+		QEN: ['❤'],
+		REN: () => '❤',
+		RAR: () => '❤',
+	},
+	{
+		key: 'RANDOM_MESSAGE_12',
+		QAR: ['😭'],
+		QEN: ['😭'],
+		REN: () => '😁',
+		RAR: () => '😁',
+	},
+	{
+		key: 'RANDOM_MESSAGE_13',
+		QAR: ['👍🏼'],
+		QEN: ['👍🏼'],
+		REN: () => '👍🏼',
+		RAR: () => '👍🏼',
+	},
+	{
+		key: 'RANDOM_MESSAGE_14',
+		QAR: ['👍👍'],
+		QEN: ['👍👍'],
+		REN: () => '👍',
+		RAR: () => '👍',
+	},
+	{
+		key: 'RANDOM_MESSAGE_15',
+		QAR: ['👍👍👍'],
+		QEN: ['👍👍👍'],
+		REN: () => '👍',
+		RAR: () => '👍',
+	},
+	{
+		key: 'RANDOM_MESSAGE_16',
+		QAR: ['اقدر ذلك'],
+		QEN: ['I know that'],
+		REN: () => 'Thank You ❤',
+		RAR: () => 'شكرا لتقدريك هذا ❤',
+	},
+	{
+		key: 'RANDOM_MESSAGE_17',
+		QAR: ['اريد شىء اخر'],
+		QEN: ['Somthing else'],
+		REN: () => 'Feel Free To Ask Me :)',
+		RAR: () => 'تفضل , اى خدمه حابب تستفسر عنها؟',
+	},
+	{
+		key: 'RANDOM_MESSAGE_18',
+		QAR: ['سؤال اخر'],
+		QEN: ['Onther Question'],
+		REN: () => 'Feel Free To Ask Me :)',
+		RAR: () => 'تفضل , اى خدمه حابب تستفسر عنها؟',
+	},
+	{
+		key: 'RANDOM_MESSAGE_19',
+		QAR: ['سؤال'],
+		QEN: ['Question'],
+		REN: () => 'Feel Free To Ask Me :)',
+		RAR: () => 'تفضل , اى خدمه حابب تستفسر عنها؟',
+	},
+	{
+		key: 'RANDOM_MESSAGE_20',
+		QAR: ['احببت التعامل معك'],
+		QEN: ['I Love working with you'],
+		REN: () => 'I love it Too ❤',
+		RAR: () => 'وانا ايضا ❤',
+	},
+	{
+		key: 'RANDOM_MESSAGE_21',
+		QAR: ['احببتك'],
+		QEN: ['I Love you'],
+		REN: () => 'I love it Too ❤',
+		RAR: () => 'وانا ايضا ❤',
+	},
+	{
+		key: 'RANDOM_MESSAGE_22',
+		QAR: ['هذا مفيد'],
+		QEN: ["It's Helpful"],
+		REN: () => 'Thank You ❤',
+		RAR: () => 'شكرا لك ❤',
+	},
+	{
+		key: 'RANDOM_MESSAGE_23',
+
+		QAR: ['كيف حالك'],
+		QEN: ['How Are You'],
+		REN: () => "I' fine thanks (y)",
+		RAR: () => 'الحمد لله :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_24',
+		QAR: ['كيف الاحوال'],
+		QEN: ['How Are You Doing'],
+		REN: () => "I' fine thanks (y)",
+		RAR: () => 'الحمد لله :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_25',
+		QAR: ['صباح الفل'],
+		QEN: ['Good Day'],
+		REN: () => 'Good Morning    \n\nHow I Can Help You? :)',
+		RAR: () => 'صباح الخير \n\nكيف يمكن ان اساعدك :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_26',
+
+		QAR: ['صباح الخير'],
+		QEN: ['Good Morning'],
+		REN: () => 'Good Morning    \n\nHow I Can Help You? :)',
+		RAR: () => 'صباح الخير \n\nكيف يمكن ان اساعدك :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_27',
+		QAR: ['صباح النور'],
+		QEN: ['Morning'],
+		REN: () => 'Good Morning    \n\nHow I Can Help You? :)',
+		RAR: () => 'صباح الخير \n\nكيف يمكن ان اساعدك :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_28',
+		QAR: ['شكرا'],
+		QEN: ['thanks'],
+		REN: () => 'You are welcome',
+		RAR: () => 'عفوا',
+	},
+	{
+		key: 'RANDOM_MESSAGE_29',
+		QAR: ['مع السلامة'],
+		QEN: ['bye'],
+		REN: () => 'Have a good day Sure ',
+		RAR: () => 'في أمان الله',
+	},
+	{
+		key: 'RANDOM_MESSAGE_30',
+		QAR: ['مع السلامه'],
+		QEN: ['bye bye'],
+		REN: () => 'Have a good day',
+		RAR: () => 'في أمان الله',
+	},
+	{
+		key: 'RANDOM_MESSAGE_31',
+		QAR: ['تسلم'],
+		QEN: ['Thank you'],
+		REN: () => "You're Welocome ",
+		RAR: () => 'شكرا لك :)',
+	},
+	{
+		key: 'RANDOM_MESSAGE_32',
+		QAR: ['سلامات'],
+		QEN: ['Thanx'],
+		REN: () => "You're Welocome ",
+		RAR: () => 'شكرا لك :)',
+	},
+
+	{
+		key: 'RANDOM_MESSAGE_33',
+		QAR: ['تمام'],
+		QEN: ['K'],
+		REN: () => "You're Welocome ",
+		RAR: () => 'شكرا لك :)',
 	},
 ];
 
