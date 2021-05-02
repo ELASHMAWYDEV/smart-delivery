@@ -68,8 +68,8 @@ router.post('/', async (req, res) => {
 			) {
 				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
 			} else if (
-				langList.length != 0 &&
-				langList.filter((item) => item.includes('english') || body.toLowerCase() == 'hi').length != 0
+				(langList.length != 0 && langList.filter((item) => item.includes('english')).length != 0) ||
+				body.toLowerCase() == 'hi'
 			) {
 				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
 			}
