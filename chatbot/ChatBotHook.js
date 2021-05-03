@@ -14,7 +14,7 @@ const userQuestion = new Map();
 router.post('/', async (req, res) => {
 	try {
 		const { messages } = req.body;
-		// console.log(messages);
+		console.log(userQuestion);
 
 		let data;
 		let response;
@@ -87,9 +87,6 @@ router.post('/', async (req, res) => {
 
 			switch (type) {
 				case 'location':
-					//Location handling
-					await sendMessage({ chatId, language, key: 'LOCATION_SUCCESS' });
-
 					//Update on API
 					/****************************************/
 					// //Send to the driver that location is updated
@@ -120,88 +117,92 @@ router.post('/', async (req, res) => {
 						break;
 					}
 
+					//Has not found order
+					if (!data.data.isAccept) {
+						await sendMessage({
+							chatId,
+							language,
+							key: 'TRACK_INFO',
+							params: data.data,
+						});
+
+						break;
+					}
+
 					//Ask the csutomer for his building number
+					await sendMessage({ chatId, language, key: 'LOCATION_SUCCESS' });
 					await sendMessage({ chatId, language, key: 'ASK_FOR_BUILDING' });
 					//Register the user as awaiting for answer
-					userQuestion.set(author.split('@')[0], { key: 'ASK_FOR_BUILDING', answer: '', done: false });
+					userQuestion.set(author.split('@')[0], 'ASK_FOR_BUILDING');
 
 					break;
 				case 'chat':
 					//Check if user is answering any question first
 					if (userQuestion.get(author.split('@')[0])) {
-						let question = userQuestion.get(author.split('@')[0]).find((q) => q.done == false);
+						let questionKey = userQuestion.get(author.split('@')[0]);
 
-						if (question) {
-							//Set the answer as the current body
+						//Set the answer as the current body
 
-							//Remove the question first
-							userQuestion.set(author.split('@')[0], [
-								...userQuestion.get(author.split('@')[0]).filter((q) => q.key != question.key),
-								{ key: question.key, answer: body, done: true },
-							]);
+						//Remove the question first
+						userQuestion.delete(author.split('@')[0]);
 
-							switch (question.key) {
-								case 'ASK_FOR_BUILDING':
-									//Send data to api
-									response = await axios.post(
-										`${API_URI}/Trip/UpdateReceiverLocation`,
-										{ mobileNo: userSearch.phoneNumber, location: body, type: 2 },
-										{
-											headers: {
-												Authorization: `Bearer ${API_SECRET_KEY}`,
-												'Accept-Language': userSearch.language,
-											},
-										}
-									);
-									data = await response.data;
-
-									//Error handling
-									if (!data.status) {
-										await sendMessage({ chatId, language, message: data.message });
-										break;
+						switch (questionKey) {
+							case 'ASK_FOR_BUILDING':
+								//Send data to api
+								response = await axios.post(
+									`${API_URI}/Trip/UpdateReceiverLocation`,
+									{ mobileNo: userSearch.phoneNumber, location: body, type: 2 },
+									{
+										headers: {
+											Authorization: `Bearer ${API_SECRET_KEY}`,
+											'Accept-Language': userSearch.language,
+										},
 									}
+								);
+								data = await response.data;
 
-									//Ask the csutomer for his building number
-									await sendMessage({ chatId, language, key: 'ASK_FOR_APPARTMENT' });
-									//Register the user as awaiting for answer
-									userQuestion.set(author.split('@')[0], [
-										...(userQuestion.get(author.split('@')[0]) || []),
-										{ key: 'ASK_FOR_APPARTMENT', answer: '', done: false },
-									]);
+								//Error handling
+								if (!data.status) {
+									await sendMessage({ chatId, language, message: data.message });
 									break;
+								}
 
-								case 'ASK_FOR_APPARTMENT':
-									//Send data to api
-									response = await axios.post(
-										`${API_URI}/Trip/UpdateReceiverLocation`,
-										{ mobileNo: userSearch.phoneNumber, location: body, type: 3 },
-										{
-											headers: {
-												Authorization: `Bearer ${API_SECRET_KEY}`,
-												'Accept-Language': userSearch.language,
-											},
-										}
-									);
-									data = await response.data;
+								//Ask the csutomer for his building number
+								await sendMessage({ chatId, language, key: 'ASK_FOR_APPARTMENT' });
+								//Register the user as awaiting for answer
+								userQuestion.set(author.split('@')[0], 'ASK_FOR_APPARTMENT');
+								break;
 
-									//Error handling
-									if (!data.status) {
-										await sendMessage({ chatId, language, message: data.message });
-										break;
+							case 'ASK_FOR_APPARTMENT':
+								//Send data to api
+								response = await axios.post(
+									`${API_URI}/Trip/UpdateReceiverLocation`,
+									{ mobileNo: userSearch.phoneNumber, location: body, type: 3 },
+									{
+										headers: {
+											Authorization: `Bearer ${API_SECRET_KEY}`,
+											'Accept-Language': userSearch.language,
+										},
 									}
+								);
+								data = await response.data;
 
-									//Ask the csutomer for his building number
-									await sendMessage({ chatId, language, key: 'THANKS_FOR_INFORMATION' });
-									userQuestion.delete(author.split('@')[0]);
+								//Error handling
+								if (!data.status) {
+									await sendMessage({ chatId, language, message: data.message });
 									break;
+								}
 
-								default:
-									await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
-									await sendMessage({ chatId, language, key: 'INFO_MESSAGE' });
+								//Ask the csutomer for his building number
+								await sendMessage({ chatId, language, key: 'THANKS_FOR_INFORMATION' });
+								break;
 
-									userQuestion.delete(author.split('@')[0]);
-									break;
-							}
+							default:
+								await sendMessage({ chatId, language, key: 'DONT_UNDERSTANT' });
+								await sendMessage({ chatId, language, key: 'INFO_MESSAGE' });
+
+								userQuestion.delete(author.split('@')[0]);
+								break;
 						}
 					} else {
 						//Check if user is searching for order by id
@@ -396,6 +397,17 @@ router.post('/', async (req, res) => {
 									break;
 								}
 
+								if (!data.data.isAccept) {
+									await sendMessage({
+										chatId,
+										language,
+										key: 'TRACK_INFO',
+										params: data.data,
+									});
+
+									break;
+								}
+
 								await sendMessage({
 									chatId,
 									language,
@@ -405,11 +417,29 @@ router.post('/', async (req, res) => {
 
 								break;
 							case 'LOCATION_INFO':
-								userQuestion.set(author.split('@')[0], {
-									key: 'LOCATION_INFO',
-									answer: body,
-									done: false,
-								});
+								response = await axios.post(
+									`${API_URI}/Trip/GetReceiverOrder`,
+									{ mobileNo: userSearch.phoneNumber, type: 2 },
+									{
+										headers: {
+											Authorization: `Bearer ${API_SECRET_KEY}`,
+											'Accept-Language': userSearch.language,
+										},
+									}
+								);
+								data = await response.data;
+								//Error handling
+								if (!data.status || !data.data.isAccept) {
+									await sendMessage({
+										chatId,
+										language,
+										message: data.message,
+									});
+
+									break;
+								}
+
+								userQuestion.set(author.split('@')[0], 'LOCATION_INFO');
 
 								await sendMessage({
 									chatId,
