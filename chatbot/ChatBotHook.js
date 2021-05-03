@@ -97,12 +97,6 @@ router.post('/', async (req, res) => {
 					// }
 					/****************************************/
 
-					//Save the location of the user on the userQuestion map
-					userQuestion.set(author.split('@')[0], [
-						...(userQuestion.get(author.split('@')[0]) || []),
-						{ key: 'LOCATION_INFO', answer: body, done: true },
-					]);
-
 					//Send data to api
 					response = await axios.post(
 						`${API_URI}/Trip/UpdateReceiverLocation`,
@@ -129,10 +123,7 @@ router.post('/', async (req, res) => {
 					//Ask the csutomer for his building number
 					await sendMessage({ chatId, language, key: 'ASK_FOR_BUILDING' });
 					//Register the user as awaiting for answer
-					userQuestion.set(author.split('@')[0], [
-						...(userQuestion.get(author.split('@')[0]) || []),
-						{ key: 'ASK_FOR_BUILDING', answer: '', done: false },
-					]);
+					userQuestion.set(author.split('@')[0], { key: 'ASK_FOR_BUILDING', answer: '', done: false });
 
 					break;
 				case 'chat':
@@ -413,14 +404,26 @@ router.post('/', async (req, res) => {
 								});
 
 								break;
-
-							default:
-								//Send BOT answer to user
-								await axios.post(CHAT_API_SEND_MESSAGE, {
-									chatId: chatId,
-									body: userSearch.language == 'ar' ? questionObj.RAR() : questionObj.REN(),
+							case 'LOCATION_INFO':
+								userQuestion.set(author.split('@')[0], {
+									key: 'LOCATION_INFO',
+									answer: body,
+									done: false,
 								});
 
+								await sendMessage({
+									chatId,
+									language,
+									key: 'LOCATION_INFO',
+								});
+								break;
+							default:
+								//Send BOT answer to user
+								await sendMessage({
+									chatId,
+									language,
+									key: questionObj.key,
+								});
 								break;
 						}
 
