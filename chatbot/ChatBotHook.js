@@ -471,12 +471,18 @@ router.post('/', async (req, res) => {
 	} catch (e) {
 		//Remove all questions for this user
 		if (req.body.messages[0]) {
-			userQuestion.delete(req.body.messages[0].author.split('@')[0]);
-			let userSearch = await ChatBotUserModel.findOne({ phoneNumber: req.body.messages[0].author.split('@')[0] });
+			const { author, senderName, chatId } = req.body.messages[0];
+
+			userQuestion.delete(author.split('@')[0]);
+			//If user is not registered --> add to DB
+			if (!(await ChatBotUserModel.findOne({ phoneNumber: author.split('@')[0] }))) {
+				await ChatBotUserModel.create({ phoneNumber: author.split('@')[0], name: senderName});
+			}
+			let userSearch = await ChatBotUserModel.findOne({ phoneNumber: author.split('@')[0] });
 
 			await sendMessage({
-				chatId: req.body.messages[0].chatId,
-				language: userSearch.language || "ar",
+				chatId,
+				language: userSearch.language || 'ar',
 				key: 'INFO_MESSAGE',
 			});
 		}
