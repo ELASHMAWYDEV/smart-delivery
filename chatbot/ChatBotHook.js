@@ -64,7 +64,11 @@ router.post('/', async (req, res) => {
 							item.includes('pashto') ||
 							item.includes('urdu')
 					).length != 0) ||
-				body == 'خروج' //Custom
+				body == 'خروج' ||
+				body == '١' ||
+				body == '٢' ||
+				body == '٣' ||
+				body == '٤'
 			) {
 				await ChatBotUserModel.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
 			} else if (
@@ -311,28 +315,26 @@ router.post('/', async (req, res) => {
 							case 'HELLO_MESSAGE':
 								await sendMessage({ chatId, language, key: questionObj.key });
 								//Check if there is an order or not
-								response = await axios.post(
-									`${API_URI}/Trip/GetReceiverOrder`,
-									{ mobileNo: userSearch.phoneNumber, type: 1 },
-									{
-										headers: {
-											Authorization: `Bearer ${API_SECRET_KEY}`,
-											'Accept-Language': userSearch.language,
-										},
-									}
-								);
-								data = await response.data;
+								// response = await axios.post(
+								// 	`${API_URI}/Trip/GetReceiverOrder`,
+								// 	{ mobileNo: userSearch.phoneNumber, type: 1 },
+								// 	{
+								// 		headers: {
+								// 			Authorization: `Bearer ${API_SECRET_KEY}`,
+								// 			'Accept-Language': userSearch.language,
+								// 		},
+								// 	}
+								// );
+								// data = await response.data;
 
-								//Error handling
-								if (!data.status) {
-									await sendMessage({
-										chatId,
-										language,
-										message: data.message,
-									});
-
-									break;
-								}
+								// //Error handling
+								// if (!data.status) {
+								// 	await sendMessage({
+								// 		chatId,
+								// 		language,
+								// 		message: data.message,
+								// 	});
+								// }
 
 								await sendMessage({
 									chatId,
@@ -476,7 +478,7 @@ router.post('/', async (req, res) => {
 			userQuestion.delete(author.split('@')[0]);
 			//If user is not registered --> add to DB
 			if (!(await ChatBotUserModel.findOne({ phoneNumber: author.split('@')[0] }))) {
-				await ChatBotUserModel.create({ phoneNumber: author.split('@')[0], name: senderName});
+				await ChatBotUserModel.create({ phoneNumber: author.split('@')[0], name: senderName });
 			}
 			let userSearch = await ChatBotUserModel.findOne({ phoneNumber: author.split('@')[0] });
 
