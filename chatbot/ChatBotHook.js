@@ -7,7 +7,7 @@ const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
 const { CHAT_API_SEND_MESSAGE, CHAT_API_TYPING, CHAT_MOBILE_PHONE, API_URI, API_SECRET_KEY } = require('../globals');
 //Models
-const ChatUser = require('../models/ChatUser');
+const ChatBotUserModel = require('../models/ChatBotUser');
 
 const userQuestion = new Map();
 
@@ -48,8 +48,8 @@ router.post('/', async (req, res) => {
 			/*************************************************/
 
 			//If user is not registered --> add to DB
-			if (!(await ChatUser.findOne({ phoneNumber: author.split('@')[0] }))) {
-				await ChatUser.create({ phoneNumber: author.split('@')[0], name: senderName });
+			if (!(await ChatBotUserModel.findOne({ phoneNumber: author.split('@')[0] }))) {
+				await ChatBotUserModel.create({ phoneNumber: author.split('@')[0], name: senderName });
 			}
 
 			/*************************************************/
@@ -66,17 +66,17 @@ router.post('/', async (req, res) => {
 					).length != 0) ||
 				body == 'خروج' //Custom
 			) {
-				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
+				await ChatBotUserModel.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
 			} else if (
 				(langList.length != 0 && langList.filter((item) => item.includes('english')).length != 0) ||
 				body.toLowerCase() == 'hi'
 			) {
-				await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
+				await ChatBotUserModel.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
 			}
 
 			/*************************************************/
 			//Get the user from DB
-			let userSearch = await ChatUser.findOne({ phoneNumber: author.split('@')[0] });
+			let userSearch = await ChatBotUserModel.findOne({ phoneNumber: author.split('@')[0] });
 			const { language } = userSearch;
 
 			/*************************************************/
@@ -271,11 +271,17 @@ router.post('/', async (req, res) => {
 						//Perform actions depending on KEYS
 						switch (questionObj.key) {
 							case 'LANG_TO_EN':
-								await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'en' });
+								await ChatBotUserModel.updateOne(
+									{ phoneNumber: author.split('@')[0] },
+									{ language: 'en' }
+								);
 								await sendMessage({ chatId, language, key: 'LANG_TO_EN' });
 								break;
 							case 'LANG_TO_AR':
-								await ChatUser.updateOne({ phoneNumber: author.split('@')[0] }, { language: 'ar' });
+								await ChatBotUserModel.updateOne(
+									{ phoneNumber: author.split('@')[0] },
+									{ language: 'ar' }
+								);
 								await sendMessage({ chatId, language, key: 'LANG_TO_AR' });
 								break;
 							case 'CUSTOMER_SERVICE':
@@ -466,11 +472,11 @@ router.post('/', async (req, res) => {
 		//Remove all questions for this user
 		if (req.body.messages[0]) {
 			userQuestion.delete(req.body.messages[0].author.split('@')[0]);
-			let userSearch = await ChatUser.findOne({ phoneNumber: req.body.messages[0].author.split('@')[0] });
+			let userSearch = await ChatBotUserModel.findOne({ phoneNumber: req.body.messages[0].author.split('@')[0] });
 
 			await sendMessage({
 				chatId: req.body.messages[0].chatId,
-				language: userSearch.language,
+				language: userSearch.language || "ar",
 				key: 'INFO_MESSAGE',
 			});
 		}

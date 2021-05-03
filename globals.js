@@ -28,6 +28,10 @@ module.exports.disconnectInterval = new Map();
 module.exports.busyDrivers = new Map(); //Hold all drivers that are currently busy with thier branch id & orders ids[]
 module.exports.driverHasTakenAction = new Map(); //Hold the driver bool to check if he took action on that order or not
 
+//Chat global variables
+module.exports.chatDrivers = new Map();
+module.exports.chatOperators = new Map();
+
 //API's
 module.exports.GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_KEY || '';
 module.exports.FIREBASE_URI = process.env.FIREBASE_URI || 'https://super-1231e.firebaseio.com';
