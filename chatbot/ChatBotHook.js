@@ -5,7 +5,15 @@ const axios = require('axios');
 const stringSimilarity = require('string-similarity');
 const LanguageDetect = require('languagedetect');
 const lngDetector = new LanguageDetect();
-const { CHAT_API_SEND_MESSAGE, CHAT_API_TYPING, CHAT_MOBILE_PHONE, API_URI, API_SECRET_KEY } = require('../globals');
+const {
+	CHAT_API_SEND_MESSAGE,
+	CHAT_API_TYPING,
+	CHAT_MOBILE_PHONE,
+	API_URI,
+	API_SECRET_KEY,
+	MAP_DECODER_URI,
+	GOOGLE_MAPS_KEY,
+} = require('../globals');
 //Models
 const ChatBotUserModel = require('../models/ChatBotUser');
 
@@ -117,18 +125,6 @@ router.post('/', async (req, res) => {
 						break;
 					}
 
-					//Has not found order
-					if (!data.data.isAccept) {
-						await sendMessage({
-							chatId,
-							language,
-							key: 'TRACK_INFO',
-							params: data.data,
-						});
-
-						break;
-					}
-
 					//Ask the csutomer for his building number
 					await sendMessage({ chatId, language, key: 'LOCATION_SUCCESS' });
 					await sendMessage({ chatId, language, key: 'ASK_FOR_BUILDING' });
@@ -140,11 +136,6 @@ router.post('/', async (req, res) => {
 					//Check if user is answering any question first
 					if (userQuestion.get(author.split('@')[0])) {
 						let questionKey = userQuestion.get(author.split('@')[0]);
-
-						//Set the answer as the current body
-
-						//Remove the question first
-						userQuestion.delete(author.split('@')[0]);
 
 						switch (questionKey) {
 							case 'ASK_FOR_BUILDING':
@@ -195,6 +186,56 @@ router.post('/', async (req, res) => {
 
 								//Ask the csutomer for his building number
 								await sendMessage({ chatId, language, key: 'THANKS_FOR_INFORMATION' });
+								userQuestion.delete(author.split('@')[0]);
+
+								break;
+							case 'LOCATION_INFO':
+								//Check if the user sent a url
+								let url = body.match(/(https?:\/\/[^ ]*)/) && body.match(/(https?:\/\/[^ ]*)/)[0];
+								if (!url) {
+									await sendMessage({ chatId, language, key: 'LOCATION_NOT_VALID' });
+									break;
+								} else {
+									await sendMessage({ chatId, language, key: 'CHECKING_LOCATION_URL' });
+									//Get the lat & long from Google Map Decoder service
+									response = await axios.post(MAP_DECODER_URI, { url });
+									data = await response.data;
+
+									if (!data.status) {
+										await sendMessage({ chatId, language, key: 'LOCATION_NOT_VALID' });
+										break;
+									}
+									//Send data to api
+									response = await axios.post(
+										`${API_URI}/Trip/UpdateReceiverLocation`,
+										{
+											mobileNo: userSearch.phoneNumber,
+											location: `${data.data.lat};${data.data.lng}`,
+											type: 1,
+										},
+										{
+											headers: {
+												Authorization: `Bearer ${API_SECRET_KEY}`,
+												'Accept-Language': userSearch.language,
+											},
+										}
+									);
+									data = await response.data;
+
+									console.log(data);
+									//Error handling
+									if (!data.status) {
+										await sendMessage({ chatId, language, message: data.message });
+										break;
+									}
+
+									//Ask the csutomer for his building number
+									await sendMessage({ chatId, language, key: 'LOCATION_SUCCESS' });
+									await sendMessage({ chatId, language, key: 'ASK_FOR_BUILDING' });
+									//Register the user as awaiting for answer
+									userQuestion.set(author.split('@')[0], 'ASK_FOR_BUILDING');
+								}
+
 								break;
 
 							default:
@@ -419,7 +460,7 @@ router.post('/', async (req, res) => {
 							case 'LOCATION_INFO':
 								response = await axios.post(
 									`${API_URI}/Trip/GetReceiverOrder`,
-									{ mobileNo: userSearch.phoneNumber, type: 2 },
+									{ mobileNo: userSearch.phoneNumber, type: 4 },
 									{
 										headers: {
 											Authorization: `Bearer ${API_SECRET_KEY}`,
@@ -429,7 +470,7 @@ router.post('/', async (req, res) => {
 								);
 								data = await response.data;
 								//Error handling
-								if (!data.status || !data.data.isAccept) {
+								if (!data.status) {
 									await sendMessage({
 										chatId,
 										language,
@@ -687,6 +728,20 @@ const QUESTIONS = [
 		RAR: () => 'شكرا لك علي مشاركة موقعك معنا ، لقد قمنا بتسجيله في طلبك وسيسهل هذا عملية وصول السائق اليك',
 		REN: () =>
 			'Thank you for sharing your location with us, we have added this location to your order to make it easier for our driver to reach for you',
+	},
+	{
+		key: 'CHECKING_LOCATION_URL',
+		QAR: [''],
+		QEN: [''],
+		RAR: () => 'جاري التحقق من الرابط الذي ارسلته...\nيرجي الانتظار بضعة ثواني...',
+		REN: () => 'Checking the location url you have sent...\nPlease wait a few seconds...',
+	},
+	{
+		key: 'LOCATION_NOT_VALID',
+		QAR: [''],
+		QEN: [''],
+		RAR: () => 'يبدو أن هذا الرابط غير صالح ، أنصحك باستخدام *مشاركة الموقع* من واتساب ',
+		REN: () => 'It looks that this link is not valid, consider using *Share Location* from whatsapp',
 	},
 	{
 		key: 'DONT_UNDERSTANT',

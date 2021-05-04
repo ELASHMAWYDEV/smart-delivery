@@ -41,3 +41,4 @@ module.exports.API_SECRET_KEY = process.env.API_SECRET_KEY || 'randomtoken';
 module.exports.CHAT_API_SEND_MESSAGE = process.env.CHAT_API_URI + '/sendMessage?token=' + process.env.CHAT_API_TOKEN;
 module.exports.CHAT_API_TYPING = process.env.CHAT_API_URI + '/typing?token=' + process.env.CHAT_API_TOKEN;
 module.exports.CHAT_MOBILE_PHONE = process.env.CHAT_MOBILE_PHONE;
+module.exports.MAP_DECODER_URI = process.env.MAP_DECODER_URI;
