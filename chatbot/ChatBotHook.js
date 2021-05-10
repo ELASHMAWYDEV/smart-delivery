@@ -22,7 +22,7 @@ const userQuestion = new Map();
 router.post('/', async (req, res) => {
 	try {
 		const { messages } = req.body;
-		console.log(userQuestion);
+		console.log(userQuestion, messages);
 
 		let data;
 		let response;
