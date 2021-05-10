@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
 			await sendNotification({
 				firebaseToken: driverSearch.firebaseToken,
 				title: `The customer has paid for order #${orderSearch.master.orderId}`,
-				body: `Please go and check for order #${orderSearch.master.orderId} again.\nThe customer has paid for the order`,
+				body: `The customer has paid for order #${orderSearch.master.orderId}`,
 				type: '4',
 				deviceType: +driverSearch.deviceType, // + To Number
 				data: {
