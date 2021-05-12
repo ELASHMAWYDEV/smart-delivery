@@ -55,7 +55,6 @@ router.post('/', orderValidator, async (req, res) => {
 		//Loop through orders
 		Promise.all(
 			ordersAfterSave.map((order) => {
-				console.log('Orders are being sent via new order');
 				orderCycleDrivers.set(order.master.orderId, []);
 				driverHasTakenAction.set(order.master.orderId, []);
 				orderCycle({ orderId: order.master.orderId });
