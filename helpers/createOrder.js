@@ -28,10 +28,9 @@ module.exports = async ({ orders }) => {
 			};
 		});
 
-		
 		//Save order to DB
 		let ordersSave = await OrderModel.insertMany(ordersToStoreInDB);
-		
+
 		return {
 			status: true,
 			orders: ordersSave,
