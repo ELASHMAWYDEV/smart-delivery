@@ -46,19 +46,20 @@ try {
 		res.sendFile(path.join(__dirname, 'test', 'cycle', `${req.params.user}.html`));
 	});
 
-	(async () => {
-		try {
-			const tunnel = await localtunnel({ port: +PORT, subdomain: 'smart-delivery-30' });
+	process.env.LOCAL_TUNNEL_ACTIVE &&
+		(async () => {
+			try {
+				const tunnel = await localtunnel({ port: +PORT, subdomain: 'smart-delivery-30' });
 
-			console.log('Tunnel Url:', tunnel.url);
+				console.log('Tunnel Url:', tunnel.url);
 
-			tunnel.on('close', () => {
-				console.log('Tunnel is closed');
-			});
-		} catch (e) {
-			console.log(e);
-		}
-	})();
+				tunnel.on('close', () => {
+					console.log('Tunnel is closed');
+				});
+			} catch (e) {
+				console.log(e);
+			}
+		})();
 
 	/*------------------------------------------*/
 
