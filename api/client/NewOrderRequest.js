@@ -32,6 +32,7 @@ router.post('/', orderValidator, async (req, res) => {
 		const createOrderResult = await createOrder({
 			orders,
 		});
+		console.log(createOrderResult);
 
 		if (!createOrderResult.status) return res.json(createOrderResult);
 
