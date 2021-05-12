@@ -49,7 +49,6 @@ router.post('/', async (req, res) => {
 		//Loop through orders
 		Promise.all(
 			ordersAfterSave.map((order) => {
-				console.log(`Order ${order.master.orderId} started the cycle`);
 				orderCycleDrivers.set(order.master.orderId, []);
 				driverHasTakenAction.set(order.master.orderId, []);
 				orderCycle({ orderId: order.master.orderId });

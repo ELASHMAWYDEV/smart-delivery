@@ -2,11 +2,9 @@ const Sentry = require('@sentry/node');
 const { Mutex } = require('async-mutex');
 const mutex = new Mutex();
 const OrderModel = require('../models/Order');
-const DriverModel = require('../models/Driver');
 const {
 	activeOrders,
 	activeOrderDrivers,
-	busyDrivers,
 	orderCycleDrivers,
 	driverHasTakenAction,
 } = require('../globals');
@@ -29,14 +27,11 @@ const orderCycle = async ({ driverIdSentFrom = null, orderId, driversIds = [], o
 	 *
 	 * */
 
-	console.log('Before mutex start');
 	const release = await mutex.acquire(); //Block code execution for sequentially placing orders
 	orderId = parseInt(orderId);
-	console.log('After mutex start');
 
 	try {
 		/************************************/
-		console.log('Inside try');
 		//Check if driver didn't send the cycle before
 		if (orderCycleDrivers.has(orderId)) {
       if (driverIdSentFrom && orderCycleDrivers.get(orderId).includes(driverIdSentFrom)) {
@@ -50,7 +45,6 @@ const orderCycle = async ({ driverIdSentFrom = null, orderId, driversIds = [], o
 			}
 		}
 
-    console.log('passed first if condition');
 		//Add driver to memory
 		if (driverIdSentFrom) {
 			orderCycleDrivers.set(orderId, [...new Set([...(orderCycleDrivers.get(orderId) || []), driverIdSentFrom])]);
