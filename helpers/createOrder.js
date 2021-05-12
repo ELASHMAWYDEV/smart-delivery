@@ -29,8 +29,10 @@ module.exports = async ({ orders }) => {
 		});
 
 		
+		console.log("before save",ordersToStoreInDB);
 		//Save order to DB
 		let ordersSave = await OrderModel.insertMany(ordersToStoreInDB);
+		console.log("after save",ordersSave);
 		
 		return {
 			status: true,

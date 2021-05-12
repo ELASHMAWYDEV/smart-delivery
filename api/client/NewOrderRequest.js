@@ -1,8 +1,6 @@
 const Sentry = require('@sentry/node');
 const express = require('express');
 const router = express.Router();
-const { validationResult } = require('express-validator');
-const orderValidator = require('../../validators/order');
 const { orderCycleDrivers, driverHasTakenAction } = require('../../globals');
 
 //Helpers
@@ -14,13 +12,8 @@ const orderCycle = require('../../helpers/orderCycle');
  *
  */
 
-router.post('/', orderValidator, async (req, res) => {
+router.post('/', async (req, res) => {
 	try {
-		//Developement errors
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) return res.json({ status: false, errors: errors.array() });
-
-		/******************************************************/
 		//Will receive array || object
 		let orders = [];
 
