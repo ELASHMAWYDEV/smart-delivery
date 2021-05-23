@@ -121,20 +121,16 @@ module.exports = (io, socket) => {
 			}
 
 			/********************************************************/
-			//Check if location is updated 60s ago
-			let isLocationRecentlyUpdated =
-				new Date(driverSearch.updateLocationDate).getTime() < new Date().getTime() &&
-				new Date(driverSearch.updateLocationDate).getTime() > new Date().getTime() - 1000 * 60;
-
-			console.log('isRecent:', isLocationRecentlyUpdated, new Date(driverSearch.updateLocationDate).getTime());
-			/********************************************************/
 
 			//Send back to the driver
 			socket.emit('JoinDriver', {
 				status: true,
 				isAuthorize: true,
 				isOnline:
-					driverSearch.isOnline || isHasOrder || busyOrdersMemory.length != 0 || isLocationRecentlyUpdated,
+					driverSearch.isOnline ||
+					isHasOrder ||
+					busyOrdersMemory.length != 0 ||
+					driverSearch.onlineBeforeDisconnect,
 				isHasOrder,
 				message: `join success, socket id: ${socket.id}`,
 				busyOrders,

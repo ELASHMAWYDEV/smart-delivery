@@ -97,6 +97,9 @@ const driverSchema = new mongoose.Schema({
 	isCompany: {
 		type: Boolean,
 	},
+	onlineBeforeDisconnect: {
+		type: Boolean,
+	},
 });
 
 const Driver = mongoose.model('Driver', driverSchema, 'drivers');
