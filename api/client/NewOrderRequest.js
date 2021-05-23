@@ -20,6 +20,7 @@ router.post('/', async (req, res) => {
 		if (Array.isArray(req.body)) orders = [...orders];
 		else orders = [req.body];
 
+		console.log('Orders', orders);
 		/******************************************************/
 		//Create the order on DB & API
 		const createOrderResult = await createOrder({
