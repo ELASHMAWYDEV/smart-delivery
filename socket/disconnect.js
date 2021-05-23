@@ -39,6 +39,7 @@ module.exports = (io, socket) => {
 					{
 						isOnline: busyOrders > 0 ? true : false,
 						onlineBeforeDisconnect: driverSearch.isOnline,
+						disconnectTime: new Date().getTime(),
 					}
 				);
 
