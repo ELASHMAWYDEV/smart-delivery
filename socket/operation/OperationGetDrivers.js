@@ -10,7 +10,7 @@ const { countDrivers, countDriversInRange, manipulateDriver } = require('../../h
 let { admins, clients, busyDrivers } = require('../../globals');
 
 module.exports = (io, socket) => {
-	socket.on('OperationGetDrivers', async ({ adminId, clientId, branchId, lat, lng, maxDistance }) => {
+	socket.on('OperationGetDrivers', async ({ adminId, clientId, branchId, companyId, lat, lng, maxDistance }) => {
 		try {
 			//Validation
 			if (!clientId && !adminId)
@@ -60,18 +60,36 @@ module.exports = (io, socket) => {
 			}
 
 			//Get all drivers within range (maxDistance)
-			let driversSearch = await DriverModel.find({
-				driverId: { $in: driversIds },
-				location: {
-					$nearSphere: {
-						$geometry: {
-							type: 'Point',
-							coordinates: [lng, lat],
+			let driversSearch;
+			if (!companyId) {
+				driversSearch = await DriverModel.find({
+					driverId: { $in: driversIds },
+
+					location: {
+						$nearSphere: {
+							$geometry: {
+								type: 'Point',
+								coordinates: [lng, lat],
+							},
+							$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 						},
-						$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
 					},
-				},
-			});
+				});
+			} else {
+				driversSearch = await DriverModel.find({
+					driverId: { $in: driversIds },
+					companyId,
+					location: {
+						$nearSphere: {
+							$geometry: {
+								type: 'Point',
+								coordinates: [lng, lat],
+							},
+							$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
+						},
+					},
+				});
+			}
 
 			/*****************************************************/
 
