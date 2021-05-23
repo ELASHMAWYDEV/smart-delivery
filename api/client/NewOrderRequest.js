@@ -15,9 +15,9 @@ const orderCycle = require('../../helpers/orderCycle');
 router.post('/', async (req, res) => {
 	try {
 		//Will receive array || object
-		let orders = [];
+		let { orders, drivers } = req.body;
 
-		if (Array.isArray(req.body)) orders = [...orders, ...req.body];
+		if (Array.isArray(req.body)) orders = [...orders];
 		else orders = [req.body];
 
 		/******************************************************/
@@ -45,12 +45,17 @@ router.post('/', async (req, res) => {
 		 *
 		 */
 		/******************************************************/
+		console.log(
+			`New Orders: [${ordersAfterSave && ordersAfterSave.map((order) => order.master.orderId)}], drivers: [${
+				drivers && drivers.map((driver) => driver)
+			}]`
+		);
 		//Loop through orders
 		Promise.all(
 			ordersAfterSave.map((order) => {
 				orderCycleDrivers.set(order.master.orderId, []);
 				driverHasTakenAction.set(order.master.orderId, []);
-				orderCycle({ orderId: order.master.orderId });
+				orderCycle({ orderId: order.master.orderId, driversIds: drivers || [] });
 			})
 		);
 
