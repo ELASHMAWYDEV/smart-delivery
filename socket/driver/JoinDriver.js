@@ -111,7 +111,8 @@ module.exports = (io, socket) => {
 			if (
 				isHasOrder ||
 				busyOrdersMemory.length != 0 ||
-				(driverSearch.onlineBeforeDisconnect && new Date().getTime() - 60 * 1000 < driverSearch.disconnectTime)
+				(driverSearch.onlineBeforeDisconnect &&
+					new Date().getTime() - 60 * 1000 < new Date(driverSearch.disconnectTime).getTime())
 			) {
 				await DriverModel.updateOne(
 					{ driverId },
@@ -135,7 +136,7 @@ module.exports = (io, socket) => {
 					isHasOrder ||
 					busyOrdersMemory.length != 0 ||
 					(driverSearch.onlineBeforeDisconnect &&
-						new Date().getTime() - 60 * 1000 < driverSearch.disconnectTime),
+						new Date().getTime() - 60 * 1000 < new Date(driverSearch.disconnectTime).getTime()),
 				isHasOrder,
 				message: `join success, socket id: ${socket.id}`,
 				busyOrders,
