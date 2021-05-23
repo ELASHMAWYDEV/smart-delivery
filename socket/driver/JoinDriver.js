@@ -108,7 +108,7 @@ module.exports = (io, socket) => {
 				busyOrders: [],
 			};
 
-			if (isHasOrder || busyOrdersMemory.length != 0) {
+			if (isHasOrder || busyOrdersMemory.length != 0 || driverSearch.onlineBeforeDisconnect) {
 				await DriverModel.updateOne(
 					{ driverId },
 					{ isOnline: true, firebaseToken: firebaseToken || driverSearch.firebaseToken, deviceType }
