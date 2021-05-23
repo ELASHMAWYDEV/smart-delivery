@@ -126,6 +126,7 @@ module.exports = (io, socket) => {
 				new Date(driverSearch.updateLocationDate).getTime() < new Date().getTime() &&
 				new Date(driverSearch.updateLocationDate).getTime() > new Date().getTime() - 1000 * 60;
 
+			console.log('isRecent:', isLocationRecentlyUpdated, new Date(driverSearch.updateLocationDate).getTime());
 			/********************************************************/
 
 			//Send back to the driver
