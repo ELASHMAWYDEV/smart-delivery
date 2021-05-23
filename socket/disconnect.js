@@ -32,6 +32,7 @@ module.exports = (io, socket) => {
 					'master.driverId': driverId[0],
 				});
 
+				console.log(`Driver ${driverId[0]} disconnected from socket`);
 				//Set to offline || online
 				await DriverModel.updateOne({ driverId: driverId[0] }, { isOnline: busyOrders > 0 ? true : false });
 
