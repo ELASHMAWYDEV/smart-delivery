@@ -39,7 +39,9 @@ module.exports = (io, socket) => {
 					{
 						isOnline: busyOrders > 0 ? true : false,
 						onlineBeforeDisconnect: driverSearch.isOnline,
-						disconnectTime: new Date().getTime(),
+						disconnectTime: new Date().constructor({
+							timeZone: 'Asia/Bahrain', //to get time zone of Saudi Arabia
+						}),
 					}
 				);
 
