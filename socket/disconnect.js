@@ -32,8 +32,18 @@ module.exports = (io, socket) => {
 					'master.driverId': driverId[0],
 				});
 
+				console.log(`Driver ${driverId[0]} disconnected from socket, online: ${driverSearch.isOnline}`);
 				//Set to offline || online
-				await DriverModel.updateOne({ driverId: driverId[0] }, { isOnline: busyOrders > 0 ? true : false });
+				await DriverModel.updateOne(
+					{ driverId: driverId[0] },
+					{
+						isOnline: busyOrders > 0 ? true : false,
+						onlineBeforeDisconnect: driverSearch.isOnline,
+						disconnectTime: new Date().constructor({
+							timeZone: 'Asia/Bahrain', //to get time zone of Saudi Arabia
+						}),
+					}
+				);
 
 				/************************************************************/
 			}

@@ -108,7 +108,12 @@ module.exports = (io, socket) => {
 				busyOrders: [],
 			};
 
-			if (isHasOrder || busyOrdersMemory.length != 0) {
+			if (
+				isHasOrder ||
+				busyOrdersMemory.length != 0 ||
+				(driverSearch.onlineBeforeDisconnect &&
+					new Date().getTime() - 60 * 1000 < new Date(driverSearch.disconnectTime).getTime())
+			) {
 				await DriverModel.updateOne(
 					{ driverId },
 					{ isOnline: true, firebaseToken: firebaseToken || driverSearch.firebaseToken, deviceType }
@@ -126,7 +131,12 @@ module.exports = (io, socket) => {
 			socket.emit('JoinDriver', {
 				status: true,
 				isAuthorize: true,
-				isOnline: driverSearch.isOnline || isHasOrder || busyOrdersMemory.length != 0,
+				isOnline:
+					driverSearch.isOnline ||
+					isHasOrder ||
+					busyOrdersMemory.length != 0 ||
+					(driverSearch.onlineBeforeDisconnect &&
+						new Date().getTime() - 60 * 1000 < new Date(driverSearch.disconnectTime).getTime()),
 				isHasOrder,
 				message: `join success, socket id: ${socket.id}`,
 				busyOrders,
