@@ -1,12 +1,13 @@
-const Sentry = require('@sentry/node');
+const Sentry = require("@sentry/node");
 
 //Models
-const DriverModel = require('../../models/Driver');
+const DriverModel = require("../../models/Driver");
 
-module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
+module.exports = async ({ driversIds, lat, lng, maxDistance, companyId }) => {
 	try {
 		//Get all availabel drivers (online, not busy)
 		let available = await DriverModel.find({
+			...(companyId && { companyId }),
 			driverId: { $in: driversIds },
 			isOnline: true,
 			isBusy: false,
@@ -14,7 +15,7 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 			location: {
 				$nearSphere: {
 					$geometry: {
-						type: 'Point',
+						type: "Point",
 						coordinates: [lng, lat],
 					},
 					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
@@ -24,13 +25,14 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 
 		//Get all offline drivers
 		let offline = await DriverModel.find({
+			...(companyId && { companyId }),
 			driverId: { $in: driversIds },
 			isOnline: false,
 			isDeleted: false,
 			location: {
 				$nearSphere: {
 					$geometry: {
-						type: 'Point',
+						type: "Point",
 						coordinates: [lng, lat],
 					},
 					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
@@ -40,13 +42,14 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 
 		//Get all busy drivers
 		let busy = await DriverModel.find({
+			...(companyId && { companyId }),
 			driverId: { $in: driversIds },
 			isBusy: true,
 			isDeleted: false,
 			location: {
 				$nearSphere: {
 					$geometry: {
-						type: 'Point',
+						type: "Point",
 						coordinates: [lng, lat],
 					},
 					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
@@ -56,12 +59,13 @@ module.exports = async ({ driversIds, lat, lng, maxDistance }) => {
 
 		//Get the count of all drivers
 		let total = await DriverModel.find({
+			...(companyId && { companyId }),
 			driverId: { $in: driversIds },
 			isDeleted: false,
 			location: {
 				$nearSphere: {
 					$geometry: {
-						type: 'Point',
+						type: "Point",
 						coordinates: [lng, lat],
 					},
 					$maxDistance: lat == 0 ? Infinity : maxDistance * 1000,
