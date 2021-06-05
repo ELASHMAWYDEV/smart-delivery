@@ -54,7 +54,7 @@ module.exports = async ({ orderId, lng, lat, token }) => {
 				firebaseToken: driverSearch.firebaseToken,
 				title: apiData.notAllowedTitle,
 				body: apiData.notAllowedMessage,
-				type: "5",
+				type: "6",
 				deviceType: +driverSearch.deviceType, // + To Number
 				data: {
 					title: apiData.notAllowedTitle,
