@@ -1,25 +1,25 @@
-const Sentry = require('@sentry/node');
-const express = require('express');
+const Sentry = require("@sentry/node");
+const express = require("express");
 const router = express.Router();
-const OrderModel = require('../../models/Order');
-const DriverModel = require('../../models/Driver');
-const { io } = require('../../index');
-const { drivers, busyDrivers } = require('../../globals');
-const { sendNotification } = require('../../helpers');
+const OrderModel = require("../../models/Order");
+const DriverModel = require("../../models/Driver");
+const { io } = require("../../index");
+const { drivers, busyDrivers } = require("../../globals");
+const { sendNotification } = require("../../helpers");
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
 	try {
 		let { orderId } = req.body;
 
 		//Developmemt Errors
-		if (!orderId) return res.json({ status: false, message: 'orderId is missing' });
+		if (!orderId) return res.json({ status: false, message: "orderId is missing" });
 
 		orderId = parseInt(orderId);
 		/******************************************************/
 		//Search for the order
 		const orderSearch = await OrderModel.findOne({
-			'master.orderId': orderId,
-			'master.statusId': { $nin: [2, 6] },
+			"master.orderId": orderId,
+			"master.statusId": { $nin: [2, 6] },
 		});
 
 		if (!orderSearch)
@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
 		/******************************************************/
 
 		//Set the order to status cancel
-		await OrderModel.updateOne({ 'master.orderId': orderId }, { 'master.statusId': 6 });
+		await OrderModel.updateOne({ "master.orderId": orderId }, { "master.statusId": 6 });
 
 		/******************************************************/
 		//Check if there was a driver on this order & get his orders & update his busy state
@@ -40,8 +40,8 @@ router.post('/', async (req, res) => {
 			/******************************************************/
 			//Check if driver has any busy orders
 			const busyOrders = await OrderModel.find({
-				'master.statusId': { $in: [1, 3, 4] },
-				'master.driverId': orderSearch.master.driverId,
+				"master.statusId": { $in: [1, 3, 4] },
+				"master.driverId": orderSearch.master.driverId,
 			});
 
 			/******************************************************/
@@ -75,22 +75,22 @@ router.post('/', async (req, res) => {
 				firebaseToken: driverSearch.firebaseToken,
 				title: `Order #${orderSearch.master.orderId} was canceled by board`,
 				body: `Order #${orderSearch.master.orderId} was canceled by board`,
-				type: '2',
+				type: "2",
 				deviceType: +driverSearch.deviceType, // + To Number
 				data: {
 					message: `Order #${orderSearch.master.orderId} was canceled by board`,
-					branchNameAr: orderSearch.master.branchNameAr || '',
-					branchNameEn: orderSearch.master.branchNameEn || '',
-					branchLogo: orderSearch.master.branchLogo || '',
-					branchAddress: orderSearch.master.branchAddress || '',
-					receiverAddress: orderSearch.master.receiverAddress || '',
-					orderId: orderSearch.master.orderId.toString() || '',
+					branchNameAr: orderSearch.master.branchNameAr || "",
+					branchNameEn: orderSearch.master.branchNameEn || "",
+					branchLogo: orderSearch.master.branchLogo || "",
+					branchAddress: orderSearch.master.branchAddress || "",
+					receiverAddress: orderSearch.master.receiverAddress || "",
+					orderId: orderSearch.master.orderId.toString() || "",
 				},
 			});
 
 			/******************************************************/
 			//Send the cancel to the driver via socket
-			io.to(drivers.get(parseInt(orderSearch.master.driverId))).emit('CancelOrder', {
+			io.to(drivers.get(parseInt(orderSearch.master.driverId))).emit("CancelOrder", {
 				status: true,
 				isAuthorize: true,
 				message: `Order #${orderId} was canceled by board`,
