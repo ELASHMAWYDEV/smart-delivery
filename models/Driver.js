@@ -1,12 +1,12 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Number, Boolean, String, ObjectId } = mongoose.Schema.Types;
 
 const pointSchema = new mongoose.Schema({
 	type: {
 		type: String,
-		enum: ['Point'],
+		enum: ["Point"],
 		required: true,
-		default: 'Point',
+		default: "Point",
 	},
 	coordinates: {
 		type: [Number],
@@ -25,6 +25,10 @@ const driverSchema = new mongoose.Schema({
 		type: Boolean,
 		default: true,
 	},
+	isActivated: {
+		type: Boolean,
+		default: true,
+	},
 	isOnline: {
 		type: Boolean,
 		default: false,
@@ -39,12 +43,12 @@ const driverSchema = new mongoose.Schema({
 	location: {
 		type: pointSchema,
 		required: true,
-		index: '2dsphere',
+		index: "2dsphere",
 	},
 	oldLocation: {
 		type: pointSchema,
 		required: true,
-		index: '2dsphere',
+		index: "2dsphere",
 	},
 	phoneNumber: {
 		type: Number,
@@ -105,5 +109,5 @@ const driverSchema = new mongoose.Schema({
 	},
 });
 
-const Driver = mongoose.model('Driver', driverSchema, 'drivers');
+const Driver = mongoose.model("Driver", driverSchema, "drivers");
 module.exports = Driver;
