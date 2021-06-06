@@ -1,9 +1,9 @@
-const Sentry = require('@sentry/node');
-const { Mutex } = require('async-mutex');
-const orderCycle = require('../../helpers/orderCycle');
-const OrderModel = require('../../models/Order');
-const DriverModel = require('../../models/Driver');
-const { activeOrders, busyDrivers, drivers, driverHasTakenAction } = require('../../globals');
+const Sentry = require("@sentry/node");
+const { Mutex } = require("async-mutex");
+const orderCycle = require("../../helpers/orderCycle");
+const OrderModel = require("../../models/Order");
+const DriverModel = require("../../models/Driver");
+const { activeOrders, busyDrivers, drivers, driverHasTakenAction } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -12,7 +12,7 @@ const { activeOrders, busyDrivers, drivers, driverHasTakenAction } = require('..
 let EventLocks = new Map();
 
 module.exports = (io, socket) => {
-	socket.on('RejectOrder', async ({ orderId, driverId, token }) => {
+	socket.on("RejectOrder", async ({ orderId, driverId, token, language }) => {
 		/*
 		 * Start the Event Locker from here
 		 */
@@ -27,19 +27,19 @@ module.exports = (io, socket) => {
 			/********************************************************/
 			//Developement errors
 			if (!orderId)
-				return socket.emit('RejectOrder', {
+				return socket.emit("RejectOrder", {
 					status: false,
-					message: 'orderId is missing',
+					message: "orderId is missing",
 				});
 			if (!driverId)
-				return socket.emit('RejectOrder', {
+				return socket.emit("RejectOrder", {
 					status: false,
-					message: 'driverId is missing',
+					message: "driverId is missing",
 				});
 			if (!token)
-				return socket.emit('RejectOrder', {
+				return socket.emit("RejectOrder", {
 					status: false,
-					message: 'token is missing',
+					message: "token is missing",
 				});
 
 			/********************************************************/
@@ -52,11 +52,11 @@ module.exports = (io, socket) => {
 				let drivers = driverHasTakenAction.get(orderId);
 
 				if (drivers.find((driver) => driver.driverId == driverId && driver.tookAction)) {
-					return socket.emit('AcceptOrder', {
+					return socket.emit("AcceptOrder", {
 						status: false,
 						isAuthorize: false,
 						isOnline: false,
-						message: 'You have already taken action for this order',
+						message: "You have already taken action for this order",
 					});
 				}
 			}
@@ -77,10 +77,10 @@ module.exports = (io, socket) => {
 			});
 
 			if (!driverSearch) {
-				return socket.emit('RejectOrder', {
+				return socket.emit("RejectOrder", {
 					status: false,
 					isAuthorize: false,
-					message: 'You are not authorized',
+					message: "You are not authorized",
 					orderId,
 				});
 			}
@@ -89,10 +89,10 @@ module.exports = (io, socket) => {
 
 			//Check if the order is in the activeOrders or not
 			if (!activeOrders.has(orderId)) {
-				return socket.emit('RejectOrder', {
+				return socket.emit("RejectOrder", {
 					status: false,
 					isAuthorize: true,
-					message: 'The order is not available any more',
+					message: "The order is not available any more",
 					orderId,
 				});
 			}
@@ -103,8 +103,8 @@ module.exports = (io, socket) => {
 			/******************************************************/
 			//Check if order exist on DB
 			let orderSearch = await OrderModel.findOne({
-				'master.orderId': orderId,
-				'master.statusId': 1,
+				"master.orderId": orderId,
+				"master.statusId": 1,
 				driversFound: {
 					$elemMatch: {
 						driverId,
@@ -114,7 +114,7 @@ module.exports = (io, socket) => {
 			});
 
 			if (orderSearch)
-				return socket.emit('RejectOrder', {
+				return socket.emit("RejectOrder", {
 					status: false,
 					isAuthorize: true,
 					message: `You may have accepted this order #${orderId} or the board may have canceled it`,
@@ -125,17 +125,17 @@ module.exports = (io, socket) => {
 			//Update the driver requestStatus to 2
 			await OrderModel.updateOne(
 				{
-					'master.orderId': orderId,
+					"master.orderId": orderId,
 					driversFound: {
 						$elemMatch: { driverId, requestStatus: { $ne: 1 } },
 					},
 				},
 				{
 					$set: {
-						'master.driverId': null,
-						'driversFound.$.requestStatus': 2, //reject
-						'driversFound.$.actionDate': new Date().constructor({
-							timeZone: 'Asia/Bahrain', //to get time zone of Saudi Arabia
+						"master.driverId": null,
+						"driversFound.$.requestStatus": 2, //reject
+						"driversFound.$.actionDate": new Date().constructor({
+							timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
 						}),
 					},
 				}
@@ -143,8 +143,8 @@ module.exports = (io, socket) => {
 			/******************************************************/
 			//Check if driver has any busy orders
 			const busyOrders = await OrderModel.find({
-				'master.statusId': { $in: [1, 3, 4] },
-				'master.driverId': driverId,
+				"master.statusId": { $in: [1, 3, 4] },
+				"master.driverId": driverId,
 			});
 
 			/******************************************************/
@@ -166,7 +166,7 @@ module.exports = (io, socket) => {
 			);
 
 			//Send to the driver all is OK
-			socket.emit('RejectOrder', {
+			socket.emit("RejectOrder", {
 				status: true,
 				isAuthorize: true,
 				message: `Order #${orderId} rejected successfully`,
@@ -182,7 +182,7 @@ module.exports = (io, socket) => {
 			}
 
 			/**********************************************************/
-			console.log('Started cycle from RejectOrder, order', orderId);
+			console.log("Started cycle from RejectOrder, order", orderId);
 
 			//Get driversIds & orderDirversLimit
 			let { driversIds, orderDriversLimit } = activeOrders.get(orderId) || {
@@ -202,7 +202,7 @@ module.exports = (io, socket) => {
 			Sentry.captureException(e);
 
 			console.log(`Error in RejectOrder event: ${e.message}`, e);
-			return socket.emit('RejectOrder', {
+			return socket.emit("RejectOrder", {
 				status: false,
 				message: `Error in RejectOrder event: ${e.message}`,
 				orderId,

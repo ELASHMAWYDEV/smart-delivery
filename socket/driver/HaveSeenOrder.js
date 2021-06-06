@@ -11,72 +11,70 @@ const OrderModel = require("../../models/Order");
 let EventLocks = new Map();
 
 module.exports = (io, socket) => {
-  socket.on("HaveSeenOrder", async ({ driverId, token, orderId }) => {
-    /*
-     * Start the Event Locker from here
-     */
+	socket.on("HaveSeenOrder", async ({ driverId, token, language, orderId }) => {
+		/*
+		 * Start the Event Locker from here
+		 */
 
-    if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
+		if (!EventLocks.has(driverId)) EventLocks.set(driverId, new Mutex());
 
-    const releaseEvent = await EventLocks.get(driverId).acquire();
+		const releaseEvent = await EventLocks.get(driverId).acquire();
 
-    /***************************************************/
+		/***************************************************/
 
-    try {
-      console.log(
-        `HaveSeenOrder event called driver: ${driverId} order: ${orderId}`
-      );
+		try {
+			console.log(`HaveSeenOrder event called driver: ${driverId} order: ${orderId}`);
 
-      //Developement errors
-      if (!orderId)
-        return socket.emit("HaveSeenOrder", {
-          status: false,
-          message: "branchId is missing",
-        });
-      if (!driverId)
-        return socket.emit("HaveSeenOrder", {
-          status: false,
-          message: "driverId is missing",
-        });
-      if (!token)
-        return socket.emit("HaveSeenOrder", {
-          status: false,
-          message: "token is missing",
-        });
+			//Developement errors
+			if (!orderId)
+				return socket.emit("HaveSeenOrder", {
+					status: false,
+					message: "branchId is missing",
+				});
+			if (!driverId)
+				return socket.emit("HaveSeenOrder", {
+					status: false,
+					message: "driverId is missing",
+				});
+			if (!token)
+				return socket.emit("HaveSeenOrder", {
+					status: false,
+					message: "token is missing",
+				});
 
-      /*****************************************************/
+			/*****************************************************/
 
-      //Update the driver isSeenOrder on DB
-      await OrderModel.updateOne(
-        {
-          "master.orderId": orderId,
-          driversFound: {
-            $elemMatch: {
-              driverId,
-            },
-          },
-        },
-        {
-          $set: {
-            "driversFound.$.isSeenOrder": true,
-          },
-        }
-      );
+			//Update the driver isSeenOrder on DB
+			await OrderModel.updateOne(
+				{
+					"master.orderId": orderId,
+					driversFound: {
+						$elemMatch: {
+							driverId,
+						},
+					},
+				},
+				{
+					$set: {
+						"driversFound.$.isSeenOrder": true,
+					},
+				}
+			);
 
-      return socket.emit("HaveSeenOrder", {
-        status: true,
-        message: "Order have been marked as seen",
-      });
-    } catch (e) {
-      Sentry.captureException(e);
+			return socket.emit("HaveSeenOrder", {
+				status: true,
+				message: "Order have been marked as seen",
+			});
+		} catch (e) {
+			Sentry.captureException(e);
 
-      console.log(`Error in HaveSeenOrder, error: ${e.message}`);
-      return socket.emit("HaveSeenOrder", {
-        status: false,
-        message: `Error in HaveSeenOrder, error: ${e.message}`,
-      });
-    } finally {
-      releaseEvent();
-    }
-  });
+			console.log(`Error in HaveSeenOrder, error: ${e.message}`);
+			return socket.emit("HaveSeenOrder", {
+				status: false,
+				message: `Error in HaveSeenOrder, error: ${e.message}`,
+			});
+		} finally {
+			releaseEvent();
+		}
+	});
 };

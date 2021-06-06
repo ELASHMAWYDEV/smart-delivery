@@ -4,7 +4,7 @@ const OrderModel = require("../models/Order");
 
 const { API_URI } = require("../globals");
 
-module.exports = async ({ branchId, token }) => {
+module.exports = async ({ branchId, token , language}) => {
   try {
     //Send to the API
     let response = await axios.post(
@@ -13,6 +13,7 @@ module.exports = async ({ branchId, token }) => {
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Accept-Language": language
         },
       }
     );

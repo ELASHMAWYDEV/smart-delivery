@@ -6,57 +6,57 @@ const OrderModel = require("../models/Order");
 const { API_URI, API_SECRET_KEY, activeOrders } = require("../globals");
 
 module.exports = async ({ statusId, orderId }) => {
-  try {
-    orderId = parseInt(orderId);
+	try {
+		orderId = parseInt(orderId);
 
-    if (statusId == 2) activeOrders.delete(orderId);
+		if (statusId == 2) activeOrders.delete(orderId);
 
-    //Get the list of drivers found for this order
-    let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
-    orderSearch = orderSearch && orderSearch.toObject();
+		//Get the list of drivers found for this order
+		let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+		orderSearch = orderSearch && orderSearch.toObject();
 
-    //Update to the API
-    let response = await axios.post(
-      `${API_URI}/Trip/UpdateOrder`,
-      {
-        orderId,
-        orderStatusId: statusId,
-        orderDrivers: orderSearch.driversFound,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${API_SECRET_KEY}`,
-        },
-      }
-    );
+		//Update to the API
+		let response = await axios.post(
+			`${API_URI}/Trip/UpdateOrder`,
+			{
+				orderId,
+				orderStatusId: statusId,
+				orderDrivers: orderSearch.driversFound,
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${API_SECRET_KEY}`,
+				},
+			}
+		);
 
-    let data = await response.data;
+		let data = await response.data;
 
-    if (!data.isAuthorize || !data.status) {
-      return {
-        status: false,
-        isAuthorize: data.isAuthorize,
-        message: data.message,
-      };
-    }
+		if (!data.isAuthorize || !data.status) {
+			return {
+				status: false,
+				isAuthorize: data.isAuthorize,
+				message: data.message,
+			};
+		}
 
-    let { data: apiData } = data;
+		let { data: apiData } = data;
 
-    return {
-      status: true,
-      message: "Order status updated successefully",
-      data: apiData,
-    };
+		return {
+			status: true,
+			message: "Order status updated successefully",
+			data: apiData,
+		};
 
-    /******************************************************/
-  } catch (e) {
-    Sentry.captureException(e);
+		/******************************************************/
+	} catch (e) {
+		Sentry.captureException(e);
 
-    console.log(`Error in updateOrderStatus(): ${e.message}`);
+		console.log(`Error in updateOrderStatus(): ${e.message}`);
 
-    return {
-      status: false,
-      message: `Error in updateOrderStatus(): ${e.message}`,
-    };
-  }
+		return {
+			status: false,
+			message: `Error in updateOrderStatus(): ${e.message}`,
+		};
+	}
 };
