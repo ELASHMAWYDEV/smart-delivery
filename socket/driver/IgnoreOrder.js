@@ -3,6 +3,7 @@ const { Mutex } = require("async-mutex");
 const orderCycle = require("../../helpers/orderCycle");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
+const LANG = require("../../util/translation");
 const { activeOrders, drivers, busyDrivers, driverHasTakenAction } = require("../../globals");
 
 /*
@@ -56,7 +57,7 @@ module.exports = (io, socket) => {
 						status: false,
 						isAuthorize: false,
 						isOnline: false,
-						message: "You have already taken action for this order",
+						message: LANG(language).ALREADY_TAKEN_ACTION,
 					});
 				}
 			}
@@ -79,7 +80,7 @@ module.exports = (io, socket) => {
 				return socket.emit("IgnoreOrder", {
 					status: false,
 					isAuthorize: false,
-					message: "You are not authorized",
+					message: LANG(language).NOT_AUTHORIZED,
 					orderId,
 				});
 			}
@@ -90,7 +91,7 @@ module.exports = (io, socket) => {
 				return socket.emit("IgnoreOrder", {
 					status: false,
 					isAuthorize: true,
-					message: "The order is not available any more",
+					message: LANG(language).ORDER_NOT_AVAILABLE_ANYMORE,
 					orderId,
 				});
 			}
@@ -116,7 +117,7 @@ module.exports = (io, socket) => {
 				return socket.emit("IgnoreOrder", {
 					status: false,
 					isAuthorize: true,
-					message: `You may have accepted this order #${orderId} or the board may have canceled it`,
+					message: LANG(language).ORDER_REJECTED_CANCELLED({ orderId }),
 				});
 
 			/******************************************************/
@@ -167,7 +168,7 @@ module.exports = (io, socket) => {
 			socket.emit("IgnoreOrder", {
 				status: true,
 				isAuthorize: true,
-				message: `Order #${orderId} ignored successfully`,
+				message: LANG(language).ORDER_IGNORED({ orderId }),
 				orderId,
 			});
 

@@ -24,7 +24,6 @@ module.exports = async ({ orderId, driverId, lng, lat, token, language = "en" })
 
 		let data = await response.data;
 
-		console.log("deliver data:", data);
 		if (!data.isAuthorize || !data.status) {
 			return {
 				status: false,

@@ -4,6 +4,7 @@ const { receiveOrder } = require("../../helpers");
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
 const { busyDrivers } = require("../../globals");
+const LANG = require("../../util/translation");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -58,7 +59,7 @@ module.exports = (io, socket) => {
 					status: false,
 					isAuthorize: false,
 					isOnline: false,
-					message: "You are not authorized",
+					message: LANG(language).NOT_AUTHORIZED,
 				});
 			}
 
@@ -100,7 +101,7 @@ module.exports = (io, socket) => {
 			socket.emit("ReceiveOrder", {
 				status: true,
 				isAuthorize: true,
-				message: `Orders ${ordersIds.map((order) => "#" + order)} have been received successfully`,
+				message: LANG(language).ORDER_RECEIVED({ ordersIds }),
 			});
 
 			console.log(`driver ${driverId}`, busyDrivers.get(driverId));

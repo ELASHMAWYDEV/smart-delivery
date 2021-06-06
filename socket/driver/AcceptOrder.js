@@ -4,6 +4,7 @@ const { updateOrderStatus, getEstimatedDistanceDuration } = require("../../helpe
 const { activeOrders, drivers, busyDrivers, driverHasTakenAction } = require("../../globals");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
+const LANG = require("../../util/translation");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -57,7 +58,7 @@ module.exports = (io, socket) => {
 						status: false,
 						isAuthorize: false,
 						isOnline: false,
-						message: "You have already taken action for this order",
+						message: LANG(language).ALREADY_TAKEN_ACTION,
 					});
 				}
 			}
@@ -83,7 +84,7 @@ module.exports = (io, socket) => {
 					status: false,
 					isAuthorize: false,
 					isOnline: false,
-					message: "You are not authorized",
+					message: LANG(language).NOT_AUTHORIZED,
 				});
 			}
 
@@ -102,7 +103,7 @@ module.exports = (io, socket) => {
 				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: true,
-					message: `You may have reject this order #${orderId} or the board may have canceled it`,
+					message: LANG(language).ORDER_REJECTED_CANCELLED({ orderId }),
 					orderId,
 				});
 
@@ -117,7 +118,7 @@ module.exports = (io, socket) => {
 				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: true,
-					message: "You already have received orders !",
+					message: LANG(language).YOU_HAVE_ORDERS_ALREADY,
 					orderId,
 				});
 			}
@@ -132,7 +133,7 @@ module.exports = (io, socket) => {
 				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: true,
-					message: `There is no order with id #${orderId}`,
+					message: LANG(language).NO_ORDER_FOUND({ orderId }),
 					orderId,
 				});
 
@@ -235,7 +236,7 @@ module.exports = (io, socket) => {
 					io.to(parseInt(drivers.get(driver.driverId))).emit("AcceptTrip", {
 						status: false,
 						isAuthorize: true,
-						message: "Sorry, another driver accepted the trip",
+						message: LANG(language).ANOTHER_DRIVER_ACCEPTED,
 					});
 				}
 			}
@@ -254,7 +255,7 @@ module.exports = (io, socket) => {
 			/***************************************************/
 			socket.emit("AcceptOrder", {
 				status: true,
-				message: `Order #${orderId} accepted successfully`,
+				message: LANG(language).ORDER_ACCEPTED,
 				orderId,
 			});
 

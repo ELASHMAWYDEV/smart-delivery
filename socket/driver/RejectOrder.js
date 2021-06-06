@@ -4,6 +4,7 @@ const orderCycle = require("../../helpers/orderCycle");
 const OrderModel = require("../../models/Order");
 const DriverModel = require("../../models/Driver");
 const { activeOrders, busyDrivers, drivers, driverHasTakenAction } = require("../../globals");
+const LANG = require("../../util/translation");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -52,11 +53,11 @@ module.exports = (io, socket) => {
 				let drivers = driverHasTakenAction.get(orderId);
 
 				if (drivers.find((driver) => driver.driverId == driverId && driver.tookAction)) {
-					return socket.emit("AcceptOrder", {
+					return socket.emit("RejectOrder", {
 						status: false,
 						isAuthorize: false,
 						isOnline: false,
-						message: "You have already taken action for this order",
+						message: LANG(language).ALREADY_TAKEN_ACTION,
 					});
 				}
 			}
@@ -80,7 +81,7 @@ module.exports = (io, socket) => {
 				return socket.emit("RejectOrder", {
 					status: false,
 					isAuthorize: false,
-					message: "You are not authorized",
+					message: LANG(language).NOT_AUTHORIZED,
 					orderId,
 				});
 			}
@@ -92,7 +93,7 @@ module.exports = (io, socket) => {
 				return socket.emit("RejectOrder", {
 					status: false,
 					isAuthorize: true,
-					message: "The order is not available any more",
+					message: LANG(language).ORDER_NOT_AVAILABLE_ANYMORE,
 					orderId,
 				});
 			}
@@ -117,7 +118,7 @@ module.exports = (io, socket) => {
 				return socket.emit("RejectOrder", {
 					status: false,
 					isAuthorize: true,
-					message: `You may have accepted this order #${orderId} or the board may have canceled it`,
+					message: LANG(language).ORDER_REJECTED_CANCELLED({ orderId }),
 					orderId,
 				});
 
@@ -169,7 +170,7 @@ module.exports = (io, socket) => {
 			socket.emit("RejectOrder", {
 				status: true,
 				isAuthorize: true,
-				message: `Order #${orderId} rejected successfully`,
+				message: LANG(language).ORDER_REJECTED,
 				orderId,
 			});
 

@@ -1,5 +1,6 @@
 const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
+const LANG = require("../../util/translation");
 
 //Models
 const DriverModel = require("../../models/Driver");
@@ -60,7 +61,7 @@ module.exports = (io, socket) => {
 					status: false,
 					isAuthorize: false,
 					isOnline: false,
-					message: "You are not authorized",
+					message: LANG(language).NOT_AUTHORIZED,
 				});
 			}
 
@@ -145,7 +146,7 @@ module.exports = (io, socket) => {
 			/********************************************************/
 
 			if (busyCreatedOrders.length != 0) {
-				await checkForOrderRequest({ socket, driverId }); //Send him orders that he have not seen
+				await checkForOrderRequest({ socket, driverId, language }); //Send him orders that he have not seen
 			}
 			/***************************************************/
 		} catch (e) {

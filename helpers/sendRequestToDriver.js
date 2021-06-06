@@ -1,14 +1,15 @@
-const Sentry = require('@sentry/node');
-const DeliverySettingsModel = require('../models/DeliverySettings');
-const OrderModel = require('../models/Order');
-const DriverModel = require('../models/Driver');
-const { drivers, activeOrders, busyDrivers, driverHasTakenAction } = require('../globals');
-const { io } = require('../index');
+const Sentry = require("@sentry/node");
+const DeliverySettingsModel = require("../models/DeliverySettings");
+const OrderModel = require("../models/Order");
+const DriverModel = require("../models/Driver");
+const { drivers, activeOrders, busyDrivers, driverHasTakenAction } = require("../globals");
+const { io } = require("../index");
+const LANG = require("../util/translation");
 
 //Helpers
-const sendNotification = require('./sendNotification');
+const sendNotification = require("./sendNotification");
 
-const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriversLimit = 2 }) => {
+const sendRequestToDriver = async ({ language = "en", driverId, order, driversIds = [], orderDriversLimit = 2 }) => {
 	try {
 		driverId = parseInt(driverId);
 
@@ -16,9 +17,9 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 
 		//Get the trip data from activeOrders map
 		if (!activeOrders.has(orderId)) {
-			return io.to(drivers.get(driverId)).emit('NewOrderRequest', {
+			return io.to(drivers.get(driverId)).emit("NewOrderRequest", {
 				status: false,
-				message: `Sorry you couldn't catch the order, Error Code: 59`,
+				message: LANG(language).HARD_LUCK_NEXT_TIME,
 			});
 		}
 		/**************************************************************/
@@ -57,7 +58,7 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 			busyOrders: [],
 			branchId: null,
 		};
-		const orderCycle = require('./orderCycle');
+		const orderCycle = require("./orderCycle");
 
 		//If not the same branch --> go & check for another driver
 		if (branchId && branchId != order.master.branchId && busyOrders.length >= 1) {
@@ -91,11 +92,11 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 		/**************************************************************/
 		//Add the driver to the driversFound[] in order
 		await OrderModel.updateOne(
-			{ 'master.orderId': orderId },
+			{ "master.orderId": orderId },
 			{
 				$set: {
-					'master.driverId': driverSearch.driverId,
-					'master.statuId': 1,
+					"master.driverId": driverSearch.driverId,
+					"master.statuId": 1,
 				},
 				$push: {
 					driversFound: {
@@ -104,7 +105,7 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 						requestStatus: 4, // 4 => noCatch (default), 1 => accept, 2 => ignore, 3 => reject
 						location: driverSearch.location,
 						actionDate: new Date().constructor({
-							timeZone: 'Asia/Bahrain', //to get time zone of Saudi Arabia
+							timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
 						}),
 						timeSent: new Date().getTime(),
 					},
@@ -114,7 +115,7 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 
 		/******************************************************/
 		//Get the order after update
-		let orderSearch = await OrderModel.findOne({ 'master.orderId': orderId });
+		let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 		orderSearch = orderSearch && orderSearch.toObject();
 
 		/******************************************************/
@@ -142,9 +143,12 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 		//Send notification to the driver
 		await sendNotification({
 			firebaseToken: driverSearch.firebaseToken,
-			title: 'You have a new order request, Hurry up !',
-			body: `Order #${master.orderId} has been sent to you by ${master.branchNameEn}`,
-			type: '1',
+			title: LANG(language).NEW_ORDER_REQUEST,
+			body: LANG(language).NEW_ORDER_BODY({
+				orderId,
+				branchName: language == "ar" ? master.brancNameAr : master.branchNameEn,
+			}),
+			type: "1",
 			deviceType: +driverSearch.deviceType, // + To Number
 			data: { orderId: master.orderId.toString() },
 		});
@@ -152,9 +156,9 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 		/******************************************************/
 		console.log(`driver ${driverId}, socketId:`, drivers.get(driverId));
 		//Send a request to the driver
-		io.to(drivers.get(driverId)).emit('NewOrderRequest', {
+		io.to(drivers.get(driverId)).emit("NewOrderRequest", {
 			status: true,
-			message: 'You have a new order request',
+			message: LANG(language).NEW_ORDER_REQUEST,
 			timerSeconds,
 			expiryTime: new Date().getTime() + timerSeconds * 1000,
 			order: {
@@ -197,18 +201,18 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 
 			await OrderModel.updateOne(
 				{
-					'master.orderId': order.master.orderId,
+					"master.orderId": order.master.orderId,
 				},
 				{
 					$set: {
-						'master.driverId': null,
+						"master.driverId": null,
 					},
 				}
 			);
 
 			const busyOrdersDB = await OrderModel.find({
-				'master.statusId': { $in: [1, 3, 4] },
-				'master.driverId': driverId,
+				"master.statusId": { $in: [1, 3, 4] },
+				"master.driverId": driverId,
 			});
 
 			/************************************/
@@ -246,7 +250,7 @@ const sendRequestToDriver = async ({ driverId, order, driversIds = [], orderDriv
 			/************************************/
 			/************************************/
 			/************************************/
-			const orderCycle = require('./orderCycle');
+			const orderCycle = require("./orderCycle");
 
 			console.log(`Started cycle from sendRequestToDriver after timeout, order ${orderId}`);
 			//Send the order to the next driver
