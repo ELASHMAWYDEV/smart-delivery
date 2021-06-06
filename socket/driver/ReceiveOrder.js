@@ -101,7 +101,7 @@ module.exports = (io, socket) => {
 			socket.emit("ReceiveOrder", {
 				status: true,
 				isAuthorize: true,
-				message: LANG(language).ORDER_RECEIVED({ ordersIds }),
+				message: updateOrdersResult.message,
 			});
 
 			console.log(`driver ${driverId}`, busyDrivers.get(driverId));

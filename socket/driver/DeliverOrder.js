@@ -120,7 +120,7 @@ module.exports = (io, socket) => {
 				socket.emit("DeliverOrder", {
 					status: true,
 					isAuthorize: true,
-					message: LANG(language).ORDER_DELIVERED,
+					message: updateOrdersResult.message,
 				});
 
 				console.log(`driver ${driverId}`, busyDrivers.get(driverId));
