@@ -1,9 +1,9 @@
-const Sentry = require('@sentry/node');
-const { Mutex } = require('async-mutex');
-const { updateOrderStatus, getEstimatedDistanceDuration } = require('../../helpers');
-const { activeOrders, drivers, busyDrivers, driverHasTakenAction } = require('../../globals');
-const OrderModel = require('../../models/Order');
-const DriverModel = require('../../models/Driver');
+const Sentry = require("@sentry/node");
+const { Mutex } = require("async-mutex");
+const { updateOrderStatus, getEstimatedDistanceDuration } = require("../../helpers");
+const { activeOrders, drivers, busyDrivers, driverHasTakenAction } = require("../../globals");
+const OrderModel = require("../../models/Order");
+const DriverModel = require("../../models/Driver");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -12,7 +12,7 @@ const DriverModel = require('../../models/Driver');
 let EventLocks = new Map();
 
 module.exports = (io, socket) => {
-	socket.on('AcceptOrder', async ({ orderId, driverId, token }) => {
+	socket.on("AcceptOrder", async ({ orderId, driverId, token, language }) => {
 		/******************************************************/
 		/*
 		 * Start the Event Locker from here
@@ -28,19 +28,19 @@ module.exports = (io, socket) => {
 			/********************************************************/
 			//Developement errors
 			if (!orderId)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
-					message: 'orderId is missing',
+					message: "orderId is missing",
 				});
 			if (!driverId)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
-					message: 'driverId is missing',
+					message: "driverId is missing",
 				});
 			if (!token)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
-					message: 'token is missing',
+					message: "token is missing",
 				});
 
 			/********************************************************/
@@ -53,11 +53,11 @@ module.exports = (io, socket) => {
 				let drivers = driverHasTakenAction.get(orderId);
 
 				if (drivers.find((driver) => driver.driverId == driverId && driver.tookAction)) {
-					return socket.emit('AcceptOrder', {
+					return socket.emit("AcceptOrder", {
 						status: false,
 						isAuthorize: false,
 						isOnline: false,
-						message: 'You have already taken action for this order',
+						message: "You have already taken action for this order",
 					});
 				}
 			}
@@ -79,11 +79,11 @@ module.exports = (io, socket) => {
 			});
 
 			if (!driverSearch) {
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: false,
 					isOnline: false,
-					message: 'You are not authorized',
+					message: "You are not authorized",
 				});
 			}
 
@@ -91,15 +91,15 @@ module.exports = (io, socket) => {
 
 			//Check if order exist on DB
 			let orderSearch = await OrderModel.findOne({
-				'master.orderId': orderId,
-				'master.driverId': { $ne: driverId },
+				"master.orderId": orderId,
+				"master.driverId": { $ne: driverId },
 				driversFound: {
 					$elemMatch: { driverId, requestStatus: { $ne: 4 } },
 				},
 			});
 
 			if (orderSearch)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: true,
 					message: `You may have reject this order #${orderId} or the board may have canceled it`,
@@ -109,15 +109,15 @@ module.exports = (io, socket) => {
 			/***************************************************/
 			//Check if the driver have received orders
 			const receivedOrders = await OrderModel.find({
-				'master.driverId': driverId,
-				'master.statusId': 4,
+				"master.driverId": driverId,
+				"master.statusId": 4,
 			});
 
 			if (receivedOrders.length != 0) {
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: true,
-					message: 'You already have received orders !',
+					message: "You already have received orders !",
 					orderId,
 				});
 			}
@@ -125,11 +125,11 @@ module.exports = (io, socket) => {
 			/***************************************************/
 
 			orderSearch = await OrderModel.findOne({
-				'master.orderId': orderId,
+				"master.orderId": orderId,
 			});
 
 			if (!orderSearch)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
 					isAuthorize: true,
 					message: `There is no order with id #${orderId}`,
@@ -151,23 +151,23 @@ module.exports = (io, socket) => {
 			//Set this driver as the accepter of this order
 			await OrderModel.updateOne(
 				{
-					'master.orderId': orderId,
+					"master.orderId": orderId,
 					driversFound: {
 						$elemMatch: { driverId },
 					},
 				},
 				{
 					$set: {
-						'driversFound.$.requestStatus': 1, //Accept
-						'driversFound.$.estimatedDistance': branchDistance,
-						'driversFound.$.location': {
+						"driversFound.$.requestStatus": 1, //Accept
+						"driversFound.$.estimatedDistance": branchDistance,
+						"driversFound.$.location": {
 							coordinates: [driverSearch.location.coordinates[0], driverSearch.location.coordinates[1]],
 						},
-						'driversFound.$.actionDate': new Date().constructor({
-							timeZone: 'Asia/Bahrain', //to get time zone of Saudi Arabia
+						"driversFound.$.actionDate": new Date().constructor({
+							timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
 						}),
 
-						'master.driverId': driverId,
+						"master.driverId": driverId,
 					},
 				}
 			);
@@ -180,24 +180,22 @@ module.exports = (io, socket) => {
 			});
 
 			if (!updateResult.status) {
-				Sentry.captureMessage(
-					`Error in API, AcceptOrder event, order: ${orderId}, error: ${updateResult.message}`
-				);
+				Sentry.captureMessage(`Error in API, AcceptOrder event, order: ${orderId}, error: ${updateResult.message}`);
 
-				return socket.emit('AcceptOrder', updateResult);
+				return socket.emit("AcceptOrder", updateResult);
 			}
 
 			/******************************************************/
 			//Update the order status on DB
 			await OrderModel.updateOne(
 				{
-					'master.orderId': orderId,
+					"master.orderId": orderId,
 				},
 				{
 					$set: {
-						'master.statusId': 3,
-						'master.branchDistance': branchDistance,
-						'master.driverId': driverId,
+						"master.statusId": 3,
+						"master.branchDistance": branchDistance,
+						"master.driverId": driverId,
 					},
 				}
 			);
@@ -214,7 +212,7 @@ module.exports = (io, socket) => {
 
 			/******************************************************/
 			//Get the order again
-			orderSearch = await OrderModel.findOne({ 'master.orderId': orderId });
+			orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 			orderSearch = orderSearch && orderSearch.toObject();
 
 			/***********************************************************/
@@ -234,10 +232,10 @@ module.exports = (io, socket) => {
 
 			for (let driver of orderSearch.driversFound) {
 				if (driver.driverId != driverId && driver.requestStatus == 4) {
-					io.to(parseInt(drivers.get(driver.driverId))).emit('AcceptTrip', {
+					io.to(parseInt(drivers.get(driver.driverId))).emit("AcceptTrip", {
 						status: false,
 						isAuthorize: true,
-						message: 'Sorry, another driver accepted the trip',
+						message: "Sorry, another driver accepted the trip",
 					});
 				}
 			}
@@ -254,7 +252,7 @@ module.exports = (io, socket) => {
 			);
 
 			/***************************************************/
-			socket.emit('AcceptOrder', {
+			socket.emit("AcceptOrder", {
 				status: true,
 				message: `Order #${orderId} accepted successfully`,
 				orderId,
@@ -267,7 +265,7 @@ module.exports = (io, socket) => {
 			Sentry.captureException(e);
 
 			console.log(`Error in AcceptOrder event: ${e.message}`, e);
-			return socket.emit('AcceptOrder', {
+			return socket.emit("AcceptOrder", {
 				status: false,
 				message: `Error in AcceptOrder event: ${e.message}`,
 				orderId,

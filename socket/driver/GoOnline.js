@@ -1,13 +1,13 @@
-const Sentry = require('@sentry/node');
-const { Mutex } = require('async-mutex');
+const Sentry = require("@sentry/node");
+const { Mutex } = require("async-mutex");
 
 //Models
-const DriverModel = require('../../models/Driver');
-const OrderModel = require('../../models/Order');
-const orderCycle = require('../../helpers/orderCycle');
+const DriverModel = require("../../models/Driver");
+const OrderModel = require("../../models/Order");
+const orderCycle = require("../../helpers/orderCycle");
 
 //Globals
-let { drivers, disconnectInterval, activeOrders, busyDrivers, orderCycleDrivers } = require('../../globals');
+let { drivers, disconnectInterval, activeOrders, busyDrivers, orderCycleDrivers } = require("../../globals");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -16,7 +16,7 @@ let { drivers, disconnectInterval, activeOrders, busyDrivers, orderCycleDrivers 
 let EventLocks = new Map();
 
 module.exports = (io, socket) => {
-	socket.on('GoOnline', async ({ driverId, status, token, firebaseToken, deviceType = 2 }) => {
+	socket.on("GoOnline", async ({ driverId, status, token, language, firebaseToken, deviceType = 2 }) => {
 		/*
 		 * Start the Event Locker from here
 		 */
@@ -28,7 +28,7 @@ module.exports = (io, socket) => {
 		/***************************************************/
 
 		try {
-			console.log(`GoOnline Event Called, driver id: ${driverId}, ${status == 1 ? 'online' : 'offline'}`);
+			console.log(`GoOnline Event Called, driver id: ${driverId}, ${status == 1 ? "online" : "offline"}`);
 
 			driverId = parseInt(driverId);
 			/********************************************************/
@@ -41,11 +41,11 @@ module.exports = (io, socket) => {
 			});
 
 			if (!driverSearch) {
-				return socket.emit('GoOnline', {
+				return socket.emit("GoOnline", {
 					status: false,
 					isAuthorize: false,
 					isOnline: false,
-					message: 'You are not authorized',
+					message: "You are not authorized",
 				});
 			}
 
@@ -61,8 +61,8 @@ module.exports = (io, socket) => {
 
 			//Search for busy orders
 			let busyOrders = await OrderModel.find({
-				'master.statusId': { $in: [1, 3, 4] },
-				'master.driverId': driverId,
+				"master.statusId": { $in: [1, 3, 4] },
+				"master.driverId": driverId,
 			});
 			/******************************************************/
 			//Update in memory first
@@ -141,11 +141,11 @@ module.exports = (io, socket) => {
 			);
 			/***************************************************/
 			//Emit GoOnline with updated status
-			socket.emit('GoOnline', {
+			socket.emit("GoOnline", {
 				status: !isForced,
 				isAuthorize: true,
 				isOnline,
-				message: `The driver is set to ${isOnline ? 'online' : 'offline'}`,
+				message: `The driver is set to ${isOnline ? "online" : "offline"}`,
 				busyOrders: busyOrders.map((order) => order.master.orderId),
 			});
 
@@ -154,7 +154,7 @@ module.exports = (io, socket) => {
 			Sentry.captureException(e);
 
 			console.log(`Error in GoOnline, error: ${e.message}`);
-			return socket.emit('GoOnline', {
+			return socket.emit("GoOnline", {
 				status: false,
 				message: `Error in GoOnline, error: ${e.message}`,
 			});

@@ -1,15 +1,15 @@
-const Sentry = require('@sentry/node');
-const { Mutex } = require('async-mutex');
+const Sentry = require("@sentry/node");
+const { Mutex } = require("async-mutex");
 
 //Models
-const DriverModel = require('../../models/Driver');
-const OrderModel = require('../../models/Order');
+const DriverModel = require("../../models/Driver");
+const OrderModel = require("../../models/Order");
 
 //Globals
-let { drivers, disconnectInterval, busyDrivers } = require('../../globals');
+let { drivers, disconnectInterval, busyDrivers } = require("../../globals");
 
 //Helpers
-const { checkForOrderRequest } = require('../../helpers');
+const { checkForOrderRequest } = require("../../helpers");
 
 /*
  * @param EventLocks is a map of mutex interfaces to prevent race condition in the event
@@ -18,7 +18,7 @@ const { checkForOrderRequest } = require('../../helpers');
 let EventLocks = new Map();
 
 module.exports = (io, socket) => {
-	socket.on('JoinDriver', async ({ driverId, token, firebaseToken, deviceType = 2 }) => {
+	socket.on("JoinDriver", async ({ driverId, token, language, firebaseToken, deviceType = 2 }) => {
 		/*
 		 * Start the Event Locker from here
 		 */
@@ -33,14 +33,14 @@ module.exports = (io, socket) => {
 
 			//Developement errors
 			if (!driverId)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
-					message: 'driverId is missing',
+					message: "driverId is missing",
 				});
 			if (!token)
-				return socket.emit('AcceptOrder', {
+				return socket.emit("AcceptOrder", {
 					status: false,
-					message: 'token is missing',
+					message: "token is missing",
 				});
 
 			/********************************************************/
@@ -56,11 +56,11 @@ module.exports = (io, socket) => {
 			});
 
 			if (!driverSearch) {
-				return socket.emit('JoinDriver', {
+				return socket.emit("JoinDriver", {
 					status: false,
 					isAuthorize: false,
 					isOnline: false,
-					message: 'You are not authorized',
+					message: "You are not authorized",
 				});
 			}
 
@@ -75,8 +75,8 @@ module.exports = (io, socket) => {
 			//Search for busy orders
 			let isHasOrder = false;
 			let busyOrders = await OrderModel.find({
-				'master.statusId': { $in: [1, 3, 4] },
-				'master.driverId': driverId,
+				"master.statusId": { $in: [1, 3, 4] },
+				"master.driverId": driverId,
 			});
 
 			/******************************************************/
@@ -128,7 +128,7 @@ module.exports = (io, socket) => {
 			/********************************************************/
 
 			//Send back to the driver
-			socket.emit('JoinDriver', {
+			socket.emit("JoinDriver", {
 				status: true,
 				isAuthorize: true,
 				isOnline:
@@ -152,7 +152,7 @@ module.exports = (io, socket) => {
 			Sentry.captureException(e);
 
 			console.log(`Error in JoinDriver, error: ${e.message}`);
-			return socket.emit('JoinDriver', {
+			return socket.emit("JoinDriver", {
 				status: false,
 				message: `Error in JoinDriver, error: ${e.message}`,
 			});
