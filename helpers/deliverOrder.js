@@ -8,7 +8,7 @@ const { drivers } = require("../globals");
 
 const { API_URI } = require("../globals");
 
-module.exports = async ({ orderId, driverId, lng, lat, token, language }) => {
+module.exports = async ({ orderId, driverId, lng, lat, token, language = "en" }) => {
 	try {
 		//Send to the API
 		let response = await axios.post(
