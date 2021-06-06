@@ -47,7 +47,7 @@ module.exports = async ({ orderId, driverId, lng, lat, token, language = "en" })
 		);
 
 		//Check if driver has ballance
-		if (apiData.isAllowedBalance) {
+		if (!apiData.isAllowedBalance) {
 			const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 			const driverSearch = await DriverModel.findOne({ driverId });
 
