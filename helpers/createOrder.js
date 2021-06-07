@@ -1,5 +1,5 @@
-const Sentry = require('@sentry/node');
-const OrderModel = require('../models/Order');
+const Sentry = require("@sentry/node");
+const OrderModel = require("../models/Order");
 
 module.exports = async ({ orders }) => {
 	try {
@@ -9,6 +9,7 @@ module.exports = async ({ orders }) => {
 				master: {
 					orderId: order.orderId,
 					branchId: order.branchId,
+					clientId: order.clientId,
 					branchNameAr: order.branchNameAr,
 					branchNameEn: order.branchNameEn,
 					branchAddress: order.branchAddress,

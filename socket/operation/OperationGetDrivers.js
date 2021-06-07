@@ -92,7 +92,7 @@ module.exports = (io, socket) => {
 
 			//Manipulate drivers
 			let finalDrivers = [];
-			for (driver of driversSearch) {
+			for (let driver of driversSearch) {
 				//Check the status & add tripInfo if busy on a trip
 				let result = await manipulateDriver(driver.toObject());
 				if (!result.status) {

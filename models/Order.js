@@ -1,12 +1,12 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Number, Boolean, String } = mongoose.Schema.Types;
 
 const pointSchema = new mongoose.Schema({
 	type: {
 		type: String,
-		enum: ['Point'],
+		enum: ["Point"],
 		required: true,
-		default: 'Point',
+		default: "Point",
 	},
 	coordinates: {
 		type: [Number],
@@ -21,6 +21,7 @@ const masterSchema = new mongoose.Schema({
 	},
 	orderId: Number,
 	branchId: Number,
+	clientId: { type: Number, default: null },
 	driverId: Number,
 	branchNameAr: String,
 	branchNameEn: String,
@@ -37,7 +38,7 @@ const masterSchema = new mongoose.Schema({
 	branchDistance: { type: Number, default: 1.5 },
 	branchLocation: {
 		type: pointSchema,
-		index: '2dsphere',
+		index: "2dsphere",
 		required: true,
 	},
 	//1 ==> created, 2 ==> not found, 3 ==> accept, 4 ==> received, 5 ==> delivered, 6 ==> canceled
@@ -64,7 +65,7 @@ const orderDriversSchema = new mongoose.Schema({
 	location: {
 		type: pointSchema,
 		required: true,
-		index: '2dsphere',
+		index: "2dsphere",
 	},
 	actionDate: {
 		type: Date,
@@ -99,5 +100,5 @@ const orderSchema = new mongoose.Schema({
 	},
 });
 
-const Order = mongoose.model('Order', orderSchema, 'orders');
+const Order = mongoose.model("Order", orderSchema, "orders");
 module.exports = Order;
