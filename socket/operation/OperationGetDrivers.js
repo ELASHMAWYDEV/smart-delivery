@@ -63,8 +63,8 @@ module.exports = (io, socket) => {
 					},
 				]);
 
-				for (let driver of ordersSearch) {
-					driversIds.push(driver.driverId);
+				for (let order of ordersSearch) {
+					driversIds.push(order.driverId);
 				}
 			} else {
 				//Get all driversIds
@@ -147,7 +147,7 @@ module.exports = (io, socket) => {
 			});
 		} catch (e) {
 			Sentry.captureException(e);
-			console.log(`Error in OperationGetDrivers, error: ${e.message}`);
+			console.log(`Error in OperationGetDrivers`, e);
 
 			socket.emit("OperationGetDrivers", {
 				status: false,
