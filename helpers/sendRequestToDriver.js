@@ -169,6 +169,7 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 				branchAddress: master.branchAddress,
 				receiverAddress: master.receiverAddress,
 				receiverDistance: master.receiverDistance,
+				branchDistance: master.branchDistance,
 				branchLogo: master.branchLogo,
 				paymentTypeEn: master.paymentTypeEn,
 				paymentTypeAr: master.paymentTypeAr,

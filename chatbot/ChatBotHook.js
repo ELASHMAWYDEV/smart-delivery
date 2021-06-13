@@ -436,16 +436,16 @@ router.post('/', async (req, res) => {
 									break;
 								}
 
-								if (!data.data.isAccept) {
-									await sendMessage({
-										chatId,
-										language,
-										key: 'TRACK_INFO',
-										params: data.data,
-									});
+								// if (!data.data.isAccept) {
+								// 	await sendMessage({
+								// 		chatId,
+								// 		language,
+								// 		key: 'TRACK_INFO',
+								// 		params: data.data,
+								// 	});
 
-									break;
-								}
+								// 	break;
+								// }
 
 								await sendMessage({
 									chatId,
