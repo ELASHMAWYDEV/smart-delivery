@@ -1,14 +1,37 @@
-const Sentry = require('@sentry/node');
-const OrderModel = require('../../models/Order');
-const { busyDrivers } = require('../../globals');
+const Sentry = require("@sentry/node");
+const OrderModel = require("../../models/Order");
+const { busyDrivers } = require("../../globals");
 
 module.exports = async (driver) => {
 	try {
 		let { driverId, isBusy, isOnline } = driver || {};
 
-		//Get the ordersIds from memory
-		let busyOrders = await OrderModel.find({ 'master.driverId': driverId, 'master.statusId': { $in: [3, 4] } });
+		const getStatusName = (type) => {
+			switch (type) {
+				case 1:
+					return "created";
+				case 2:
+					return "not found";
+				case 3:
+					return "accept";
+				case 4:
+					return "received";
+				case 5:
+					return "delivered";
+				case 6:
+					return "canceled";
+				default:
+					return "unknown";
+			}
+		};
 
+		//Get the ordersIds from memory
+		let busyOrders = await OrderModel.find({ "master.driverId": driverId, "master.statusId": { $in: [3, 4] } });
+
+		busyOrders.map((order) => ({
+			statusName: getStatusName(order.master.statusId),
+			...order,
+		}));
 		//Add the order to the driver object
 		driver = { ...driver, orders: busyOrders };
 

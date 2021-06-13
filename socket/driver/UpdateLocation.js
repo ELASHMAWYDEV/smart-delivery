@@ -1,5 +1,7 @@
 const Sentry = require("@sentry/node");
 const { Mutex } = require("async-mutex");
+const LANG = require("../../util/translation");
+
 //Models
 const DriverModel = require("../../models/Driver");
 const OrderModel = require("../../models/Order");
@@ -35,7 +37,7 @@ module.exports = (io, socket) => {
 				return socket.emit("UpdateLocation", {
 					status: false,
 					isAuthorize: false,
-					message: "You are not authorized",
+					message: LANG(language).NOT_AUTHORIZED,
 				});
 			}
 
@@ -67,7 +69,7 @@ module.exports = (io, socket) => {
 				status: true,
 				isAuthorize: true,
 				isOnline: driverSearch.isOnline,
-				message: "Location updated successfully",
+				message: LANG(language).LOCATION_UPDATED,
 			});
 
 			/***************************************************/

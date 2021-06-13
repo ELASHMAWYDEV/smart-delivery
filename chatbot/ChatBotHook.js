@@ -436,16 +436,16 @@ router.post('/', async (req, res) => {
 									break;
 								}
 
-								if (!data.data.isAccept) {
-									await sendMessage({
-										chatId,
-										language,
-										key: 'TRACK_INFO',
-										params: data.data,
-									});
+								// if (!data.data.isAccept) {
+								// 	await sendMessage({
+								// 		chatId,
+								// 		language,
+								// 		key: 'TRACK_INFO',
+								// 		params: data.data,
+								// 	});
 
-									break;
-								}
+								// 	break;
+								// }
 
 								await sendMessage({
 									chatId,
@@ -649,14 +649,14 @@ const QUESTIONS = [
 			'0',
 			'exit',
 		],
-		RAR: () => `مرحبا بك\nأنا لوجي وان بوت 🤖`,
+		RAR: () => `مرحبا بك\nأنا لوجي ون بوت 🤖`,
 		REN: () => `Welcome\nI'm LogiOne Bot 🤖`,
 	},
 	{
 		key: 'SALAM_MESSAGE',
 		QAR: ['السلام عليكم', 'سلام', 'السلام عليكم ورحمة الله وبركاته', 'سلام عليكم'],
 		QEN: ['Salam'],
-		RAR: () => `وعليكم السلام ورحمة الله وبركاته\nأنا لوجي وان بوت 🤖`,
+		RAR: () => `وعليكم السلام ورحمة الله وبركاته\nأنا لوجي ون بوت 🤖`,
 		REN: () => `Salam :)\nI'm LogiOne Bot 🤖`,
 	},
 	{
@@ -664,9 +664,9 @@ const QUESTIONS = [
 		QAR: [''],
 		QEN: [''],
 		RAR: () =>
-			'يساعدك لوجي وان بوت في استلام وتتبع طلباتك ودفع فاتورتك والتواصل معنا\n\nلتتبع الطلب ، اكتب *1*\nلمشاركة موقع التسليم، اكتب *2*\nللتواصل معنا، اكتب *3*\nلدفع فاتورتك، اكتب *4*\n\n💡 اذا علقت او واجهتك اي مشكلة، اكتب *خروج*\n\nلخدمات أخرى، يرجى زيارة https://www.logione.net\n\nTo switch the language to English at any time, just type *English*\n\n*Logi One*',
+			'يساعدك لوجي ون بوت في استلام وتتبع طلباتك ودفع فاتورتك والتواصل معنا\n\nلتتبع الطلب ، اكتب *1*\nلمشاركة موقع التسليم، اكتب *2*\nللتواصل معنا، اكتب *3*\nلدفع فاتورتك، اكتب *4*\n\n💡 اذا علقت او واجهتك اي مشكلة، اكتب *خروج*\n\nلخدمات أخرى، يرجى زيارة https://www.logione.net\n\nTo switch the language to English at any time, just type *English*\n\n*Logi One*',
 		REN: () =>
-			'LogiOne Pot helps you receive and track your shipments, pay your bill, and communicate with us\n\nTo track your shipment, press *1*\nTo share your location, press *2*\nTo contact us, press *3*\nTo pay your bill, press *4*\n\n💡 If you are stuck، just write *exit*\n\nFor other services, please visit https://www.logione.net\n\n لتغيير اللغة الي العربية في أي وقت، فقط قم بكتابة *عربي*\n\n*لوجي وان*',
+			'LogiOne Pot helps you receive and track your shipments, pay your bill, and communicate with us\n\nTo track your shipment, press *1*\nTo share your location, press *2*\nTo contact us, press *3*\nTo pay your bill, press *4*\n\n💡 If you are stuck، just write *exit*\n\nFor other services, please visit https://www.logione.net\n\n لتغيير اللغة الي العربية في أي وقت، فقط قم بكتابة *عربي*\n\n*لوجي ون*',
 	},
 	{
 		key: 'TRACK_INFO',

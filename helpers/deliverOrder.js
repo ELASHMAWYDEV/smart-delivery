@@ -8,7 +8,7 @@ const { drivers } = require("../globals");
 
 const { API_URI } = require("../globals");
 
-module.exports = async ({ orderId, driverId, lng, lat, token, language }) => {
+module.exports = async ({ orderId, driverId, lng, lat, token, language = "en" }) => {
 	try {
 		//Send to the API
 		let response = await axios.post(
@@ -46,7 +46,7 @@ module.exports = async ({ orderId, driverId, lng, lat, token, language }) => {
 		);
 
 		//Check if driver has ballance
-		if (apiData.isAllowedBalance) {
+		if (!apiData.isAllowedBalance) {
 			const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 			const driverSearch = await DriverModel.findOne({ driverId });
 

@@ -2,6 +2,7 @@ const Sentry = require("@sentry/node");
 
 //Models
 const DriverModel = require("../../models/Driver");
+const OrderModel = require("../../models/Order");
 
 //Helpers
 const { countDrivers, countDriversInRange, manipulateDriver } = require("../../helpers");
@@ -47,11 +48,23 @@ module.exports = (io, socket) => {
 
 				/******************************************************/
 
-				//Get all drivers that have active orders to this branch(s) ---> from memory
-				for (let driver of busyDrivers) {
-					if (branchs.includes(driver[1].branchId)) {
-						driversIds.push(driver[0]);
-					}
+				//Get all drivers that have active orders to this branch(s)
+				let ordersSearch = await OrderModel.aggregate([
+					{
+						$match: {
+							"master.branchId": { $in: branchs },
+							"master.statusId": { $in: [3, 4] },
+						},
+					},
+					{
+						$project: {
+							driverId: "$master.driverId",
+						},
+					},
+				]);
+
+				for (let order of ordersSearch) {
+					driversIds.push(order.driverId);
 				}
 			} else {
 				//Get all driversIds
@@ -79,7 +92,7 @@ module.exports = (io, socket) => {
 
 			//Manipulate drivers
 			let finalDrivers = [];
-			for (driver of driversSearch) {
+			for (let driver of driversSearch) {
 				//Check the status & add tripInfo if busy on a trip
 				let result = await manipulateDriver(driver.toObject());
 				if (!result.status) {
@@ -134,7 +147,7 @@ module.exports = (io, socket) => {
 			});
 		} catch (e) {
 			Sentry.captureException(e);
-			console.log(`Error in OperationGetDrivers, error: ${e.message}`);
+			console.log(`Error in OperationGetDrivers`, e);
 
 			socket.emit("OperationGetDrivers", {
 				status: false,
