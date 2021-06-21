@@ -123,6 +123,7 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 					"master.statuId": 1,
 					"master.deliveryPriceAr": deliveryPriceAr,
 					"master.deliveryPriceEn": deliveryPriceEn,
+					"master.branchDistance": branchDistance,
 				},
 				$push: {
 					driversFound: {

@@ -37,7 +37,7 @@ const masterSchema = new mongoose.Schema({
 	currencyEn: String,
 	deliveryPriceEn: String,
 	deliveryPriceAr: String,
-	branchDistance: { type: Number, default: 1.5 },
+	branchDistance: Number,
 	minKM: Number,
 	baseFare: Number,
 	overKilo: Number,
