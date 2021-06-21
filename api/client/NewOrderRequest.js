@@ -1,23 +1,23 @@
-const Sentry = require('@sentry/node');
-const express = require('express');
+const Sentry = require("@sentry/node");
+const express = require("express");
 const router = express.Router();
-const { orderCycleDrivers, driverHasTakenAction } = require('../../globals');
+const { orderCycleDrivers, driverHasTakenAction } = require("../../globals");
 
 //Helpers
-const { createOrder } = require('../../helpers');
-const orderCycle = require('../../helpers/orderCycle');
+const { createOrder } = require("../../helpers");
+const orderCycle = require("../../helpers/orderCycle");
 /*
  *
  * This route handles new order requests sent from the client (restaurant)
  *
  */
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
 	try {
 		//Will receive array || object
 		let { orders, drivers } = req.body;
 
-		console.log('Orders', orders);
+		console.log("Orders", orders);
 		/******************************************************/
 		//Create the order on DB & API
 		const createOrderResult = await createOrder({
@@ -31,7 +31,7 @@ router.post('/', async (req, res) => {
 		//Send response to client
 		res.json({
 			status: true,
-			message: 'All orders have been saved',
+			message: "All orders have been saved",
 			orders: (ordersAfterSave && ordersAfterSave.map((order) => order.master.orderId)) || [],
 		});
 		/******************************************************/

@@ -22,6 +22,12 @@ module.exports = async ({ orders }) => {
 					paymentTypeAr: order.paymentTypeAr,
 					deliveryPriceEn: order.deliveryPriceEn,
 					deliveryPriceAr: order.deliveryPriceAr,
+					minKM: order.minKM,
+					baseFare: order.baseFare,
+					overKilo: order.overKilo,
+					driverCommision: order.driverCommision,
+					currencyAr: order.currencyAr,
+					currencyEn: order.currencyEn,
 					branchLocation: {
 						coordinates: [order.branchLng, order.branchLat],
 					},

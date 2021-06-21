@@ -8,6 +8,7 @@ const LANG = require("../util/translation");
 
 //Helpers
 const sendNotification = require("./sendNotification");
+const getEstimatedDistanceDuration = require("./getEstimatedDistanceDuration");
 
 const sendRequestToDriver = async ({ language = "en", driverId, order, driversIds = [], orderDriversLimit = 2 }) => {
 	try {
@@ -90,6 +91,29 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 		});
 
 		/**************************************************************/
+		//Get the deliveryPrice
+		let branchDistance = 1.5; //default
+		//Get the driver distance & duration
+		let estimation = await getEstimatedDistanceDuration({
+			pickupLng: driverSearch.location.coordinates[0],
+			pickupLat: driverSearch.location.coordinates[1],
+			dropoffLng: order.master.branchLocation.coordinates[0],
+			dropoffLat: order.master.branchLocation.coordinates[1],
+		});
+
+		if (estimation.status) branchDistance = estimation.estimatedDistance;
+		const totalDistance = branchDistance + order.master.receiverDistance;
+		let deliveryPrice = order.master.baseFare;
+		const overKilos = totalDistance > order.master.minKM ? totalDistance - order.master.minKM : 0;
+		const overKilosPrice = overKilos * order.master.overKilo;
+		deliveryPrice = deliveryPrice + overKilosPrice;
+
+		deliveryPrice = ((order.master.driverCommision / 100) * deliveryPrice).toFixed(2);
+
+		const deliveryPriceAr = deliveryPrice + " " + order.master.currencyAr;
+		const deliveryPriceEn = deliveryPrice + " " + order.master.currencyEn;
+
+		/**************************************************************/
 		//Add the driver to the driversFound[] in order
 		await OrderModel.updateOne(
 			{ "master.orderId": orderId },
@@ -97,6 +121,8 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 				$set: {
 					"master.driverId": driverSearch.driverId,
 					"master.statuId": 1,
+					"master.deliveryPriceAr": deliveryPriceAr,
+					"master.deliveryPriceEn": deliveryPriceEn,
 				},
 				$push: {
 					driversFound: {
