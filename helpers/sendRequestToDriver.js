@@ -92,7 +92,7 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 
 		/**************************************************************/
 		//Get the deliveryPrice
-		let branchDistance = 1.5; //default
+		let branchDistance; //default
 		//Get the driver distance & duration
 		let estimation = await getEstimatedDistanceDuration({
 			pickupLng: driverSearch.location.coordinates[0],
