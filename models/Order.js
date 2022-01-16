@@ -41,6 +41,11 @@ const masterSchema = new mongoose.Schema({
 		index: "2dsphere",
 		required: true,
 	},
+	receiverLocation: {
+		type: pointSchema,
+		index: "2dsphere",
+		required: true,
+	},
 	//1 ==> created, 2 ==> not found, 3 ==> accept, 4 ==> received, 5 ==> delivered, 6 ==> canceled
 	statusId: { type: Number, default: 1 },
 });
