@@ -10,6 +10,7 @@ module.exports = {
   sendNotification: require("./sendNotification"),
   checkForOrderRequest: require("./checkForOrderRequest"),
   notifyDriverOnActionRequired: require("./notifyDriverOnActionRequired"),
+  checkDriverActiveDialogues: require("./checkDriverActiveDialogues"),
   countDrivers: require("./operation/countDrivers"),
   countDriversInRange: require("./operation/countDriversInRange"),
   manipulateDriver: require("./operation/manipulateDriver"),
