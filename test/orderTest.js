@@ -3,8 +3,9 @@ const io = require("socket.io-client");
 
 describe("Trying to test", () => {
   before("Connecting to the socket", (done) => {
-    const socket = io.connect("http://localhost:5000", {
+    const socket = io.connect("https://de7c-41-187-94-148.ngro", {
       reconnectionDelay: 0,
+      
     });
 
     socket.on("connect", (socket) => {
