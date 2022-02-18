@@ -46,25 +46,24 @@ module.exports = (io, socket) => {
 			//Add driver to socket
 			drivers.set(parseInt(driverId), socket.id);
 
-			// Commented temp for testing @TODO: remove comments
-			// await DriverModel.updateOne(
-			// 	{ driverId },
-			// 	{
-			// 		$set: {
-			// 			oldLocation: {
-			// 				coordinates: [driverSearch.location.coordinates[0], driverSearch.location.coordinates[1]],
-			// 				type: "Point",
-			// 			},
-			// 			location: {
-			// 				coordinates: [lng, lat],
-			// 				type: "Point",
-			// 			},
-			// 			updateLocationDate: new Date().constructor({
-			// 				timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
-			// 			}),
-			// 		},
-			// 	}
-			// );
+			await DriverModel.updateOne(
+				{ driverId },
+				{
+					$set: {
+						oldLocation: {
+							coordinates: [driverSearch.location.coordinates[0], driverSearch.location.coordinates[1]],
+							type: "Point",
+						},
+						location: {
+							coordinates: [lng, lat],
+							type: "Point",
+						},
+						updateLocationDate: new Date().constructor({
+							timeZone: "Asia/Bahrain", //to get time zone of Saudi Arabia
+						}),
+					},
+				}
+			);
 
 			socket.emit("UpdateLocation", {
 				status: true,
