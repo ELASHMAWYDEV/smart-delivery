@@ -31,11 +31,6 @@ const masterSchema = new mongoose.Schema({
   receiverName: String,
   receiverMobile: String,
   receiverDistance: Number,
-  receiverLocation: {
-    type: pointSchema,
-    index: "2dsphere",
-    required: true,
-  },
   branchLogo: String,
   paymentTypeEn: String,
   paymentTypeAr: String,
@@ -43,6 +38,11 @@ const masterSchema = new mongoose.Schema({
   deliveryPriceAr: String,
   branchDistance: { type: Number, default: 1.5 },
   branchLocation: {
+    type: pointSchema,
+    index: "2dsphere",
+    required: true,
+  },
+  receiverLocation: {
     type: pointSchema,
     index: "2dsphere",
     required: true,
