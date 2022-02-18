@@ -21,6 +21,7 @@
     "express": "^4.17.1",
     "express-validator": "^6.10.0",
     "firebase-admin": "^9.6.0",
+    "geo-distance": "^0.2.0",
     "languagedetect": "^2.0.0",
     "localtunnel": "^2.0.1",
     "mongoose": "^5.12.1",

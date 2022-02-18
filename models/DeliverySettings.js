@@ -9,6 +9,15 @@ const deliverySettingsSchema = new mongoose.Schema({
     type: Number,
     default: 20,
   },
+  notifyDriverDistance: {
+    type: {
+      branch: Number,
+      customer: Number,
+    },
+    default: {
+      branch: 500, //m
+      customer: 300, //m
+    },
   suspendDriverAfter: {
     // To suspend the driver from making orders if he rejected {ordersCount} in the last {minutes} mins
     type: {
