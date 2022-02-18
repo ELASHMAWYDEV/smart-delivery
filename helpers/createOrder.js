@@ -5,7 +5,7 @@ module.exports = async ({ orders }) => {
   try {
     //Transform to be like DB schema
     const ordersToStoreInDB = orders.map((order) => {
-      // Temp for testing
+      // Temp for testing @TODO: Remove this if condition
       if (order.refrenceNumber == "client1") {
         order.receiverLng = 49.593254;
         order.receiverLat = 25.374601;
