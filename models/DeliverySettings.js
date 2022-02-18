@@ -18,6 +18,23 @@ const deliverySettingsSchema = new mongoose.Schema({
       branch: 500, //m
       customer: 300, //m
     },
+  suspendDriverAfter: {
+    // To suspend the driver from making orders if he rejected {ordersCount} in the last {minutes} mins
+    type: {
+      minutes: Number,
+      ordersCount: Number,
+      suspendDuration: Number,
+    },
+    required: true,
+    default: {
+      minutes: 60,
+      ordersCount: 4,
+      suspendDuration: 30, //minutes
+    },
+  },
+  maxDistanceBetweenCustomers: {
+    type: Number,
+    default: 10,
   },
 });
 

@@ -71,7 +71,7 @@ router.post("/", async (req, res) => {
 			/******************************************************/
 
 			//Send notification to the driver
-			await sendNotification({
+			sendNotification({
 				firebaseToken: driverSearch.firebaseToken,
 				title: `Order #${orderSearch.master.orderId} was canceled by board`,
 				body: `Order #${orderSearch.master.orderId} was canceled by board`,

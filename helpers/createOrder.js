@@ -5,11 +5,6 @@ module.exports = async ({ orders }) => {
   try {
     //Transform to be like DB schema
     const ordersToStoreInDB = orders.map((order) => {
-      //@TODO: remove this if condition
-      if (order.refrenceNumber == "dialogue") {
-        order.receiverLat = 25.374601;
-        order.receiverLng = 49.593254;
-      }
       return {
         master: {
           orderId: order.orderId,

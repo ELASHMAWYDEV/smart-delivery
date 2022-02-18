@@ -11,6 +11,7 @@ module.exports = {
   checkForOrderRequest: require("./checkForOrderRequest"),
   notifyDriverOnActionRequired: require("./notifyDriverOnActionRequired"),
   checkDriverActiveDialogues: require("./checkDriverActiveDialogues"),
+  checkDriverCouldBeSuspended: require("./checkDriverCouldBeSuspended"),
   countDrivers: require("./operation/countDrivers"),
   countDriversInRange: require("./operation/countDriversInRange"),
   manipulateDriver: require("./operation/manipulateDriver"),

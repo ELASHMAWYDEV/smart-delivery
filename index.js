@@ -11,60 +11,60 @@ const localtunnel = require("localtunnel");
 const PORT = process.env.PORT || 5050;
 
 try {
-	//Init
-	require("./init");
+  //Init
+  require("./init");
 
-	//Middlewares
-	app.use(cors());
-	app.use(express.json());
-	app.use(express.urlencoded({ extended: true }));
+  //Middlewares
+  app.use(cors());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
-	//Database connection
-	require("./db");
+  //Database connection
+  require("./db");
 
-	//Socket Handler
-	require("./socket/index")(io);
-	module.exports.io = io;
+  //Socket Handler
+  require("./socket/index")(io);
+  module.exports.io = io;
 
-	app.use(express.static("docs"));
+  app.use(express.static("docs"));
 
-	/********************************************/
-	//Documentation
-	app.get("/docs", (req, res) => {
-		res.sendFile(path.join(__dirname, "docs", "index.html"));
-	});
-	/********************************************/
+  /********************************************/
+  //Documentation
+  app.get("/docs", (req, res) => {
+    res.sendFile(path.join(__dirname, "docs", "index.html"));
+  });
+  /********************************************/
 
-	//API routes
-	app.use("/api", require("./api"));
+  //API routes
+  app.use("/api", require("./api"));
 
-	//Chat Bot WebHook
-	app.use("/chatbot", require("./chatbot/ChatBotHook"));
+  //Chat Bot WebHook
+  app.use("/chatbot", require("./chatbot/ChatBotHook"));
 
-	// /*-------For Test Only--------*/
-	app.get("/test/cycle/:user", (req, res) => {
-		res.sendFile(path.join(__dirname, "test", "cycle", `${req.params.user}.html`));
-	});
+  // /*-------For Test Only--------*/
+  app.get("/test/cycle/:user", (req, res) => {
+    res.sendFile(path.join(__dirname, "test", "cycle", `${req.params.user}.html`));
+  });
 
-	!!process.env.LOCAL_TUNNEL_ACTIVE &&
-		(async () => {
-			try {
-				const tunnel = await localtunnel({ port: +PORT, subdomain: "smart-delivery-20" });
+  !!process.env.LOCAL_TUNNEL_ACTIVE &&
+    (async () => {
+      try {
+        const tunnel = await localtunnel({ port: +PORT, subdomain: "smart-delivery-20" });
 
-				console.log("Tunnel Url:", tunnel.url);
+        console.log("Tunnel Url:", tunnel.url);
 
-				tunnel.on("close", () => {
-					console.log("Tunnel is closed");
-				});
-			} catch (e) {
-				console.log(e);
-			}
-		})();
+        tunnel.on("close", () => {
+          console.log("Tunnel is closed");
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    })();
 
-	/*------------------------------------------*/
+  /*------------------------------------------*/
 
-	http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  http.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 } catch (e) {
-	Sentry.captureException(e);
-	console.log(`Error in root, ${e.message}`, e);
+  Sentry.captureException(e);
+  console.log(`Error in root, ${e.message}`, e);
 }
