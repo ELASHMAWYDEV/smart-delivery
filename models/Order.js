@@ -20,6 +20,7 @@ const masterSchema = new mongoose.Schema({
     default: Date.now(),
   },
   orderId: Number,
+  refrenceNumber: String,
   branchId: Number,
   clientId: { type: Number, default: null },
   driverId: Number,

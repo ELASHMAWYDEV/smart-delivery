@@ -11,7 +11,7 @@ const deliverySettingsSchema = new mongoose.Schema({
   },
   maxDistanceBetweenCustomers: {
     type: Number,
-    default: 20,
+    default: 10,
   },
 });
 
