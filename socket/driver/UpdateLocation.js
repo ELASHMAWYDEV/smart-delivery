@@ -46,6 +46,7 @@ module.exports = (io, socket) => {
 			//Add driver to socket
 			drivers.set(parseInt(driverId), socket.id);
 
+			// @TODO: remove the comment
 			// await DriverModel.updateOne(
 			// 	{ driverId },
 			// 	{
