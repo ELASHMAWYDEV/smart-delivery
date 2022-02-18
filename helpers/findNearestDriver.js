@@ -72,9 +72,11 @@ module.exports = async ({ orderId, driversIds: choosedDrivers = [] }) => {
     ]);
 
     //If no driver found
-    if (!driverSearch) {
+    if (driverSearch.length == 0) {
       return { status: false, message: "No drivers found" };
     }
+
+    driverSearch = driverSearch[0];
 
     //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
     activeOrderDrivers.set(orderId, [...(activeOrderDrivers.get(orderId) || []), driverSearch.driverId]);

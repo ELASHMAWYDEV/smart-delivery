@@ -11,6 +11,7 @@ const sendNotification = require("./sendNotification");
 
 const sendRequestToDriver = async ({ language = "en", driverId, order, driversIds = [], orderDriversLimit = 2 }) => {
   try {
+    //@TODO: remove logging
     console.log("driverId from sendRequestToDriver:", driverId);
     driverId = parseInt(driverId);
 
