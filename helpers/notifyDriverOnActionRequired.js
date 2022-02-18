@@ -34,6 +34,9 @@ module.exports = async ({ driverId }) => {
         lat: driverSearch.location.coordinates[1],
       }
     );
+
+    //@TODO: remove logging
+    console.log("branch distance:", branchDistance);
     if (branchDistance <= geoDistance(settings.notifyDriverDistance.branch, "m")) {
       sendNotification({
         firebaseToken: driverSearch.firebaseToken,
@@ -60,6 +63,9 @@ module.exports = async ({ driverId }) => {
           lat: driverSearch.location.coordinates[1],
         }
       );
+
+      //@TODO: remove logging
+      console.log("customer distance:", customerDistance);
       if (customerDistance <= geoDistance(settings.notifyDriverDistance.customer, "m")) {
         sendNotification({
           firebaseToken: driverSearch.firebaseToken,
