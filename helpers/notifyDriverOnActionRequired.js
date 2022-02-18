@@ -15,14 +15,14 @@ module.exports = async ({ driverId }) => {
   const ordersSearch = await OrderModel.find({ "master.driverId": driverId, "master.statusId": { $in: [3, 4] } });
 
    //@TODO: remove logging
-   console.log("entered notifyDriver, orders:", ordersSearch.length);
+  console.log("entered notifyDriver, orders:", ordersSearch.length);
   if (ordersSearch.length == 0) return;
 
   // Get the driver
   const driverSearch = await DriverModel.findOne({ driverId });
 
-  const acceptedOrders = ordersSearch.filter((order) => order.statusId == 3);
-  const receivedOrders = ordersSearch.filter((order) => order.statusId == 4);
+  const acceptedOrders = ordersSearch.filter((order) => order?.master?.statusId == 3);
+  const receivedOrders = ordersSearch.filter((order) => order?.master?.statusId == 4);
 
   if (acceptedOrders.length > 0) {
     // Check branch area
