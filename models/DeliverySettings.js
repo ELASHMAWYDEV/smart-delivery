@@ -14,6 +14,7 @@ const deliverySettingsSchema = new mongoose.Schema({
     type: {
       minutes: Number,
       ordersCount: Number,
+      suspendDuration: Number,
     },
     required: true,
     default: {
