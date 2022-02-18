@@ -3,6 +3,8 @@ const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const SettingsModel = require("../models/DeliverySettings");
 const { activeOrderDrivers } = require("../globals");
+const { driverTypes } = require("../models/constants");
+
 const getEstimatedDistanceDuration  = require("./getEstimatedDistanceDuration");
 
 let settings;
@@ -24,23 +26,48 @@ module.exports = async ({ branchId, orderId, driversIds: choosedDrivers = [], or
       choosedDrivers = driversSearch.map((driver) => driver.driverId);
     }
 
-    let driversSearch = await DriverModel.find({
-      isOnline: true,
-      isBusy: true,
-      isDeleted: false,
-      $and: [{ driverId: { $nin: driversIds } }, { driverId: { $in: choosedDrivers } }],
-      location: {
-        $nearSphere: {
-          $geometry: {
+    let driversSearch = await DriverModel.aggregate([
+      {
+        $geoNear: {
+          key: "location",
+          near: {
             type: "Point",
             coordinates: [
               orderSearch.master.branchLocation.coordinates[0],
               orderSearch.master.branchLocation.coordinates[1],
             ],
           },
+          distanceField: "distination.calculated",
+          maxDistance: Infinity,
+          includeLocs: "distination.location",
+          spherical: true,
+          query: {
+            isOnline: true,
+            isBusy: true,
+            isDeleted: false,
+            $and: [{ driverId: { $nin: driversIds } }, { driverId: { $in: choosedDrivers } }],
+          },
         },
       },
-    });
+      // Sort by driverType priority
+      {
+        $addFields: {
+          driverTypeSortId: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$driverType", driverTypes.CONTRACTOR] }, then: 1 },
+                { case: { $eq: ["$driverType", driverTypes.FREELANCER] }, then: 2 },
+              ],
+            },
+          },
+        },
+      },
+      {
+        $sort: {
+          driverTypeSortId: 1,
+        },
+      },
+    ]);
 
     //If no driver found , send message to client
     if (driversSearch.length == 0) {

@@ -24,7 +24,9 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
     }
     /**************************************************************/
     //Get the driver again
-    let driverSearch = await DriverModel.findOne({ driverId });
+    let driverSearch = await DriverModel.findOne({
+      driverId,
+    });
 
     if (!driverSearch) {
       Sentry.captureMessage(`Couldn't send request to driver: #${driver.driverId}`);
@@ -63,7 +65,11 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
     //If not the same branch --> go & check for another driver
     if (branchId && branchId != order.master.branchId && busyOrders.length >= 1) {
       console.log(`Started cycle from sendRequestToDriver, not same branch,order ${orderId}`);
-      orderCycle({ orderId, driversIds, orderDriversLimit });
+      orderCycle({
+        orderId,
+        driversIds,
+        orderDriversLimit,
+      });
       return {
         status: true,
         message: `Order ${orderId} went wrong for driver ${driverId}, in another branch, resending to another driver`,
@@ -74,7 +80,11 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
     //If has busy orders more than limit --> go & check for another driver
     if (busyOrders.length >= orderDriversLimit) {
       console.log(`Started cycle from sendRequestToDriver, orders limit exceed, order ${orderId}`);
-      orderCycle({ orderId, driversIds, orderDriversLimit });
+      orderCycle({
+        orderId,
+        driversIds,
+        orderDriversLimit,
+      });
       return {
         status: true,
         message: `Order ${orderId} went wrong for driver ${driverId}, orders limit exceeded, resending to another driver`,
@@ -92,7 +102,9 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
     /**************************************************************/
     //Add the driver to the driversFound[] in order
     await OrderModel.updateOne(
-      { "master.orderId": orderId },
+      {
+        "master.orderId": orderId,
+      },
       {
         $set: {
           "master.driverId": driverSearch.driverId,
@@ -115,13 +127,17 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 
     /******************************************************/
     //Get the order after update
-    let orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
+    let orderSearch = await OrderModel.findOne({
+      "master.orderId": orderId,
+    });
     orderSearch = orderSearch && orderSearch.toObject();
 
     /******************************************************/
     //Set the driver to be busy
     await DriverModel.updateOne(
-      { driverId: driverSearch.driverId },
+      {
+        driverId: driverSearch.driverId,
+      },
       {
         isBusy: true,
       }
@@ -150,7 +166,9 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
       }),
       type: "1",
       deviceType: +driverSearch.deviceType, // + To Number
-      data: { orderId: master.orderId.toString() },
+      data: {
+        orderId: master.orderId.toString(),
+      },
     });
 
     /******************************************************/
@@ -212,7 +230,9 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
       );
 
       const busyOrdersDB = await OrderModel.find({
-        "master.statusId": { $in: [1, 3, 4] },
+        "master.statusId": {
+          $in: [1, 3, 4],
+        },
         "master.driverId": driverId,
       });
 

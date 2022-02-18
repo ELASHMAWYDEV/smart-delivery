@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const { Number, Boolean, String, ObjectId } = mongoose.Schema.Types;
+const { Number, Boolean, String } = mongoose.Schema.Types;
+const { driverTypes } = require("./constants");
 
 const pointSchema = new mongoose.Schema({
   type: {
@@ -17,6 +18,11 @@ const pointSchema = new mongoose.Schema({
 const driverSchema = new mongoose.Schema({
   driverId: {
     type: Number,
+  },
+  driverType: {
+    type: String,
+    enum: Object.values(driverTypes),
+    required: true,
   },
   categoryCarTypeId: {
     type: Number,
