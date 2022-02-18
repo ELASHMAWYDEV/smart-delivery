@@ -45,10 +45,10 @@ module.exports = async ({ driverId }) => {
 
       //Emit to the driver that he went offline
       io.to(drivers.get(driverId)).emit("GoOnline", {
-        status: false,
+        status: true,
         isAuthorize: true,
         isOnline: false,
-        message: `The driver is set to offline`,
+        message: `The driver is set to offline because he is suspended`,
       });
 
       const timeString = new Date(
@@ -59,7 +59,7 @@ module.exports = async ({ driverId }) => {
       sendNotification({
         firebaseToken: updatedDriver.firebaseToken,
         title: "You have been banned from receiving any orders",
-        body: `You have been banned until ${timeString}. because you have rejected ${rejectedOrders.length} in the last ${settings.suspendDriverAfter.minutes
+        body: `You have been banned until ${timeString}. because you have rejected ${rejectedOrders.length} orders in the last ${settings.suspendDriverAfter.minutes
           } minutes`,
         type: "0",
         deviceType: +updatedDriver.deviceType,
