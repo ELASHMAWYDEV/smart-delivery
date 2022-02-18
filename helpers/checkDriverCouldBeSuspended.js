@@ -1,4 +1,5 @@
 const Sentry = require("@sentry/node");
+const dayjs = require("dayjs");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const SettingsModel = require("../models/DeliverySettings");
@@ -20,7 +21,7 @@ module.exports = async ({ driverId }) => {
         $elemMatch: {
           driverId,
           requestStatus: 2,
-          actionDate: { $gt: new Date(new Date().setSeconds(-60 * settings.suspendDriverAfter.minutes)) },
+          actionDate: { $gt: dayjs().subtract(settings.suspendDriverAfter.minutes, 'minutes') },
         },
       },
     });
@@ -33,11 +34,10 @@ module.exports = async ({ driverId }) => {
           $set: {
             isSuspended: true,
             isOnline: false,
-            suspendedUntil: new Date(
-              new Date(
-                rejectedOrders[rejectedOrders.length - 1].driversFound.find((d) => d.driverId == driverId).actionDate
-              ).setSeconds(60 * settings.suspendDriverAfter.suspendDuration)
-            ),
+            suspendedUntil: dayjs(
+              rejectedOrders[rejectedOrders.length - 1].driversFound.find((d) => d.driverId == driverId).actionDate
+            ).add(settings.suspendDriverAfter.suspendDuration, 'minutes')
+            ,
           },
         },
         { new: true }
@@ -51,15 +51,16 @@ module.exports = async ({ driverId }) => {
         message: `The driver is set to offline`,
       });
 
+      const timeString = new Date(
+        updatedDriver.suspendedUntil
+      ).toLocaleTimeString("en-US", { timeZone: "Asia/Bahrain" });
+
       // Send him a notification
       sendNotification({
         firebaseToken: updatedDriver.firebaseToken,
         title: "You have been banned from receiving any orders",
-        body: `You have been banned until ${new Date(
-          updatedDriver.suspendedUntil
-        ).toLocaleTimeString()}. because you have rejected ${rejectedOrders.length} in the last ${
-          settings.suspendDriverAfter.minutes
-        } minutes`,
+        body: `You have been banned until ${timeString}. because you have rejected ${rejectedOrders.length} in the last ${settings.suspendDriverAfter.minutes
+          } minutes`,
         type: "0",
         deviceType: +updatedDriver.deviceType,
       });
