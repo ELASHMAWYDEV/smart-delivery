@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 			/******************************************************/
 
 			//Send notification to the driver
-			await sendNotification({
+			sendNotification({
 				firebaseToken: driverSearch.firebaseToken,
 				title: `The customer has paid for order #${orderSearch.master.orderId}`,
 				body: `The customer has paid for order #${orderSearch.master.orderId}`,

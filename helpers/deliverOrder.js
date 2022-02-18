@@ -51,7 +51,7 @@ module.exports = async ({ orderId, driverId, lng, lat, token, language = "en" })
 			const driverSearch = await DriverModel.findOne({ driverId });
 
 			//Send notification to the driver
-			await sendNotification({
+			sendNotification({
 				firebaseToken: driverSearch.firebaseToken,
 				title: apiData.notAllowedTitle,
 				body: apiData.notAllowedMessage,
