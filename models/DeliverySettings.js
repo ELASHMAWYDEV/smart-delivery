@@ -18,6 +18,7 @@ const deliverySettingsSchema = new mongoose.Schema({
       branch: 500, //m
       customer: 300, //m
     },
+  },
   suspendDriverAfter: {
     // To suspend the driver from making orders if he rejected {ordersCount} in the last {minutes} mins
     type: {
