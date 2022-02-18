@@ -64,7 +64,7 @@ module.exports = async ({ branchId, orderId, driversIds: choosedDrivers = [], or
       // Get the last order & check the distance between its customer & the new customer
       const lastOrder = busyOrders[busyOrders.length - 1];
 
-      const { status: distanceCalcStatus, estimatedCustomersDistance } = await getEstimatedDistanceDuration({
+      const { status: distanceCalcStatus, estimatedDistance: estimatedCustomersDistance } = await getEstimatedDistanceDuration({
         pickupLng: lastOrder?.master?.receiverLocation?.coordinates[0],
         pickupLat: lastOrder?.master?.receiverLocation?.coordinates[1],
         dropoffLng: orderSearch?.master?.receiverLocation?.coordinates[0],
