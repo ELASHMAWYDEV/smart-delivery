@@ -3,7 +3,7 @@ const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
 const SettingsModel = require("../models/DeliverySettings");
 const { activeOrderDrivers } = require("../globals");
-const { getEstimatedDistanceDuration } = require("../helpers");
+const getEstimatedDistanceDuration  = require("./getEstimatedDistanceDuration");
 
 let settings;
 (async () => {
