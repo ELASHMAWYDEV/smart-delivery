@@ -14,6 +14,8 @@ module.exports = async ({ driverId }) => {
   // Check if this driver has any orders with status [3, 4]
   const ordersSearch = await OrderModel.find({ "master.driverId": driverId, "master.statusId": { $in: [3, 4] } });
 
+   //@TODO: remove logging
+   console.log("entered notifyDriver, orders:", ordersSearch.length);
   if (ordersSearch.length == 0) return;
 
   // Get the driver
