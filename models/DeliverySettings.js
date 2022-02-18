@@ -23,6 +23,10 @@ const deliverySettingsSchema = new mongoose.Schema({
       suspendDuration: 30, //minutes
     },
   },
+  maxDistanceBetweenCustomers: {
+    type: Number,
+    default: 10,
+  },
 });
 
 const DeliverySettings = mongoose.model("DeliverySettings", deliverySettingsSchema, "deliverySettings");

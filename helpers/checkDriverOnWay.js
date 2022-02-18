@@ -1,14 +1,16 @@
 const Sentry = require("@sentry/node");
 const DriverModel = require("../models/Driver");
 const OrderModel = require("../models/Order");
+const SettingsModel = require("../models/DeliverySettings");
 const { activeOrderDrivers } = require("../globals");
+const getEstimatedDistanceDuration  = require("./getEstimatedDistanceDuration");
 
-module.exports = async ({
-  branchId,
-  orderId,
-  driversIds: choosedDrivers = [],
-  orderDriversLimit = 2,
-}) => {
+let settings;
+(async () => {
+  settings = await SettingsModel.findOne({});
+})();
+
+module.exports = async ({ branchId, orderId, driversIds: choosedDrivers = [], orderDriversLimit = 2 }) => {
   try {
     const orderSearch = await OrderModel.findOne({ "master.orderId": orderId });
 
@@ -26,10 +28,7 @@ module.exports = async ({
       isOnline: true,
       isBusy: true,
       isDeleted: false,
-      $and: [
-        { driverId: { $nin: driversIds } },
-        { driverId: { $in: choosedDrivers } },
-      ],
+      $and: [{ driverId: { $nin: driversIds } }, { driverId: { $in: choosedDrivers } }],
       location: {
         $nearSphere: {
           $geometry: {
@@ -56,19 +55,28 @@ module.exports = async ({
         "master.statusId": { $in: [1, 3] },
         "master.branchId": branchId,
         "master.driverId": driver.driverId,
-      });
+      }).sort({ _id: -1 });
 
       if (busyOrders.length >= orderDriversLimit || busyOrders.length == 0) {
         continue;
-      } else {
-        //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
-        activeOrderDrivers.set(orderId, [
-          ...(activeOrderDrivers.get(orderId) || []),
-          driver.driverId,
-        ]);
-
-        return { status: true, driverId: driver.driverId };
       }
+
+      // Get the last order & check the distance between its customer & the new customer
+      const lastOrder = busyOrders[busyOrders.length - 1];
+
+      const { status: distanceCalcStatus, estimatedDistance: estimatedCustomersDistance } = await getEstimatedDistanceDuration({
+        pickupLng: lastOrder?.master?.receiverLocation?.coordinates[0],
+        pickupLat: lastOrder?.master?.receiverLocation?.coordinates[1],
+        dropoffLng: orderSearch?.master?.receiverLocation?.coordinates[0],
+        dropoffLat: orderSearch?.master?.receiverLocation?.coordinates[1],
+      });
+
+      if (distanceCalcStatus == true && estimatedCustomersDistance > settings.maxDistanceBetweenCustomers) continue;
+
+      //If the driver was found, add him to the trip driverFound & activeOrderDrivers arrays
+      activeOrderDrivers.set(orderId, [...(activeOrderDrivers.get(orderId) || []), driver.driverId]);
+
+      return { status: true, driverId: driver.driverId };
     }
     /******************************************************/
     return { status: false, message: "No drivers on way found" };
