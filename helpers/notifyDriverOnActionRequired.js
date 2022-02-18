@@ -14,8 +14,6 @@ module.exports = async ({ driverId }) => {
   // Check if this driver has any orders with status [3, 4]
   const ordersSearch = await OrderModel.find({ "master.driverId": driverId, "master.statusId": { $in: [3, 4] } });
 
-   //@TODO: remove logging
-  console.log("entered notifyDriver, orders:", ordersSearch.length);
   if (ordersSearch.length == 0) return;
 
   // Get the driver
@@ -37,8 +35,6 @@ module.exports = async ({ driverId }) => {
       }
     );
 
-    //@TODO: remove logging
-    console.log("branch distance:", branchDistance, acceptedOrders[0].master.branchId.toString());
     if (branchDistance <= geoDistance(settings.notifyDriverDistance.branch, "m")) {
       sendNotification({
         firebaseToken: driverSearch.firebaseToken,
@@ -66,8 +62,6 @@ module.exports = async ({ driverId }) => {
         }
       );
 
-      //@TODO: remove logging
-      console.log("customer distance:", customerDistance);
       if (customerDistance <= geoDistance(settings.notifyDriverDistance.customer, "m")) {
         sendNotification({
           firebaseToken: driverSearch.firebaseToken,
@@ -77,7 +71,7 @@ module.exports = async ({ driverId }) => {
           deviceType: +driverSearch.deviceType, // + To Number
           data: {
             message: `Have you delivered order #${order.master.orderId} to ${order.master.receiverName} ?`,
-            orderId: order.master.orderId,
+            orderId: order.master.orderId.toString(),
           },
         });
       }
