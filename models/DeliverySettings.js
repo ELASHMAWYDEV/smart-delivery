@@ -1,10 +1,5 @@
 const mongoose = require("mongoose");
 
-const globalIntervalSchema = new mongoose.Schema({
-  index: Number,
-  maxDistance: Number,
-});
-
 const deliverySettingsSchema = new mongoose.Schema({
   timerSeconds: {
     type: Number,
@@ -14,14 +9,25 @@ const deliverySettingsSchema = new mongoose.Schema({
     type: Number,
     default: 20,
   },
-  globalIntervals: {
-    type: [globalIntervalSchema],
+  suspendDriverAfter: {
+    // To suspend the driver from making orders if he rejected {ordersCount} in the last {minutes} mins
+    type: {
+      minutes: Number,
+      ordersCount: Number,
+      suspendDuration: Number,
+    },
+    required: true,
+    default: {
+      minutes: 60,
+      ordersCount: 4,
+      suspendDuration: 30, //minutes
+    },
+  },
+  maxDistanceBetweenCustomers: {
+    type: Number,
+    default: 10,
   },
 });
 
-const DeliverySettings = mongoose.model(
-  "DeliverySettings",
-  deliverySettingsSchema,
-  "deliverySettings"
-);
+const DeliverySettings = mongoose.model("DeliverySettings", deliverySettingsSchema, "deliverySettings");
 module.exports = DeliverySettings;

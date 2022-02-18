@@ -157,7 +157,7 @@ const sendRequestToDriver = async ({ language = "en", driverId, order, driversId
 
     /******************************************************/
     //Send notification to the driver
-    await sendNotification({
+    sendNotification({
       firebaseToken: driverSearch.firebaseToken,
       title: LANG(language).NEW_ORDER_REQUEST,
       body: LANG(language).NEW_ORDER_BODY({

@@ -113,6 +113,13 @@ const driverSchema = new mongoose.Schema({
   disconnectTime: {
     type: Date,
   },
+  isSuspended: {
+    type: Boolean,
+    default: false,
+  },
+  suspendedUntil: {
+    type: Date,
+  },
 });
 
 const Driver = mongoose.model("Driver", driverSchema, "drivers");

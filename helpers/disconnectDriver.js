@@ -52,7 +52,7 @@ module.exports = async ({ driverId }) => {
       );
 
       //Send notification to driver
-      await sendNotification({
+      sendNotification({
         firebaseToken: driverSearch.firebaseToken,
         title: count <= 3 ? "You are still online" : "You are offline now",
         body:
