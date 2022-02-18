@@ -38,7 +38,7 @@ module.exports = async ({ driverId }) => {
     );
 
     //@TODO: remove logging
-    console.log("branch distance:", branchDistance);
+    console.log("branch distance:", branchDistance, acceptedOrders[0].master.branchId.toString());
     if (branchDistance <= geoDistance(settings.notifyDriverDistance.branch, "m")) {
       sendNotification({
         firebaseToken: driverSearch.firebaseToken,
@@ -48,7 +48,7 @@ module.exports = async ({ driverId }) => {
         deviceType: +driverSearch.deviceType, // + To Number
         data: {
           message: `Have you received all the order from ${acceptedOrders[0].master.branchNameEn}`,
-          branchId: acceptedOrders[0].master.branchId,
+          branchId: acceptedOrders[0].master.branchId.toString(),
         },
       });
     }
